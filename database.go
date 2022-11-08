@@ -2,10 +2,10 @@ package main
 
 import (
 	"database/sql"
-	"fmt"
 	"log"
 )
 
+// pass dbConnector, return DB searching result as [] string
 func getDBList(db *sql.DB) []string {
 	// Query the DB
 	var row string
@@ -26,6 +26,6 @@ func getDBList(db *sql.DB) []string {
 	if err := rows.Err(); err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println("DB list is here :", listSlice)
+	//fmt.Println("DB list is here :", listSlice)
 	return listSlice
 }

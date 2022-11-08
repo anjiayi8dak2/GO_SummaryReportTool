@@ -10,10 +10,6 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
-type DBList struct {
-	DbName string
-}
-
 func main() {
 	a := app.New()
 	w := a.NewWindow("Select entry widget, drop down")
@@ -28,17 +24,17 @@ func main() {
 	db.QueryRow("SELECT VERSION()").Scan(&version)
 	fmt.Println("Connected to:", version)
 
-	// get DB List
-	var list []string
-	list = getDBList(db)
-	// use list to update dropdown box
+	// Get DB List
+	var dbList []string
+	dbList = getDBList(db)
+	// use dbList to update dropdown box
 	// lets show our selected entry in label
 	label1 := widget.NewLabel("...")
 	// dropdown/ select entry
 	//[]string{} all our option goes in slice
 	// s is the variable to get the selected value
 	dd := widget.NewSelect(
-		list,
+		dbList,
 		func(s string) {
 			fmt.Printf("I selected %s as my input DB..", s)
 			label1.Text = s
