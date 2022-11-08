@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 )
 
@@ -28,4 +29,11 @@ func getDBList(db *sql.DB) []string {
 	}
 	//fmt.Println("DB list is here :", listSlice)
 	return listSlice
+}
+
+// pass dbConnector, print DB version that is connected to
+func getDBVersion(db *sql.DB) {
+	var version string
+	db.QueryRow("SELECT VERSION()").Scan(&version)
+	fmt.Println("Connected to:", version)
 }
