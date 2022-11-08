@@ -6,7 +6,7 @@ import (
 	"log"
 )
 
-// pass dbConnector, return DB searching result as [] string
+// PASS dbConnector, RETURN DB searching result as [] string
 func getDBList(db *sql.DB) []string {
 	// Query the DB
 	var row string
@@ -31,9 +31,52 @@ func getDBList(db *sql.DB) []string {
 	return listSlice
 }
 
-// pass dbConnector, print DB version that is connected to
+// PASS dbConnector, print DB version that is connected to
 func getDBVersion(db *sql.DB) {
 	var version string
 	db.QueryRow("SELECT VERSION()").Scan(&version)
 	fmt.Println("Connected to:", version)
 }
+
+// PASS dbConnector, sql statement in string, and table selection RETURN query result
+func getQueryResult(db *sql.DB, sql string) {
+	rows, _ := db.Query(sql) // Note: Ignoring errors for brevity
+	cols, _ := rows.Columns()
+
+	for rows.Next() {
+		// Create a slice of interface{}'s to represent each column,
+		// and a second slice to contain pointers to each item in the columns slice.
+		columns := make([]interface{}, len(cols))
+		columnPointers := make([]interface{}, len(cols))
+		for i, _ := range columns {
+			columnPointers[i] = &columns[i]
+		}
+
+		// Scan the result into the column pointers...
+		if err := rows.Scan(columnPointers...); err != nil {
+			fmt.Println("scanning pointer failed")
+			//return err
+		}
+
+		// Create our map, and retrieve the value for each column from the pointers slice,
+		// storing it in the map with the name of the column as the key.
+		m := make(map[string]interface{})
+		for i, colName := range cols {
+			val := columnPointers[i].(*interface{})
+			m[colName] = *val
+		}
+
+		// Outputs: map[columnName:value columnName2:value2 columnName3:value3 ...]
+		fmt.Print(m)
+	}
+}
+
+//func buttonSubmit(con *sql.DB, db string, table string) {
+//	var sql string
+//	sql = "SELECT * FROM " + db + "." + table + " LIMIT 10"
+//	getQueryResult(con, sql)
+//}
+
+//func buildSql(db string) {
+//
+//}

@@ -12,17 +12,37 @@ import (
 )
 
 func main() {
+	// Create the database handle, confirm driver is present
+	db, err := sql.Open("mysql", "moves:moves@/")
+	defer db.Close()
+	if err != nil {
+		fmt.Println("Failed to connect MariaDB", err)
+		return
+	}
+
+	// Connect and check the server version
+	getDBVersion(db)
+
+	//Initialize
 	a := app.New()
 	w := a.NewWindow("Summary Report Tool")
 	w.Resize(fyne.NewSize(400, 400))
+	//Global var
+	var dbSelection string
+	var tableSelection string
 
 	//menu bar
 	menuitemMaria := fyne.NewMenuItem("Open Maria Data Folder", nil) // ignore functions
-	menuitemRefresh := fyne.NewMenuItem("Refresh (F5)", nil)         // ignore functions
-	menuitemOpenlog := fyne.NewMenuItem("Open Log", nil)             // ignore functions
-	menuitemClearlog := fyne.NewMenuItem("Clear Log", nil)           // ignore functions
-	menuitemAbout := fyne.NewMenuItem("About", nil)                  // ignore functions
-	menuitemManual := fyne.NewMenuItem("Manual", nil)                // ignore functions
+	//menuitemRefresh := fyne.NewMenuItem("Refresh (F5)", buttonSubmit(db, dbSelection, tableSelection)) // ignore functions
+	menuitemRefresh := fyne.NewMenuItem("Refresh (F5)", func() {
+		var sqlStatement string
+		sqlStatement = "SELECT * FROM " + dbSelection + "." + tableSelection + " LIMIT 10"
+		getQueryResult(db, sqlStatement)
+	})
+	menuitemOpenlog := fyne.NewMenuItem("Open Log", nil)   // ignore functions
+	menuitemClearlog := fyne.NewMenuItem("Clear Log", nil) // ignore functions
+	menuitemAbout := fyne.NewMenuItem("About", nil)        // ignore functions
+	menuitemManual := fyne.NewMenuItem("Manual", nil)      // ignore functions
 	// New Menu
 	newMenu1 := fyne.NewMenu("File", menuitemMaria)
 	newMenu2 := fyne.NewMenu("Edit", menuitemRefresh)
@@ -32,37 +52,32 @@ func main() {
 	menu := fyne.NewMainMenu(newMenu1, newMenu2, newMenu3, newMenu4)
 	w.SetMainMenu(menu)
 
-	// Create the database handle, confirm driver is present
-	db, _ := sql.Open("mysql", "moves:moves@/")
-	defer db.Close()
-
-	// Connect and check the server version
-	getDBVersion(db)
-
 	// Get DB List
 	var dbList []string
 	dbList = getDBList(db)
 
-	//create dropdown for database selection
+	//Create dropdown for database selection
 	dbDropdownResult := widget.NewLabel("Select a Database")
-	// use dbList to update dropdown box option
+	//Use dbList to update dropdown box option
 	dbDropdown := widget.NewSelect(
 		dbList,
 		func(selection string) {
 			fmt.Printf("I selected %selection as my input DB..", selection)
 			dbDropdownResult.Text = selection
+			dbSelection = selection
 			dbDropdownResult.Refresh()
 		})
 
-	//create dropdown for table selection
+	//Create dropdown for table selection
 	tableDropdownResult := widget.NewLabel("Select a Table")
 	tableList := []string{"movesoutput", "rateperdistance", "rateperhour", "rateperprofile", "rateperstart", "ratepervehicle", "startspervehicle"}
-	// use dbList to update dropdown box option
+	//Use dbList to update dropdown box option
 	tableDropdown := widget.NewSelect(
 		tableList,
 		func(selection string) {
 			fmt.Printf("I selected %selection as my input DB..", selection)
 			tableDropdownResult.Text = selection
+			tableSelection = selection
 			tableDropdownResult.Refresh()
 		})
 
