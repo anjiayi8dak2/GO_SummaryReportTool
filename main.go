@@ -6,31 +6,31 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/container"
-	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 	_ "github.com/go-sql-driver/mysql"
-	"log"
 )
 
 func main() {
 	a := app.New()
-	w := a.NewWindow("Select entry widget, drop down")
+	w := a.NewWindow("Summary Report Tool")
 	w.Resize(fyne.NewSize(400, 400))
 
-	//toolbar
-	toolbar := widget.NewToolbar(
-		widget.NewToolbarAction(theme.DocumentCreateIcon(), func() {
-			log.Println("New document")
-		}),
-		widget.NewToolbarSeparator(),
-		widget.NewToolbarAction(theme.ContentCutIcon(), func() {}),
-		widget.NewToolbarAction(theme.ContentCopyIcon(), func() {}),
-		widget.NewToolbarAction(theme.ContentPasteIcon(), func() {}),
-		widget.NewToolbarSpacer(),
-		widget.NewToolbarAction(theme.HelpIcon(), func() {
-			log.Println("Display help")
-		}),
-	)
+	//menu bar
+	menuitemMaria := fyne.NewMenuItem("Open Maria Data Folder", nil) // ignore functions
+	menuitemRefresh := fyne.NewMenuItem("Refresh (F5)", nil)         // ignore functions
+	menuitemOpenlog := fyne.NewMenuItem("Open Log", nil)             // ignore functions
+	menuitemClearlog := fyne.NewMenuItem("Clear Log", nil)           // ignore functions
+	menuitemAbout := fyne.NewMenuItem("About", nil)                  // ignore functions
+	menuitemManual := fyne.NewMenuItem("Manual", nil)                // ignore functions
+	// New Menu
+	newMenu1 := fyne.NewMenu("File", menuitemMaria)
+	newMenu2 := fyne.NewMenu("Edit", menuitemRefresh)
+	newMenu3 := fyne.NewMenu("Logs", menuitemOpenlog, menuitemClearlog)
+	newMenu4 := fyne.NewMenu("Help", menuitemAbout, menuitemManual)
+	// New main menu
+	menu := fyne.NewMainMenu(newMenu1, newMenu2, newMenu3, newMenu4)
+	w.SetMainMenu(menu)
+
 	// Create the database handle, confirm driver is present
 	db, _ := sql.Open("mysql", "moves:moves@/")
 	defer db.Close()
@@ -57,7 +57,7 @@ func main() {
 			dbDropdownResult.Refresh()
 		})
 	// more than one widget. so use container
-	c := container.NewBorder(toolbar, dbDropdownResult, dbDropdown, nil)
+	c := container.NewBorder(nil, dbDropdownResult, dbDropdown, nil)
 	w.SetContent(c)
 	//show and run
 	w.ShowAndRun()
