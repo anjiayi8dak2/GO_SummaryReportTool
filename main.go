@@ -30,14 +30,33 @@ func main() {
 	//Global var
 	var dbSelection string
 	var tableSelection string
+	var sqlResult []Movesoutput
 
 	//menu bar
-	menuitemMaria := fyne.NewMenuItem("Open Maria Data Folder", nil) // ignore functions
+	menuitemMaria := fyne.NewMenuItem("Open Maria Data Folder", func() {
+		openMariaFolder(db)
+	}) // ignore functions
 	//menuitemRefresh := fyne.NewMenuItem("Refresh (F5)", buttonSubmit(db, dbSelection, tableSelection)) // ignore functions
 	menuitemRefresh := fyne.NewMenuItem("Refresh (F5)", func() {
 		var sqlStatement string
 		sqlStatement = "SELECT * FROM " + dbSelection + "." + tableSelection + " LIMIT 10"
-		getQueryResult(db, sqlStatement)
+		sqlResult, _ = getQueryResult(db, sqlStatement)
+		fmt.Printf("%v", &sqlResult)
+		//test(sqlResult)
+		//add table here
+		//table := widget.NewTable(
+		//	func() (int, int) {
+		//		return 10, 25)
+		//	},
+		//	func() fyne.CanvasObject {
+		//		return widget.NewLabel("wide content")
+		//	},
+		//	func(i widget.TableCellID, o fyne.CanvasObject) {
+		//		o.(*widget.Label).SetText((*sqlResult)[i.Row][i.Col])
+		//	})
+		//nw := a.NewWindow("data table")
+		//nw.SetContent(table)
+		//nw.ShowAndRun()
 	})
 	menuitemOpenlog := fyne.NewMenuItem("Open Log", nil)   // ignore functions
 	menuitemClearlog := fyne.NewMenuItem("Clear Log", nil) // ignore functions
@@ -90,3 +109,33 @@ func main() {
 	//show and run
 	w.ShowAndRun()
 }
+
+//func test(m []Movesoutput) *fyne.Container {
+//	table := widget.NewTable(
+//		func() (int, int) {
+//			return 10, 25
+//		},
+//		func() fyne.CanvasObject {
+//			return widget.NewLabel("table window")
+//		},
+//		func(i widget.TableCellID, o fyne.CanvasObject) {
+//			switch i.Col {
+//			case 0:
+//				o.(*widget.Label).SetText(m[i.Row].MOVESRunID)
+//			case 1:
+//				o.(*widget.Label).SetText(Convert.ToString(m[i.Row].MOVESRunID))
+//			case 2:
+//				o.(*widget.Label).SetText(m[i.Row].Name)
+//			case 3:
+//				o.(*widget.Label).SetText(m[i.Row].Memo)
+//			}
+//		},
+//	)
+//	table.SetColumnWidth(0, 200)
+//	table.SetColumnWidth(1, 100)
+//	table.SetColumnWidth(2, 100)
+//	table.SetColumnWidth(3, 300)
+//	split := container.NewHSplit(makeLeftSidebar(), table)
+//	split.Offset = 0.2
+//	return container.NewMax(split)
+//}
