@@ -9,7 +9,6 @@ import (
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
 	_ "github.com/go-sql-driver/mysql"
-	"reflect"
 )
 
 func main() {
@@ -32,30 +31,6 @@ func main() {
 	var dbSelection string
 	var tableSelection string
 	//var sqlResult []Movesoutput
-	ifNullSQLMovesoutput := `SELECT  ifnull(MOVESRunID, -1) AS MOVESRunID,
-		ifnull(MOVESRunID, -1) AS MOVESRunID,
-		ifnull(iterationID, -1) AS iterationID,
-		ifnull(yearID, -1) AS yearID,
-		ifnull(monthID, -1) AS monthID,
-		ifnull(dayID, -1) AS dayID,
-		ifnull(stateID, -1) AS stateID,
-		ifnull(countyID, -1) AS countyID,
-		ifnull(zoneID, -1) AS zoneID,
-		ifnull(linkID, -1) AS linkID,
-		ifnull(pollutantID, -1) AS pollutantID,
-		ifnull(processID, -1) AS processID,
-		ifnull(sourceTypeID, -1) AS sourceTypeID,
-		ifnull(regClassID, -1) AS regClassID,
-		ifnull(fuelTypeID, -1) AS fuelTypeID,
-		ifnull(fuelSubTypeID, -1) AS fuelSubTypeID,
-		ifnull(modelYearID, -1) AS modelYearID,
-		ifnull(roadTypeID, -1) AS roadTypeID,
-		ifnull(SCC, -1) AS SCC,
-		ifnull(engTechID, -1) AS engTechID,
-		ifnull(sectorID, -1) AS sectorID,
-		ifnull(hpID, -1) AS hpID,
-		ifnull(emissionQuant, 0) AS emissionQuant
-		FROM `
 
 	//menu bar
 	menuitemMaria := fyne.NewMenuItem("Open Maria Data Folder", func() {
@@ -63,38 +38,7 @@ func main() {
 	}) // ignore functions
 	//menuitemRefresh := fyne.NewMenuItem("Refresh (F5)", buttonSubmit(db, dbSelection, tableSelection)) // ignore functions
 	menuitemRefresh := fyne.NewMenuItem("Refresh (F5)", func() {
-		var sqlStatement string
-		sqlStatement = ifNullSQLMovesoutput + dbSelection + "." + tableSelection + " LIMIT 1"
-		oneRowResult, _ := getOneRow(db, sqlStatement)
-		fmt.Println("start Print default sql null")
-		fmt.Printf("%v", &oneRowResult)
-		fmt.Println("end Print default sql null")
-
-		values := reflect.ValueOf(oneRowResult)
-		types := values.Type()
-		//fmt.Println("the field count for my struct ", values.NumField(), " my type is ", values.Type())
-
-		var whiteList []string
-
-		for i := 0; i < values.NumField(); i++ {
-			// int to int
-			if values.Field(i).Type() == reflect.TypeOf(1) {
-				if values.Field(i).Int() != -1 {
-					fmt.Println("found not null column, add it to white list ", types.Field(i).Name, values.Field(i))
-					whiteList = append(whiteList, types.Field(i).Name)
-					// != -1, add to whitelist
-				}
-				// float to float
-			} else if values.Field(i).Type() == reflect.TypeOf(3.14) {
-				if values.Field(i).Float() != -1 {
-					fmt.Println("found not null column, add it to blacklist ", types.Field(i).Name, values.Field(i))
-					whiteList = append(whiteList, types.Field(i).Name)
-				}
-
-			}
-
-			//fmt.Println(types.Field(i).Index[0], types.Field(i).Name, values.Field(i))
-		}
+		whiteList := getWhiteList(db, dbSelection, tableSelection)
 
 		fmt.Println("printing white list")
 		fmt.Printf("%v", &whiteList)
