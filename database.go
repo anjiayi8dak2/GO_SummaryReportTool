@@ -81,36 +81,38 @@ func getDBVersion(db *sql.DB) {
 //
 // }
 // PASS dbConnector, sql statement in string, and table selection RETURN query result
-func getQueryResult(db *sql.DB, sql string) ([]Movesoutput, error) {
-	fmt.Println("sql statement is :", sql)
-	rows, err := db.Query(sql)
+func getQueryResult(db *sql.DB, dbSelection string, tableSelection string, whiteList []string) (map[string]float64, error) {
+	//TODO: build sql statement here
+	columns := convertColumnsComma(whiteList)
+	sqlStatement := "SELECT " + columns + " FROM " + dbSelection + "." + tableSelection + " LIMIT 10 ; "
+
+	fmt.Println("sql statement is :", sqlStatement)
+	rows, err := db.Query(sqlStatement)
+	cols, _ := rows.Columns()
+	data := make(map[string]string)
 	if err != nil {
 		panic(err)
 		return nil, err
 	}
 	defer rows.Close()
-	// A movesoutput slice to hold data from returned rows.
-	var movesoutputs []Movesoutput
-	var movesout Movesoutput
+
 	// Loop through rows, using Scan to assign column data to struct fields.
 	for rows.Next() {
-		rows.Scan(&movesout.MOVESRunID, &movesout.iterationID, &movesout.yearID,
-			&movesout.monthID, &movesout.dayID, &movesout.hourID, &movesout.stateID,
-			&movesout.countyID, &movesout.zoneID, &movesout.linkID, &movesout.pollutantID,
-			&movesout.processID, &movesout.sourceTypeID, &movesout.regClassID, &movesout.fuelTypeID,
-			&movesout.fuelSubTypeID, &movesout.modelYearID, &movesout.roadTypeID, &movesout.SCC,
-			&movesout.engTechID, &movesout.sectorID, &movesout.hpID, &movesout.emissionQuant)
-		if err != nil {
-			panic(err) // Error related to the scan
+		columns := make([]string, len(cols))
+		columnPointers := make([]interface{}, len(cols))
+		for i, _ := range columns {
+			columnPointers[i] = &columns[i]
 		}
-		if err = rows.Err(); err != nil {
-			panic(err) // Error related to the iteration of rows
+
+		rows.Scan(columnPointers...)
+
+		for i, colName := range cols {
+			data[colName] = columns[i]
 		}
-		fmt.Printf("current row is %v\\n", movesout)
-		movesoutputs = append(movesoutputs, movesout)
 	}
 
-	return movesoutputs, nil
+	fmt.Print(data)
+	return nil, err
 
 }
 
@@ -141,7 +143,7 @@ func getOneRow(db *sql.DB, dbSelection string, tableSelection string) (Movesoutp
 		ifnull(emissionQuant, 0) AS emissionQuant
 		FROM `
 	// A movesoutput slice to hold data from returned rows.
-	sql := ifNullSQLMovesoutput + dbSelection + "." + tableSelection + " LIMIT 1"
+	sql := ifNullSQLMovesoutput + dbSelection + "." + tableSelection + " LIMIT 1;"
 	var movesout Movesoutput
 	fmt.Println("sql statement is :", sql)
 	rows, err := db.Query(sql)
