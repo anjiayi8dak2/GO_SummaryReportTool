@@ -98,8 +98,7 @@ func getQueryResult(db *sql.DB, sql string) ([]Movesoutput, error) {
 			&movesout.countyID, &movesout.zoneID, &movesout.linkID, &movesout.pollutantID,
 			&movesout.processID, &movesout.sourceTypeID, &movesout.regClassID, &movesout.fuelTypeID,
 			&movesout.fuelSubTypeID, &movesout.modelYearID, &movesout.roadTypeID, &movesout.SCC,
-			&movesout.engTechID, &movesout.sectorID, &movesout.hpID, &movesout.emissionQuant, &movesout.emissionQuantMean,
-			&movesout.emissionQuantSigma)
+			&movesout.engTechID, &movesout.sectorID, &movesout.hpID, &movesout.emissionQuant)
 		if err != nil {
 			panic(err) // Error related to the scan
 		}
@@ -111,6 +110,40 @@ func getQueryResult(db *sql.DB, sql string) ([]Movesoutput, error) {
 	}
 
 	return movesoutputs, nil
+
+}
+
+// PASS dbConnector, sql statement in string, and table selection RETURN query result
+func getOneRow(db *sql.DB, sql string) (Movesoutput, error) {
+	// A movesoutput slice to hold data from returned rows.
+	var movesout Movesoutput
+	fmt.Println("sql statement is :", sql)
+	rows, err := db.Query(sql)
+	if err != nil {
+		panic(err)
+		return movesout, err
+	}
+	defer rows.Close()
+
+	// Loop through rows, using Scan to assign column data to struct fields.
+	for rows.Next() {
+		rows.Scan(&movesout.MOVESRunID, &movesout.iterationID, &movesout.yearID,
+			&movesout.monthID, &movesout.dayID, &movesout.hourID, &movesout.stateID,
+			&movesout.countyID, &movesout.zoneID, &movesout.linkID, &movesout.pollutantID,
+			&movesout.processID, &movesout.sourceTypeID, &movesout.regClassID, &movesout.fuelTypeID,
+			&movesout.fuelSubTypeID, &movesout.modelYearID, &movesout.roadTypeID, &movesout.SCC,
+			&movesout.engTechID, &movesout.sectorID, &movesout.hpID, &movesout.emissionQuant)
+		if err != nil {
+			panic(err) // Error related to the scan
+		}
+		if err = rows.Err(); err != nil {
+			panic(err) // Error related to the iteration of rows
+		}
+		fmt.Printf("current row is %v\\n", movesout)
+	}
+
+	return movesout, nil
+
 }
 
 //func buttonSubmit(con *sql.DB, db string, table string) {
