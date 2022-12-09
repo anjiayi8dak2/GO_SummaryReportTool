@@ -81,38 +81,41 @@ func getDBVersion(db *sql.DB) {
 //
 // }
 // PASS dbConnector, sql statement in string, and table selection RETURN query result
-func getQueryResult(db *sql.DB, dbSelection string, tableSelection string, whiteList []string) (map[string]float64, error) {
+func getQueryResult(db *sql.DB, dbSelection string, tableSelection string, whiteList []string) ([]map[string]interface{}, error) {
 	//TODO: build sql statement here
 	columns := convertColumnsComma(whiteList)
 	sqlStatement := "SELECT " + columns + " FROM " + dbSelection + "." + tableSelection + " LIMIT 10 ; "
 
 	fmt.Println("sql statement is :", sqlStatement)
 	rows, err := db.Query(sqlStatement)
-	cols, _ := rows.Columns()
-	data := make(map[string]string)
+	//cols, _ := rows.Columns()
+	//data := make(map[string]string)
 	if err != nil {
 		panic(err)
 		return nil, err
 	}
 	defer rows.Close()
 
-	// Loop through rows, using Scan to assign column data to struct fields.
-	for rows.Next() {
-		columns := make([]string, len(cols))
-		columnPointers := make([]interface{}, len(cols))
-		for i, _ := range columns {
-			columnPointers[i] = &columns[i]
-		}
+	queryResultMap := scanMap(rows)
+	return queryResultMap, err
 
-		rows.Scan(columnPointers...)
-
-		for i, colName := range cols {
-			data[colName] = columns[i]
-		}
-	}
-
-	fmt.Print(data)
-	return nil, err
+	//// Loop through rows, using Scan to assign column data to struct fields.
+	//for rows.Next() {
+	//	columns := make([]string, len(cols))
+	//	columnPointers := make([]interface{}, len(cols))
+	//	for i, _ := range columns {
+	//		columnPointers[i] = &columns[i]
+	//	}
+	//
+	//	rows.Scan(columnPointers...)
+	//
+	//	for i, colName := range cols {
+	//		data[colName] = columns[i]
+	//	}
+	//}
+	//
+	//fmt.Print(data)
+	//return nil, err
 
 }
 
