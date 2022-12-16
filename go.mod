@@ -4,12 +4,16 @@ go 1.19
 
 require (
 	fyne.io/fyne/v2 v2.2.0
+	github.com/datasweet/datatable v0.3.2
 	github.com/go-sql-driver/mysql v1.6.0
 	github.com/joho/sqltocsv v0.0.0-20210428211105-a6d6801d59df
 )
 
 require (
 	fyne.io/systray v1.10.1-0.20220621085403-9a2652634e93 // indirect
+	github.com/cespare/xxhash v1.1.0 // indirect
+	github.com/datasweet/cast v1.2.0 // indirect
+	github.com/datasweet/expr v1.3.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/fredbi/uri v0.0.0-20181227131451-3dcfdacbaaf3 // indirect
 	github.com/fsnotify/fsnotify v1.5.4 // indirect
@@ -22,6 +26,10 @@ require (
 	github.com/goki/freetype v0.0.0-20181231101311-fa8a33aabaff // indirect
 	github.com/gopherjs/gopherjs v1.17.2 // indirect
 	github.com/jsummers/gobmp v0.0.0-20151104160322-e2ba15ffa76e // indirect
+	github.com/mattn/go-runewidth v0.0.7 // indirect
+	github.com/montanaflynn/stats v0.5.0 // indirect
+	github.com/olekukonko/tablewriter v0.0.4 // indirect
+	github.com/pkg/errors v0.8.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/srwiley/oksvg v0.0.0-20200311192757-870daf9aa564 // indirect
 	github.com/srwiley/rasterx v0.0.0-20200120212402-85cb7272f5e9 // indirect
@@ -33,6 +41,7 @@ require (
 	golang.org/x/net v0.0.0-20210805182204-aaa1db679c0d // indirect
 	golang.org/x/sys v0.0.0-20220412211240-33da011f77ad // indirect
 	golang.org/x/text v0.3.7 // indirect
+	gonum.org/v1/gonum v0.7.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	honnef.co/go/js/dom v0.0.0-20210725211120-f030747120f2 // indirect
 )

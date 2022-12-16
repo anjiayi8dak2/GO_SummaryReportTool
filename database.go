@@ -92,11 +92,13 @@ func getQueryResult(db *sql.DB, dbSelection string, tableSelection string, white
 	rows, err := db.Query(sqlStatement)
 	//cols, _ := rows.Columns()
 	//data := make(map[string]string)
-	//TODO: dumping a query to a file
+	//TODO:dumping a query to a file
 	sqlErr := sqltocsv.WriteFile("temp.csv", rows)
 	if sqlErr != nil {
 		panic(sqlErr)
 	}
+	//TODO:import csv into datatable, testing testing testing
+	readCSV()
 
 	if err != nil {
 		panic(err)
@@ -104,26 +106,11 @@ func getQueryResult(db *sql.DB, dbSelection string, tableSelection string, white
 	}
 	defer rows.Close()
 
-	queryResultMap := scanMap(rows)
-	return queryResultMap, err
+	//queryResultMap := scanMap(rows)
+	//
+	//TODO: scan lite query result into Movesoutput struct
 
-	//// Loop through rows, using Scan to assign column data to struct fields.
-	//for rows.Next() {
-	//	columns := make([]string, len(cols))
-	//	columnPointers := make([]interface{}, len(cols))
-	//	for i, _ := range columns {
-	//		columnPointers[i] = &columns[i]
-	//	}
-	//
-	//	rows.Scan(columnPointers...)
-	//
-	//	for i, colName := range cols {
-	//		data[colName] = columns[i]
-	//	}
-	//}
-	//
-	//fmt.Print(data)
-	//return nil, err
+	return queryResultMap, err
 
 }
 
@@ -212,6 +199,13 @@ func getWhiteList(con *sql.DB, dbSelection string, tableSelection string) []stri
 	return whiteList
 }
 
-//func buildSql(db string) {
-//
-//}
+func initDb() *sql.DB {
+	// Create the database handle, confirm driver is present
+	db, err := sql.Open("mysql", "moves:moves@/")
+	defer db.Close()
+
+	if err != nil {
+		log.Fatalln(err)
+	}
+	return db
+}

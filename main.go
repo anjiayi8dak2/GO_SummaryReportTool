@@ -1,7 +1,6 @@
 package main
 
 import (
-	"database/sql"
 	"fmt"
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
@@ -13,13 +12,14 @@ import (
 )
 
 func main() {
-	// Create the database handle, confirm driver is present
-	db, err := sql.Open("mysql", "moves:moves@/")
-	defer db.Close()
-	if err != nil {
-		fmt.Println("Failed to connect MariaDB", err)
-		return
-	}
+	//// Create the database handle, confirm driver is present
+	//db, err := sql.Open("mysql", "moves:moves@/")
+	//defer db.Close()
+	//if err != nil {
+	//	fmt.Println("Failed to connect MariaDB", err)
+	//	return
+	//}
+	db := initDb()
 
 	// Connect and check the server version
 	getDBVersion(db)
