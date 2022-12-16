@@ -3,6 +3,8 @@ package main
 import (
 	"database/sql"
 	"fmt"
+	"github.com/joho/sqltocsv"
+	_ "github.com/joho/sqltocsv"
 	"log"
 	"reflect"
 )
@@ -90,6 +92,12 @@ func getQueryResult(db *sql.DB, dbSelection string, tableSelection string, white
 	rows, err := db.Query(sqlStatement)
 	//cols, _ := rows.Columns()
 	//data := make(map[string]string)
+	//TODO: dumping a query to a file
+	sqlErr := sqltocsv.WriteFile("temp.csv", rows)
+	if sqlErr != nil {
+		panic(sqlErr)
+	}
+
 	if err != nil {
 		panic(err)
 		return nil, err
@@ -121,12 +129,13 @@ func getQueryResult(db *sql.DB, dbSelection string, tableSelection string, white
 
 // PASS dbConnector, sql statement in string, and table selection RETURN query result
 func getOneRow(db *sql.DB, dbSelection string, tableSelection string) (Movesoutput, error) {
-	ifNullSQLMovesoutput := `SELECT  ifnull(MOVESRunID, -1) AS MOVESRunID,
+	ifNullSQLMovesoutput := `SELECT
 		ifnull(MOVESRunID, -1) AS MOVESRunID,
 		ifnull(iterationID, -1) AS iterationID,
 		ifnull(yearID, -1) AS yearID,
 		ifnull(monthID, -1) AS monthID,
 		ifnull(dayID, -1) AS dayID,
+		ifnull(hourID, -1) AS hourID,
 		ifnull(stateID, -1) AS stateID,
 		ifnull(countyID, -1) AS countyID,
 		ifnull(zoneID, -1) AS zoneID,
@@ -143,7 +152,7 @@ func getOneRow(db *sql.DB, dbSelection string, tableSelection string) (Movesoutp
 		ifnull(engTechID, -1) AS engTechID,
 		ifnull(sectorID, -1) AS sectorID,
 		ifnull(hpID, -1) AS hpID,
-		ifnull(emissionQuant, 0) AS emissionQuant
+		emissionQuant
 		FROM `
 	// A movesoutput slice to hold data from returned rows.
 	sql := ifNullSQLMovesoutput + dbSelection + "." + tableSelection + " LIMIT 1;"
@@ -179,13 +188,11 @@ func getOneRow(db *sql.DB, dbSelection string, tableSelection string) (Movesoutp
 
 func getWhiteList(con *sql.DB, dbSelection string, tableSelection string) []string {
 	oneRowResult, _ := getOneRow(con, dbSelection, tableSelection)
-	fmt.Println("start Print default sql null")
+	fmt.Println("Print one row")
 	fmt.Printf("%v", &oneRowResult)
-	fmt.Println("end Print default sql null")
 
 	values := reflect.ValueOf(oneRowResult)
 	types := values.Type()
-	//fmt.Println("the field count for my struct ", values.NumField(), " my type is ", values.Type())
 
 	var whiteList []string
 
@@ -193,20 +200,14 @@ func getWhiteList(con *sql.DB, dbSelection string, tableSelection string) []stri
 		// int to int
 		if values.Field(i).Type() == reflect.TypeOf(1) {
 			if values.Field(i).Int() != -1 {
-				fmt.Println("found not null column, add it to white list ", types.Field(i).Name, values.Field(i))
+				fmt.Println("found column with valid integer value, add it to whitelist \n", types.Field(i).Name, values.Field(i))
 				whiteList = append(whiteList, types.Field(i).Name)
-				// != -1, add to whitelist
 			}
-			// float to float
+			// float to float, this is only for emissionQuant column
 		} else if values.Field(i).Type() == reflect.TypeOf(3.14) {
-			if values.Field(i).Float() != -1 {
-				fmt.Println("found not null column, add it to blacklist ", types.Field(i).Name, values.Field(i))
-				whiteList = append(whiteList, types.Field(i).Name)
-			}
-
+			fmt.Println("this is only for emissionQuant column, add it to whitelist \n", types.Field(i).Name, values.Field(i))
+			whiteList = append(whiteList, types.Field(i).Name)
 		}
-
-		//fmt.Println(types.Field(i).Index[0], types.Field(i).Name, values.Field(i))
 	}
 	return whiteList
 }

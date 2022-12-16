@@ -9,6 +9,7 @@ import (
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
 	_ "github.com/go-sql-driver/mysql"
+	_ "github.com/joho/sqltocsv"
 )
 
 func main() {

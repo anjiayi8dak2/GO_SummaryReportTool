@@ -1,5 +1,6 @@
 package main
 
+// Movesoutput all the field in movesoutput table
 type Movesoutput struct {
 	MOVESRunID    int
 	iterationID   int
