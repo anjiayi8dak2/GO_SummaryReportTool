@@ -34,19 +34,15 @@ func main() {
 	//TODO: all the test goes refresh button here
 	menuitemRefresh := fyne.NewMenuItem("Refresh (F5)", func() {
 		whiteList := getWhiteList(db, dbSelection, tableSelection)
-
 		dummy, _ := getQueryResult(db, dbSelection, tableSelection, whiteList)
-		//fmt.Println("printing dummy")
-		//fmt.Printf("%v", &dummy)
-
 		fmt.Println("opening window #2")
 		w2 := a.NewWindow("window #2")
 		w2.SetContent(widget.NewLabel("window #2 label"))
-		w2.Resize(fyne.NewSize(100, 100))
+		w2.Resize(fyne.NewSize(1000, 1000))
 
-		list := widget.NewTable(
+		tableData := widget.NewTable(
 			func() (int, int) {
-				return 15, len(whiteList[0])
+				return 1000, len(dummy[0]) // each page has 15 rows
 			},
 			func() fyne.CanvasObject {
 				return widget.NewLabel("wide content")
@@ -55,7 +51,20 @@ func main() {
 				o.(*widget.Label).SetText(dummy[i.Row][i.Col])
 			})
 
-		w2.SetContent(list)
+		//headerTable := widget.NewTable(
+		//	func() (int, int) {
+		//		return 1000, len(whiteList) // row size max 1000
+		//	},
+		//	func() fyne.CanvasObject {
+		//		return widget.NewLabel("wide content")
+		//	},
+		//	func(i widget.TableCellID, o fyne.CanvasObject) {
+		//		o.(*widget.Label).SetText(whiteList[i.Row])
+		//	})
+		//
+		//grid := container.New(layout.NewGridWrapLayout(fyne.NewSize(1000, 500)),
+		//	headerTable, tableData)
+		w2.SetContent(tableData)
 		w2.Show()
 	})
 	menuitemOpenlog := fyne.NewMenuItem("Open Log", nil)   // ignore functions

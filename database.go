@@ -107,8 +107,9 @@ func getQueryResult(db *sql.DB, dbSelection string, tableSelection string, white
 	columns := convertColumnsComma(whiteList)
 	sqlStatement := "SELECT " + columns + " FROM " + dbSelection + "." + tableSelection + " LIMIT 1000 ; "
 
-	// A 2D array string to hold the table
+	// A 2D array string to hold the table, add the column names as first row
 	var outFlat [][]string
+	outFlat = append(outFlat, whiteList)
 	//fmt.Println("sql statement is :", sqlStatement)
 	rows, err := db.Query(sqlStatement)
 	if err != nil {
@@ -125,7 +126,7 @@ func getQueryResult(db *sql.DB, dbSelection string, tableSelection string, white
 			valuePtrs[i] = &values[i]
 		}
 		rows.Scan(valuePtrs...)
-		for i, col := range whiteList {
+		for i, _ := range whiteList {
 			val := values[i]
 			b, ok := val.([]byte)
 			var v interface{}
@@ -134,8 +135,8 @@ func getQueryResult(db *sql.DB, dbSelection string, tableSelection string, white
 			} else {
 				v = val
 			}
-			//
-			fmt.Println(col, v)
+
+			//fmt.Println(col, v)
 			innerFlat = append(innerFlat, v.(string))
 		}
 		// stick all 1D array into 2D for data table
