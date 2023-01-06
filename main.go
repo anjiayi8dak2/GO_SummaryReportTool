@@ -12,42 +12,51 @@ import (
 )
 
 func main() {
-	//// Create the database handle, confirm driver is present
-	//db, err := sql.Open("mysql", "moves:moves@/")
-	//defer db.Close()
-	//if err != nil {
-	//	fmt.Println("Failed to connect MariaDB", err)
-	//	return
-	//}
+	// Create the database handle, confirm driver is present
 	db := initDb()
 
 	// Connect and check the server version
 	getDBVersion(db)
 
-	//Initialize
+	//Initialize app main window
 	a := app.New()
 	w := a.NewWindow("Summary Report Tool")
 	w.Resize(fyne.NewSize(400, 400))
 	//Global var
 	var dbSelection string
 	var tableSelection string
-	//var sqlResult []Movesoutput
 
-	//menu bar
+	//Top menu bar
 	menuitemMaria := fyne.NewMenuItem("Open Maria Data Folder", func() {
 		openMariaFolder(db)
 	}) // ignore functions
 	//menuitemRefresh := fyne.NewMenuItem("Refresh (F5)", buttonSubmit(db, dbSelection, tableSelection)) // ignore functions
+	//TODO: all the test goes refresh button here
 	menuitemRefresh := fyne.NewMenuItem("Refresh (F5)", func() {
 		whiteList := getWhiteList(db, dbSelection, tableSelection)
 
-		fmt.Println("printing white list")
-		fmt.Printf("%v", &whiteList)
-
-		getQueryResult(db, dbSelection, tableSelection, whiteList)
-		//dummy, _ := getQueryResult(db, dbSelection, tableSelection, whiteList)
+		dummy, _ := getQueryResult(db, dbSelection, tableSelection, whiteList)
 		//fmt.Println("printing dummy")
 		//fmt.Printf("%v", &dummy)
+
+		fmt.Println("opening window #2")
+		w2 := a.NewWindow("window #2")
+		w2.SetContent(widget.NewLabel("window #2 label"))
+		w2.Resize(fyne.NewSize(100, 100))
+
+		list := widget.NewTable(
+			func() (int, int) {
+				return 15, len(whiteList[0])
+			},
+			func() fyne.CanvasObject {
+				return widget.NewLabel("wide content")
+			},
+			func(i widget.TableCellID, o fyne.CanvasObject) {
+				o.(*widget.Label).SetText(dummy[i.Row][i.Col])
+			})
+
+		w2.SetContent(list)
+		w2.Show()
 	})
 	menuitemOpenlog := fyne.NewMenuItem("Open Log", nil)   // ignore functions
 	menuitemClearlog := fyne.NewMenuItem("Clear Log", nil) // ignore functions
@@ -100,33 +109,3 @@ func main() {
 	//show and run
 	w.ShowAndRun()
 }
-
-//func test(m []Movesoutput) *fyne.Container {
-//	table := widget.NewTable(
-//		func() (int, int) {
-//			return 10, 25
-//		},
-//		func() fyne.CanvasObject {
-//			return widget.NewLabel("table window")
-//		},
-//		func(i widget.TableCellID, o fyne.CanvasObject) {
-//			switch i.Col {
-//			case 0:
-//				o.(*widget.Label).SetText(m[i.Row].MOVESRunID)
-//			case 1:
-//				o.(*widget.Label).SetText(Convert.ToString(m[i.Row].MOVESRunID))
-//			case 2:
-//				o.(*widget.Label).SetText(m[i.Row].Name)
-//			case 3:
-//				o.(*widget.Label).SetText(m[i.Row].Memo)
-//			}
-//		},
-//	)
-//	table.SetColumnWidth(0, 200)
-//	table.SetColumnWidth(1, 100)
-//	table.SetColumnWidth(2, 100)
-//	table.SetColumnWidth(3, 300)
-//	split := container.NewHSplit(makeLeftSidebar(), table)
-//	split.Offset = 0.2
-//	return container.NewMax(split)
-//}
