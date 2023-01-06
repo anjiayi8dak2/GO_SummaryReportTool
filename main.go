@@ -44,9 +44,10 @@ func main() {
 		fmt.Println("printing white list")
 		fmt.Printf("%v", &whiteList)
 
-		dummy, _ := getQueryResult(db, dbSelection, tableSelection, whiteList)
-		fmt.Println("printing dummy")
-		fmt.Printf("%v", &dummy)
+		getQueryResult(db, dbSelection, tableSelection, whiteList)
+		//dummy, _ := getQueryResult(db, dbSelection, tableSelection, whiteList)
+		//fmt.Println("printing dummy")
+		//fmt.Printf("%v", &dummy)
 	})
 	menuitemOpenlog := fyne.NewMenuItem("Open Log", nil)   // ignore functions
 	menuitemClearlog := fyne.NewMenuItem("Clear Log", nil) // ignore functions
