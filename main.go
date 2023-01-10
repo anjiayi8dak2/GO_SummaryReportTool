@@ -51,20 +51,124 @@ func main() {
 				o.(*widget.Label).SetText(dummy[i.Row][i.Col])
 			})
 
-		//headerTable := widget.NewTable(
-		//	func() (int, int) {
-		//		return 1000, len(whiteList) // row size max 1000
-		//	},
-		//	func() fyne.CanvasObject {
-		//		return widget.NewLabel("wide content")
-		//	},
-		//	func(i widget.TableCellID, o fyne.CanvasObject) {
-		//		o.(*widget.Label).SetText(whiteList[i.Row])
-		//	})
+		//create  buttons
+		MOVESRunID := widget.NewButton("MOVESRunID", func() {
+		})
+
+		iterationID := widget.NewButton("iterationID", func() {
+		})
+
+		yearID := widget.NewButton("yearID", func() {
+		})
+
+		monthID := widget.NewButton("monthID", func() {
+		})
+
+		dayID := widget.NewButton("dayID", func() {
+		})
+
+		hourID := widget.NewButton("hourID", func() {
+		})
+
+		stateID := widget.NewButton("stateID", func() {
+		})
+
+		countyID := widget.NewButton("countyID", func() {
+		})
+
+		zoneID := widget.NewButton("zoneID", func() {
+		})
+
+		linkID := widget.NewButton("linkID", func() {
+		})
+
+		pollutantID := widget.NewButton("pollutantID", func() {
+		})
+
+		processID := widget.NewButton("processID", func() {
+		})
+
+		sourceTypeID := widget.NewButton("sourceTypeID", func() {
+		})
+
+		regClassID := widget.NewButton("regClassID", func() {
+		})
+
+		fuelTypeID := widget.NewButton("fuelTypeID", func() {
+		})
+
+		fuelSubTypeID := widget.NewButton("fuelSubTypeID", func() {
+		})
+
+		modelYearID := widget.NewButton("modelYearID", func() {
+		})
+
+		roadTypeID := widget.NewButton("roadTypeID", func() {
+		})
+
+		SCC := widget.NewButton("SCC", func() {
+		})
+
+		engTechID := widget.NewButton("engTechID", func() {
+		})
+
+		sectorID := widget.NewButton("sectorID", func() {
+		})
+
+		hpID := widget.NewButton("hpID", func() {
+		})
+
+		//create layout from buttons
+
+		//w2.SetContent(container.NewHSplit(
+		//	container.NewVBox(
+		//		MOVESRunID,
+		//		iterationID,
+		//		yearID),
+		//	container.NewMax(tableData)),
+		//)
+
+		innerContainer := container.NewVBox(
+			MOVESRunID,
+			iterationID,
+			yearID,
+			monthID,
+			dayID,
+			hourID,
+			stateID,
+			countyID,
+			zoneID,
+			linkID,
+			pollutantID,
+			processID,
+			sourceTypeID,
+			regClassID,
+			fuelTypeID,
+			fuelSubTypeID,
+			modelYearID,
+			roadTypeID,
+			SCC,
+			engTechID,
+			sectorID,
+			hpID)
+
+		//TODO: dynamic filter buttons, Use the record of whitelist, delete corresponding filter buttons above.
+		//for index, column := range whiteList{
+		//	if column == innerContainer.Objects[index].{
 		//
-		//grid := container.New(layout.NewGridWrapLayout(fyne.NewSize(1000, 500)),
-		//	headerTable, tableData)
-		w2.SetContent(tableData)
+		//	}
+		//}
+
+		outerContainer := container.NewHSplit(
+			innerContainer,
+			tableData,
+		)
+
+		w2.SetContent(outerContainer)
+
+		//filters :=
+		//leftRightGrid := container.New(layout.NewGridLayout(2), filters, tableData)
+		//w2.SetContent(leftRightGrid)
 		w2.Show()
 	})
 	menuitemOpenlog := fyne.NewMenuItem("Open Log", nil)   // ignore functions
