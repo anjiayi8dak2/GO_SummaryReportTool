@@ -42,6 +42,33 @@ func getDBList(db *sql.DB) []string {
 	return listSlice
 }
 
+func getDistinct(db *sql.DB, dbSelection string, tableSelection string, targetColumn string) []string {
+	sqlStatement := "SELECT DISTINCT " + targetColumn + " AS dummy FROM " + dbSelection + "." + tableSelection + " ORDER BY dummy ASC ; "
+	fmt.Println("sql statement is :", sqlStatement)
+	rows, err := db.Query(sqlStatement)
+	var distinctResults []string
+	if err != nil {
+		panic(err)
+		return distinctResults
+	}
+	defer rows.Close()
+
+	// Loop through rows, using Scan to assign column data to struct fields.
+	for rows.Next() {
+		var distinctResult string
+		rows.Scan(&distinctResult)
+		if err != nil {
+			panic(err) // Error related to the scan
+		}
+		if err = rows.Err(); err != nil {
+			panic(err) // Error related to the iteration of rows
+		}
+		distinctResults = append(distinctResults, distinctResult)
+	}
+	fmt.Println("distinct result is %v :", distinctResults)
+	return distinctResults
+}
+
 // PASS dbConnector, print DB version that is connected to
 func getDBVersion(db *sql.DB) {
 	var version string

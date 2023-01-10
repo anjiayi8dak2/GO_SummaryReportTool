@@ -44,7 +44,7 @@ func main() {
 
 		tableData := widget.NewTable(
 			func() (int, int) {
-				return 1000, len(dummy[0]) // each page has 15 rows
+				return 1000, len(dummy[0]) // row size max
 			},
 			func() fyne.CanvasObject {
 				return widget.NewLabel("wide content")
@@ -53,6 +53,7 @@ func main() {
 				o.(*widget.Label).SetText(dummy[i.Row][i.Col])
 			})
 
+		//TODO; make a function to create window or containers not in the main.go
 		//create  buttons
 		MOVESRunID := widget.NewButton("MOVESRunID", func() {
 		})
@@ -84,8 +85,12 @@ func main() {
 		linkID := widget.NewButton("linkID", func() {
 		})
 
-		pollutantID := widget.NewButton("pollutantID", func() {
+		//pollutant
+		pollutantidButton := widget.NewButton("pollutantID", func() {
 		})
+		distinctPollutant := getDistinct(db, dbSelection, tableSelection, "pollutantID")
+		pollutantidCheckGroup := widget.NewCheckGroup(distinctPollutant, func(s []string) { fmt.Println("selected", s) })
+		pollutantContainer := container.NewVBox(pollutantidButton, pollutantidCheckGroup)
 
 		processID := widget.NewButton("processID", func() {
 		})
@@ -102,8 +107,12 @@ func main() {
 		fuelSubTypeID := widget.NewButton("fuelSubTypeID", func() {
 		})
 
-		modelYearID := widget.NewButton("modelYearID", func() {
+		//model year
+		modelYearIDButton := widget.NewButton("modelYearID", func() {
 		})
+		distinctModelYear := getDistinct(db, dbSelection, tableSelection, "modelYearID")
+		modelYearCheckGroup := widget.NewCheckGroup(distinctModelYear, func(s []string) { fmt.Println("selected", s) })
+		modelYearContainer := container.NewVBox(modelYearIDButton, modelYearCheckGroup)
 
 		roadTypeID := widget.NewButton("roadTypeID", func() {
 		})
@@ -120,16 +129,6 @@ func main() {
 		hpID := widget.NewButton("hpID", func() {
 		})
 
-		//create layout from buttons
-
-		//w2.SetContent(container.NewHSplit(
-		//	container.NewVBox(
-		//		MOVESRunID,
-		//		iterationID,
-		//		yearID),
-		//	container.NewMax(tableData)),
-		//)
-
 		innerContainer := container.NewVBox(
 			MOVESRunID,
 			iterationID,
@@ -141,21 +140,20 @@ func main() {
 			countyID,
 			zoneID,
 			linkID,
-			pollutantID,
+			pollutantContainer,
 			processID,
 			sourceTypeID,
 			regClassID,
 			fuelTypeID,
 			fuelSubTypeID,
-			modelYearID,
+			modelYearContainer,
 			roadTypeID,
 			SCC,
 			engTechID,
 			sectorID,
 			hpID)
 
-		//TODO: dynamic filter buttons, Use the record of whitelist, delete corresponding filter buttons above.
-
+		//dynamic filter buttons, Use the record of whitelist, delete corresponding filter buttons above.
 		for index, boo := range whiteListIndex {
 			if boo {
 				innerContainer.Objects[index].Visible()
@@ -164,17 +162,16 @@ func main() {
 			}
 		}
 
+		//TODO: the filter button section has no scroll bar, contents are out of screen
+		scrollContainer := container.NewVScroll(innerContainer)
 		outerContainer := container.NewHSplit(
-			innerContainer,
+			scrollContainer,
 			tableData,
 		)
 
 		w2.SetContent(outerContainer)
-
-		//filters :=
-		//leftRightGrid := container.New(layout.NewGridLayout(2), filters, tableData)
-		//w2.SetContent(leftRightGrid)
 		w2.Show()
+
 	})
 	menuitemOpenlog := fyne.NewMenuItem("Open Log", nil)   // ignore functions
 	menuitemClearlog := fyne.NewMenuItem("Clear Log", nil) // ignore functions
