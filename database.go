@@ -210,7 +210,7 @@ func getOneRow(db *sql.DB, dbSelection string, tableSelection string) (Movesoutp
 
 }
 
-func getWhiteList(con *sql.DB, dbSelection string, tableSelection string) []string {
+func getWhiteList(con *sql.DB, dbSelection string, tableSelection string) ([]string, []bool) {
 	oneRowResult, _ := getOneRow(con, dbSelection, tableSelection)
 	fmt.Println("Print one row")
 	fmt.Printf("%v", &oneRowResult)
@@ -219,6 +219,7 @@ func getWhiteList(con *sql.DB, dbSelection string, tableSelection string) []stri
 	types := values.Type()
 
 	var whiteList []string
+	var whiteListIndex []bool
 
 	for i := 0; i < values.NumField(); i++ {
 		// int to int
@@ -233,7 +234,19 @@ func getWhiteList(con *sql.DB, dbSelection string, tableSelection string) []stri
 			whiteList = append(whiteList, types.Field(i).Name)
 		}
 	}
-	return whiteList
+
+	//get white list index in bool, length -1 because we don't filter last column emissionQuant
+	for i := 0; i < values.NumField()-1; i++ {
+		if values.Field(i).Int() != -1 {
+			whiteListIndex = append(whiteListIndex, true)
+		} else if values.Field(i).Type() == reflect.TypeOf(-1.0) {
+			whiteListIndex = append(whiteListIndex, true)
+		} else {
+			whiteListIndex = append(whiteListIndex, false)
+		}
+	}
+
+	return whiteList, whiteListIndex
 }
 
 func initDb() *sql.DB {

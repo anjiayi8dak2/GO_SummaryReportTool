@@ -33,7 +33,9 @@ func main() {
 	//menuitemRefresh := fyne.NewMenuItem("Refresh (F5)", buttonSubmit(db, dbSelection, tableSelection)) // ignore functions
 	//TODO: all the test goes refresh button here
 	menuitemRefresh := fyne.NewMenuItem("Refresh (F5)", func() {
-		whiteList := getWhiteList(db, dbSelection, tableSelection)
+		whiteList, whiteListIndex := getWhiteList(db, dbSelection, tableSelection)
+		fmt.Println("printing white list index in bool")
+		fmt.Printf("%v", whiteListIndex)
 		dummy, _ := getQueryResult(db, dbSelection, tableSelection, whiteList)
 		fmt.Println("opening window #2")
 		w2 := a.NewWindow("window #2")
@@ -153,11 +155,14 @@ func main() {
 			hpID)
 
 		//TODO: dynamic filter buttons, Use the record of whitelist, delete corresponding filter buttons above.
-		//for index, column := range whiteList{
-		//	if column == innerContainer.Objects[index].{
-		//
-		//	}
-		//}
+
+		for index, boo := range whiteListIndex {
+			if boo {
+				innerContainer.Objects[index].Visible()
+			} else {
+				innerContainer.Objects[index].Hide()
+			}
+		}
 
 		outerContainer := container.NewHSplit(
 			innerContainer,
