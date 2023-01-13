@@ -54,6 +54,7 @@ func main() {
 			})
 
 		//TODO; make a function to create window or containers not in the main.go
+		makeWindowTwo()
 		//create  buttons
 		MOVESRunID := widget.NewButton("MOVESRunID", func() {
 		})

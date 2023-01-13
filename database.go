@@ -134,15 +134,16 @@ func getQueryResult(db *sql.DB, dbSelection string, tableSelection string, white
 	columns := convertColumnsComma(whiteList)
 	sqlStatement := "SELECT " + columns + " FROM " + dbSelection + "." + tableSelection + " LIMIT 1000 ; "
 
-	// A 2D array string to hold the table, add the column names as first row
+	// A 2D array string to hold the table
 	var outFlat [][]string
+	// add the column names in first row
 	outFlat = append(outFlat, whiteList)
-	//fmt.Println("sql statement is :", sqlStatement)
+	// exe sql statement
 	rows, err := db.Query(sqlStatement)
 	if err != nil {
 		panic(err)
 	}
-	// Loop through rows, and non -1 columns AKA whitelist
+
 	count := len(whiteList)
 	values := make([]interface{}, count)
 	valuePtrs := make([]interface{}, count)
@@ -162,23 +163,15 @@ func getQueryResult(db *sql.DB, dbSelection string, tableSelection string, white
 			} else {
 				v = val
 			}
-
-			//fmt.Println(col, v)
 			innerFlat = append(innerFlat, v.(string))
 		}
 		// stick all 1D array into 2D for data table
 		outFlat = append(outFlat, innerFlat)
 	}
-
-	//fmt.Println("printing error")
-	//fmt.Printf("%#v", err)
-	//fmt.Println("printing outArr")
-	//fmt.Printf("%#v", outFlat)
-
 	return outFlat, err
 }
 
-// PASS dbConnector, sql statement in string, and table selection RETURN query result
+// go-sql driver does not read null value, therefore we use -1 as an indicator for the null value
 func getOneRow(db *sql.DB, dbSelection string, tableSelection string) (Movesoutput, error) {
 	ifNullSQLMovesoutput := `SELECT
 		ifnull(MOVESRunID, -1) AS MOVESRunID,
@@ -205,10 +198,10 @@ func getOneRow(db *sql.DB, dbSelection string, tableSelection string) (Movesoutp
 		ifnull(hpID, -1) AS hpID,
 		emissionQuant
 		FROM `
-	// A movesoutput slice to hold data from returned rows.
+	// select one row
 	sql := ifNullSQLMovesoutput + dbSelection + "." + tableSelection + " LIMIT 1;"
 	var movesout Movesoutput
-	fmt.Println("sql statement is :", sql)
+	//fmt.Println("sql statement is :", sql)
 	rows, err := db.Query(sql)
 	if err != nil {
 		panic(err)
@@ -216,7 +209,7 @@ func getOneRow(db *sql.DB, dbSelection string, tableSelection string) (Movesoutp
 	}
 	defer rows.Close()
 
-	// Loop through rows, using Scan to assign column data to struct fields.
+	// Loop through each column, using Scan to assign column data to struct fields.
 	for rows.Next() {
 		rows.Scan(&movesout.MOVESRunID, &movesout.iterationID, &movesout.yearID,
 			&movesout.monthID, &movesout.dayID, &movesout.hourID, &movesout.stateID,
@@ -230,17 +223,16 @@ func getOneRow(db *sql.DB, dbSelection string, tableSelection string) (Movesoutp
 		if err = rows.Err(); err != nil {
 			panic(err) // Error related to the iteration of rows
 		}
-		fmt.Printf("current row is %v\\n", movesout)
+		//fmt.Printf("current row is %v\\n", movesout)
 	}
-
 	return movesout, nil
 
 }
 
 func getWhiteList(con *sql.DB, dbSelection string, tableSelection string) ([]string, []bool) {
 	oneRowResult, _ := getOneRow(con, dbSelection, tableSelection)
-	fmt.Println("Print one row")
-	fmt.Printf("%v", &oneRowResult)
+	//fmt.Println("Print one row")
+	//fmt.Printf("%v", &oneRowResult)
 
 	values := reflect.ValueOf(oneRowResult)
 	types := values.Type()
@@ -248,6 +240,7 @@ func getWhiteList(con *sql.DB, dbSelection string, tableSelection string) ([]str
 	var whiteList []string
 	var whiteListIndex []bool
 
+	// get whitelist in [] string
 	for i := 0; i < values.NumField(); i++ {
 		// int to int
 		if values.Field(i).Type() == reflect.TypeOf(1) {
@@ -262,7 +255,7 @@ func getWhiteList(con *sql.DB, dbSelection string, tableSelection string) ([]str
 		}
 	}
 
-	//get white list index in bool, length -1 because we don't filter last column emissionQuant
+	//get whitelist index in bool, length -1 because we don't take emissionQuant as filter button
 	for i := 0; i < values.NumField()-1; i++ {
 		if values.Field(i).Int() != -1 {
 			whiteListIndex = append(whiteListIndex, true)
@@ -272,7 +265,6 @@ func getWhiteList(con *sql.DB, dbSelection string, tableSelection string) ([]str
 			whiteListIndex = append(whiteListIndex, false)
 		}
 	}
-
 	return whiteList, whiteListIndex
 }
 
@@ -280,7 +272,6 @@ func initDb() *sql.DB {
 	// Create the database handle, confirm driver is present
 	db, err := sql.Open("mysql", "moves:moves@/")
 	//defer db.Close()
-
 	if err != nil {
 		log.Fatalln(err)
 	}
