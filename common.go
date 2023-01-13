@@ -6,10 +6,6 @@ import (
 	"fyne.io/fyne/v2/widget"
 )
 
-func makeWindowTwo() {
-
-}
-
 // Dimensions (rows, cols)
 func dataTableLengthFunc(tableOpts *TableOpts) func() (int, int) {
 	return func() (int, int) {
