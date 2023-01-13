@@ -1,11 +1,15 @@
 package main
 
 import (
+	"bufio"
 	"database/sql"
 	"fmt"
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/widget"
+	"io/ioutil"
+	"log"
+	"os"
 	"os/exec"
 	"runtime"
 	"strings"
@@ -104,6 +108,19 @@ func makeWindowTwo(a fyne.App, queryResult [][]string, db *sql.DB, dbSelection s
 
 	hpIDContainer := createNewCheckBoxGroup(db, "hpID", dbSelection, tableSelection, moFilter)
 
+	//TODO: update button with icon
+	imgUpdate, err := os.Open("update.jpg")
+	r := bufio.NewReader(imgUpdate)
+
+	b, err := ioutil.ReadAll(r)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	updateButton := widget.NewButtonWithIcon("UPDATE", fyne.NewStaticResource("icon", b), func() {
+		fmt.Println("pressed UPDATE button")
+	})
+
 	innerContainer := container.NewVBox(
 		MOVESRunIDContainer,
 		iterationIDContainer,
@@ -127,6 +144,7 @@ func makeWindowTwo(a fyne.App, queryResult [][]string, db *sql.DB, dbSelection s
 		engTechIDContainer,
 		sectorIDContainer,
 		hpIDContainer,
+		updateButton,
 	)
 	//dynamic filter buttons, Use the record of whiteListIndex [] bool, show and hide base on 1 or 0.
 	for index, boo := range whiteListIndex {
