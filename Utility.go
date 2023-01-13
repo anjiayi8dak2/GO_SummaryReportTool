@@ -41,8 +41,8 @@ func convertColumnsComma(columns []string) string {
 
 func makeWindowTwo(a fyne.App, queryResult [][]string, db *sql.DB, dbSelection string, tableSelection string, whiteListIndex []bool) {
 	// 21 keys for Movesoutput
-	//Movesoutput_keys := []string{"MOVESRunID", "iterationID", "yearID", "monthID", "dayID", "hourID", "stateID", "countyID", "zoneID", "linkID", "pollutantID", "processID",
-	//	"sourceTypeID", "regClassID", "fuelTypeID", "fuelSubTypeID", "modelYearID", "roadTypeID", "SCC", "engTechID", "sectorID", "hpID"}
+	Movesoutput_keys := []string{"MOVESRunID", "iterationID", "yearID", "monthID", "dayID", "hourID", "stateID", "countyID", "zoneID", "linkID", "pollutantID", "processID",
+		"sourceTypeID", "regClassID", "fuelTypeID", "fuelSubTypeID", "modelYearID", "roadTypeID", "SCC", "engTechID", "sectorID", "hpID"}
 
 	fmt.Println("opening window #2")
 	w2 := a.NewWindow("window #2")
@@ -108,7 +108,7 @@ func makeWindowTwo(a fyne.App, queryResult [][]string, db *sql.DB, dbSelection s
 
 	hpIDContainer := createNewCheckBoxGroup(db, "hpID", dbSelection, tableSelection, moFilter)
 
-	//TODO: update button with icon
+	//TODO: update button with icon, icon way too small
 	imgUpdate, err := os.Open("update.jpg")
 	r := bufio.NewReader(imgUpdate)
 
@@ -118,7 +118,43 @@ func makeWindowTwo(a fyne.App, queryResult [][]string, db *sql.DB, dbSelection s
 	}
 
 	updateButton := widget.NewButtonWithIcon("UPDATE", fyne.NewStaticResource("icon", b), func() {
+		whereClause := " WHERE "
+		//var flags []bool
 		fmt.Println("pressed UPDATE button")
+		//loop through all the keys in mo map and generate a where clause
+		fmt.Println("loop throuth the 21 keys and print")
+		for index := 0; index < len(Movesoutput_keys); index++ {
+			var dummy string
+			value, ok := moFilter[Movesoutput_keys[index]]
+			if ok {
+				fmt.Println(Movesoutput_keys[index], " key found: ", value)
+				//TODO: detect if need AND
+				if len(whereClause) > 7 { //predefined whereClause with string " where ", so that the size should be 7, if the size over 7, that means we need put AND in the beginning
+					inValue := convertColumnsComma(value)
+					fmt.Println("print in values ", inValue)
+					dummy = " AND " + Movesoutput_keys[index] + " IN ( " + inValue + " ) "
+					fmt.Println("print dummy clause ", dummy)
+				} else { // otherwise do not put AND
+					inValue := convertColumnsComma(value)
+					fmt.Println("print in values ", inValue)
+					dummy = Movesoutput_keys[index] + " IN ( " + inValue + " ) "
+					fmt.Println("print dummy clause ", dummy)
+				}
+
+			} else {
+				fmt.Println(Movesoutput_keys[index], " key not found")
+			}
+			whereClause += dummy
+
+		}
+		//catch if no checkbox were selected, then remove the default where
+		if whereClause == " WHERE " {
+			whereClause = ""
+		}
+
+		whereClause += " ; "
+		fmt.Println("printing the WHERE clause")
+		fmt.Println(whereClause)
 	})
 
 	innerContainer := container.NewVBox(
@@ -155,7 +191,7 @@ func makeWindowTwo(a fyne.App, queryResult [][]string, db *sql.DB, dbSelection s
 		}
 	}
 
-	//TODO: the filter button section has no scroll bar, contents are out of screen
+	// the filter button section scroll bar
 	scrollContainer := container.NewVScroll(innerContainer)
 	outerContainer := container.NewHSplit(
 		scrollContainer,
