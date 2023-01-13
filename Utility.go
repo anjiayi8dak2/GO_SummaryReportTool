@@ -52,104 +52,81 @@ func makeWindowTwo(a fyne.App, queryResult [][]string, db *sql.DB, dbSelection s
 			o.(*widget.Label).SetText(queryResult[i.Row][i.Col])
 		})
 
-	//create  buttons
-	MOVESRunID := widget.NewButton("MOVESRunID", func() {
-	})
+	//create buttons
+	//To these filters suppose to have group of checkbox
+	//CheckGroup
+	//= pollutantContainer
+	//= title button + check group in vertical
+	//For example
+	//= pollutantidButton + pollutantContainer
 
-	iterationID := widget.NewButton("iterationID", func() {
-	})
+	MOVESRunIDContainer := createNewButton(db, "MOVESRunID", dbSelection, tableSelection)
 
-	yearID := widget.NewButton("yearID", func() {
-	})
+	iterationIDContainer := createNewButton(db, "iterationID", dbSelection, tableSelection)
 
-	monthID := widget.NewButton("monthID", func() {
-	})
+	yearIDContainer := createNewButton(db, "yearID", dbSelection, tableSelection)
 
-	dayID := widget.NewButton("dayID", func() {
-	})
+	monthIDContainer := createNewButton(db, "monthID", dbSelection, tableSelection)
 
-	hourID := widget.NewButton("hourID", func() {
-	})
+	dayIDContainer := createNewButton(db, "dayID", dbSelection, tableSelection)
 
-	stateID := widget.NewButton("stateID", func() {
-	})
+	hourIDContainer := createNewButton(db, "hourID", dbSelection, tableSelection)
 
-	countyID := widget.NewButton("countyID", func() {
-	})
+	stateIDContainer := createNewButton(db, "stateID", dbSelection, tableSelection)
 
-	zoneID := widget.NewButton("zoneID", func() {
-	})
+	countyIDContainer := createNewButton(db, "countyID", dbSelection, tableSelection)
 
-	linkID := widget.NewButton("linkID", func() {
-	})
+	zoneIDContainer := createNewButton(db, "zoneID", dbSelection, tableSelection)
 
-	//pollutant
-	pollutantidButton := widget.NewButton("pollutantID", func() {
-	})
-	distinctPollutant := getDistinct(db, dbSelection, tableSelection, "pollutantID")
-	pollutantidCheckGroup := widget.NewCheckGroup(distinctPollutant, func(s []string) { fmt.Println("selected", s) })
-	pollutantContainer := container.NewVBox(pollutantidButton, pollutantidCheckGroup)
+	linkIDContainer := createNewButton(db, "linkID", dbSelection, tableSelection)
 
-	processID := widget.NewButton("processID", func() {
-	})
+	pollutantContainer := createNewButton(db, "pollutantID", dbSelection, tableSelection)
 
-	sourceTypeID := widget.NewButton("sourceTypeID", func() {
-	})
+	processIDContainer := createNewButton(db, "processID", dbSelection, tableSelection)
 
-	regClassID := widget.NewButton("regClassID", func() {
-	})
+	sourceTypeIDContainer := createNewButton(db, "sourceTypeID", dbSelection, tableSelection)
 
-	fuelTypeID := widget.NewButton("fuelTypeID", func() {
-	})
+	regClassIDContainer := createNewButton(db, "regClassID", dbSelection, tableSelection)
 
-	fuelSubTypeID := widget.NewButton("fuelSubTypeID", func() {
-	})
+	fuelTypeIDContainer := createNewButton(db, "fuelTypeID", dbSelection, tableSelection)
 
-	//model year
-	modelYearIDButton := widget.NewButton("modelYearID", func() {
-	})
-	distinctModelYear := getDistinct(db, dbSelection, tableSelection, "modelYearID")
-	modelYearCheckGroup := widget.NewCheckGroup(distinctModelYear, func(s []string) { fmt.Println("selected", s) })
-	modelYearContainer := container.NewVBox(modelYearIDButton, modelYearCheckGroup)
+	fuelSubTypeIDContainer := createNewButton(db, "fuelSubTypeID", dbSelection, tableSelection)
 
-	roadTypeID := widget.NewButton("roadTypeID", func() {
-	})
+	modelYearContainerContainer := createNewButton(db, "modelYearID", dbSelection, tableSelection)
 
-	SCC := widget.NewButton("SCC", func() {
-	})
+	roadTypeIDContainer := createNewButton(db, "roadTypeID", dbSelection, tableSelection)
 
-	engTechID := widget.NewButton("engTechID", func() {
-	})
+	SCCContainer := createNewButton(db, "SCC", dbSelection, tableSelection)
 
-	sectorID := widget.NewButton("sectorID", func() {
-	})
+	engTechIDContainer := createNewButton(db, "engTechID", dbSelection, tableSelection)
 
-	hpID := widget.NewButton("hpID", func() {
-	})
+	sectorIDContainer := createNewButton(db, "sectorID", dbSelection, tableSelection)
+
+	hpIDContainer := createNewButton(db, "hpID", dbSelection, tableSelection)
 
 	innerContainer := container.NewVBox(
-		MOVESRunID,
-		iterationID,
-		yearID,
-		monthID,
-		dayID,
-		hourID,
-		stateID,
-		countyID,
-		zoneID,
-		linkID,
+		MOVESRunIDContainer,
+		iterationIDContainer,
+		yearIDContainer,
+		monthIDContainer,
+		dayIDContainer,
+		hourIDContainer,
+		stateIDContainer,
+		countyIDContainer,
+		zoneIDContainer,
+		linkIDContainer,
 		pollutantContainer,
-		processID,
-		sourceTypeID,
-		regClassID,
-		fuelTypeID,
-		fuelSubTypeID,
-		modelYearContainer,
-		roadTypeID,
-		SCC,
-		engTechID,
-		sectorID,
-		hpID)
+		processIDContainer,
+		sourceTypeIDContainer,
+		regClassIDContainer,
+		fuelTypeIDContainer,
+		fuelSubTypeIDContainer,
+		modelYearContainerContainer,
+		roadTypeIDContainer,
+		SCCContainer,
+		engTechIDContainer,
+		sectorIDContainer,
+		hpIDContainer)
 
 	//dynamic filter buttons, Use the record of whitelist, delete corresponding filter buttons above.
 	for index, boo := range whiteListIndex {
@@ -168,4 +145,14 @@ func makeWindowTwo(a fyne.App, queryResult [][]string, db *sql.DB, dbSelection s
 	)
 	w2.SetContent(outerContainer)
 	w2.Show()
+}
+
+func createNewButton(db *sql.DB, columnsName string, dbSelection string, tableSelection string) *fyne.Container {
+	xButton := widget.NewButton(columnsName, func() {
+	})
+	distinctX := getDistinct(db, dbSelection, tableSelection, columnsName)
+	xCheckGroup := widget.NewCheckGroup(distinctX, func(s []string) { fmt.Println("selected", s) })
+	xContainer := container.NewVBox(xButton, xCheckGroup)
+
+	return xContainer
 }
