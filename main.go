@@ -35,8 +35,8 @@ func main() {
 	menuitemRefresh := fyne.NewMenuItem("Refresh (F5)", func() {
 		//whiteList []string only contains column names, whiteListIndex [] bool contains all columns from movesoutput
 		whiteList, whiteListIndex := getWhiteList(db, dbSelection, tableSelection)
-		fmt.Println("printing white list index in bool")
-		fmt.Printf("%v", whiteListIndex)
+		//fmt.Println("printing white list index in bool")
+		//fmt.Printf("%v", whiteListIndex)
 		queryResult, _ := getQueryResult(db, dbSelection, tableSelection, whiteList)
 
 		makeWindowTwo(a, queryResult, db, dbSelection, tableSelection, whiteListIndex)

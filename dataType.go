@@ -35,6 +35,11 @@ type Movesoutput struct {
 	emissionQuant float64 `db:"emissionQuant"`
 }
 
+//type Movesoutput_filter struct {
+//	columnName string
+//	filters    []string
+//}
+
 var _ fyne.Widget = &HeaderTable{}
 
 type HeaderTable struct {

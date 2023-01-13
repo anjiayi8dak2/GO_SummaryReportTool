@@ -36,6 +36,10 @@ func convertColumnsComma(columns []string) string {
 }
 
 func makeWindowTwo(a fyne.App, queryResult [][]string, db *sql.DB, dbSelection string, tableSelection string, whiteListIndex []bool) {
+	// 21 keys for Movesoutput
+	//Movesoutput_keys := []string{"MOVESRunID", "iterationID", "yearID", "monthID", "dayID", "hourID", "stateID", "countyID", "zoneID", "linkID", "pollutantID", "processID",
+	//	"sourceTypeID", "regClassID", "fuelTypeID", "fuelSubTypeID", "modelYearID", "roadTypeID", "SCC", "engTechID", "sectorID", "hpID"}
+
 	fmt.Println("opening window #2")
 	w2 := a.NewWindow("window #2")
 	w2.SetContent(widget.NewLabel("window #2 label"))
@@ -52,57 +56,53 @@ func makeWindowTwo(a fyne.App, queryResult [][]string, db *sql.DB, dbSelection s
 			o.(*widget.Label).SetText(queryResult[i.Row][i.Col])
 		})
 
+	//map to hold movesoutput filters
+	moFilter := make(map[string][]string)
+
 	//create buttons
-	//To these filters suppose to have group of checkbox
-	//CheckGroup
-	//= pollutantContainer
-	//= title button + check group in vertical
-	//For example
-	//= pollutantidButton + pollutantContainer
+	MOVESRunIDContainer := createNewCheckBoxGroup(db, "MOVESRunID", dbSelection, tableSelection, moFilter)
 
-	MOVESRunIDContainer := createNewButton(db, "MOVESRunID", dbSelection, tableSelection)
+	iterationIDContainer := createNewCheckBoxGroup(db, "iterationID", dbSelection, tableSelection, moFilter)
 
-	iterationIDContainer := createNewButton(db, "iterationID", dbSelection, tableSelection)
+	yearIDContainer := createNewCheckBoxGroup(db, "yearID", dbSelection, tableSelection, moFilter)
 
-	yearIDContainer := createNewButton(db, "yearID", dbSelection, tableSelection)
+	monthIDContainer := createNewCheckBoxGroup(db, "monthID", dbSelection, tableSelection, moFilter)
 
-	monthIDContainer := createNewButton(db, "monthID", dbSelection, tableSelection)
+	dayIDContainer := createNewCheckBoxGroup(db, "dayID", dbSelection, tableSelection, moFilter)
 
-	dayIDContainer := createNewButton(db, "dayID", dbSelection, tableSelection)
+	hourIDContainer := createNewCheckBoxGroup(db, "hourID", dbSelection, tableSelection, moFilter)
 
-	hourIDContainer := createNewButton(db, "hourID", dbSelection, tableSelection)
+	stateIDContainer := createNewCheckBoxGroup(db, "stateID", dbSelection, tableSelection, moFilter)
 
-	stateIDContainer := createNewButton(db, "stateID", dbSelection, tableSelection)
+	countyIDContainer := createNewCheckBoxGroup(db, "countyID", dbSelection, tableSelection, moFilter)
 
-	countyIDContainer := createNewButton(db, "countyID", dbSelection, tableSelection)
+	zoneIDContainer := createNewCheckBoxGroup(db, "zoneID", dbSelection, tableSelection, moFilter)
 
-	zoneIDContainer := createNewButton(db, "zoneID", dbSelection, tableSelection)
+	linkIDContainer := createNewCheckBoxGroup(db, "linkID", dbSelection, tableSelection, moFilter)
 
-	linkIDContainer := createNewButton(db, "linkID", dbSelection, tableSelection)
+	pollutantContainer := createNewCheckBoxGroup(db, "pollutantID", dbSelection, tableSelection, moFilter)
 
-	pollutantContainer := createNewButton(db, "pollutantID", dbSelection, tableSelection)
+	processIDContainer := createNewCheckBoxGroup(db, "processID", dbSelection, tableSelection, moFilter)
 
-	processIDContainer := createNewButton(db, "processID", dbSelection, tableSelection)
+	sourceTypeIDContainer := createNewCheckBoxGroup(db, "sourceTypeID", dbSelection, tableSelection, moFilter)
 
-	sourceTypeIDContainer := createNewButton(db, "sourceTypeID", dbSelection, tableSelection)
+	regClassIDContainer := createNewCheckBoxGroup(db, "regClassID", dbSelection, tableSelection, moFilter)
 
-	regClassIDContainer := createNewButton(db, "regClassID", dbSelection, tableSelection)
+	fuelTypeIDContainer := createNewCheckBoxGroup(db, "fuelTypeID", dbSelection, tableSelection, moFilter)
 
-	fuelTypeIDContainer := createNewButton(db, "fuelTypeID", dbSelection, tableSelection)
+	fuelSubTypeIDContainer := createNewCheckBoxGroup(db, "fuelSubTypeID", dbSelection, tableSelection, moFilter)
 
-	fuelSubTypeIDContainer := createNewButton(db, "fuelSubTypeID", dbSelection, tableSelection)
+	modelYearContainerContainer := createNewCheckBoxGroup(db, "modelYearID", dbSelection, tableSelection, moFilter)
 
-	modelYearContainerContainer := createNewButton(db, "modelYearID", dbSelection, tableSelection)
+	roadTypeIDContainer := createNewCheckBoxGroup(db, "roadTypeID", dbSelection, tableSelection, moFilter)
 
-	roadTypeIDContainer := createNewButton(db, "roadTypeID", dbSelection, tableSelection)
+	SCCContainer := createNewCheckBoxGroup(db, "SCC", dbSelection, tableSelection, moFilter)
 
-	SCCContainer := createNewButton(db, "SCC", dbSelection, tableSelection)
+	engTechIDContainer := createNewCheckBoxGroup(db, "engTechID", dbSelection, tableSelection, moFilter)
 
-	engTechIDContainer := createNewButton(db, "engTechID", dbSelection, tableSelection)
+	sectorIDContainer := createNewCheckBoxGroup(db, "sectorID", dbSelection, tableSelection, moFilter)
 
-	sectorIDContainer := createNewButton(db, "sectorID", dbSelection, tableSelection)
-
-	hpIDContainer := createNewButton(db, "hpID", dbSelection, tableSelection)
+	hpIDContainer := createNewCheckBoxGroup(db, "hpID", dbSelection, tableSelection, moFilter)
 
 	innerContainer := container.NewVBox(
 		MOVESRunIDContainer,
@@ -126,9 +126,9 @@ func makeWindowTwo(a fyne.App, queryResult [][]string, db *sql.DB, dbSelection s
 		SCCContainer,
 		engTechIDContainer,
 		sectorIDContainer,
-		hpIDContainer)
-
-	//dynamic filter buttons, Use the record of whitelist, delete corresponding filter buttons above.
+		hpIDContainer,
+	)
+	//dynamic filter buttons, Use the record of whiteListIndex [] bool, show and hide base on 1 or 0.
 	for index, boo := range whiteListIndex {
 		if boo {
 			innerContainer.Objects[index].Visible()
@@ -143,16 +143,29 @@ func makeWindowTwo(a fyne.App, queryResult [][]string, db *sql.DB, dbSelection s
 		scrollContainer,
 		tableData,
 	)
+	outerContainer.Offset = 0.08
 	w2.SetContent(outerContainer)
 	w2.Show()
 }
 
-func createNewButton(db *sql.DB, columnsName string, dbSelection string, tableSelection string) *fyne.Container {
+func createNewCheckBoxGroup(db *sql.DB, columnsName string, dbSelection string, tableSelection string, mo map[string][]string) *fyne.Container {
+	//To these filters suppose to have group of checkbox
+	//CheckGroup
+	//= pollutantContainer
+	//= title button + checkbox group in vertical
+	//For example
+	//pollutantidButton + pollutantContainer
 	xButton := widget.NewButton(columnsName, func() {
 	})
 	distinctX := getDistinct(db, dbSelection, tableSelection, columnsName)
-	xCheckGroup := widget.NewCheckGroup(distinctX, func(s []string) { fmt.Println("selected", s) })
-	xContainer := container.NewVBox(xButton, xCheckGroup)
+	xCheckGroup := widget.NewCheckGroup(distinctX, func(value []string) {
+		fmt.Println("selected", value)
+		//update map  from checked boxes statues
+		mo[columnsName] = value
+		fmt.Println("print entire filter map for  ", columnsName, " inside func createNewCheckBoxGroup")
+		fmt.Println(mo)
+	})
 
+	xContainer := container.NewVBox(xButton, xCheckGroup)
 	return xContainer
 }
