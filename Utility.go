@@ -40,10 +40,6 @@ func convertColumnsComma(columns []string) string {
 }
 
 func makeWindowTwo(a fyne.App, queryResult [][]string, db *sql.DB, dbSelection string, tableSelection string, whiteListIndex []bool, whiteList []string) {
-	// 21 keys for Movesoutput
-	//Movesoutput_keys := []string{"MOVESRunID", "iterationID", "yearID", "monthID", "dayID", "hourID", "stateID", "countyID", "zoneID", "linkID", "pollutantID", "processID",
-	//	"sourceTypeID", "regClassID", "fuelTypeID", "fuelSubTypeID", "modelYearID", "roadTypeID", "SCC", "engTechID", "sectorID", "hpID"}
-
 	fmt.Println("opening window #2")
 	w2 := a.NewWindow("window #2")
 	w2.SetContent(widget.NewLabel("window #2 label"))
@@ -124,51 +120,49 @@ func makeWindowTwo(a fyne.App, queryResult [][]string, db *sql.DB, dbSelection s
 
 	updateButton := widget.NewButtonWithIcon("UPDATE", fyne.NewStaticResource("icon", b), func() {
 		whereClause := " WHERE "
-		//var flags []bool
 		fmt.Println("pressed UPDATE button")
 		//loop through all the keys in mo map and generate a where clause
 		fmt.Println("loop throuth the whiteList keys and print")
 		for index := 0; index < len(whiteList); index++ {
-			var particalWhere string
+			var partialWhere string
 			value, ok := moFilter[whiteList[index]]
-			if ok {
+			if ok { //none 0 value
 				fmt.Println(whiteList[index], " key found: ", value)
 				//TODO: detect if need AND
 				if len(whereClause) > 7 { //predefined whereClause with string " where ", so that the size should be 7, if the size over 7, that means we need put AND in the beginning
 					inValue := convertColumnsComma(value)
 					fmt.Println("print in values ", inValue)
-					particalWhere = " AND " + whiteList[index] + " IN ( " + inValue + " ) "
-					fmt.Println("print dummy clause ", particalWhere)
+					partialWhere = " AND " + whiteList[index] + " IN ( " + inValue + " ) "
+					fmt.Println("print dummy clause ", partialWhere)
 				} else { // otherwise do not put AND
 					inValue := convertColumnsComma(value)
 					fmt.Println("print in values ", inValue)
-					particalWhere = whiteList[index] + " IN ( " + inValue + " ) "
-					fmt.Println("print dummy clause ", particalWhere)
+					partialWhere = whiteList[index] + " IN ( " + inValue + " ) "
+					fmt.Println("print dummy clause ", partialWhere)
 				}
-
 			} else {
 				fmt.Println(whiteList[index], " key not found")
-				//delete map
+				//delete map that has empty value, they looks like hpID:[], they will eventually cause an empty IN() in the where clause
 				for key, value := range moFilter {
 					if len(value) == 0 {
 						delete(moFilter, key)
 					}
 				}
-				fmt.Println("print the map at then end of button fuction")
+				fmt.Println("print the map at then end of button function")
 				fmt.Println(moFilter)
 			}
-			whereClause += particalWhere
-
+			//append inner string to outer string
+			whereClause += partialWhere
 		}
-		//catch if no checkbox were selected, then remove the default where
+		//catch if no checkbox were selected, then remove the default WHERE, since there is no filter
 		if whereClause == " WHERE " {
 			whereClause = ""
 		}
 
-		//whereClause += " ; "
 		fmt.Println("printing the WHERE clause")
 		fmt.Println(whereClause)
 
+		//update the matrix with the new where clause we just made
 		queryResult, err = getQueryResult(db, dbSelection, tableSelection, whiteList, whereClause)
 		fmt.Println("printing error query result WHERE clause")
 		fmt.Println(err)
@@ -177,15 +171,6 @@ func makeWindowTwo(a fyne.App, queryResult [][]string, db *sql.DB, dbSelection s
 		//if len(queryResult) < 2 {
 		//	dialog.ShowCustom("title", "Ok", nil, w2)
 		//}
-
-		////delete map
-		//for key, value := range moFilter {
-		//	if len(value) == 0 {
-		//		delete(moFilter, key)
-		//	}
-		//}
-		//fmt.Println("print the map at then end of button fuction")
-		//fmt.Println(moFilter)
 
 	})
 
