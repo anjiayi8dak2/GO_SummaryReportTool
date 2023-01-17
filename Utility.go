@@ -39,10 +39,10 @@ func convertColumnsComma(columns []string) string {
 	return ColumnsComma
 }
 
-func makeWindowTwo(a fyne.App, queryResult [][]string, db *sql.DB, dbSelection string, tableSelection string, whiteListIndex []bool) {
+func makeWindowTwo(a fyne.App, queryResult [][]string, db *sql.DB, dbSelection string, tableSelection string, whiteListIndex []bool, whiteList []string) {
 	// 21 keys for Movesoutput
-	Movesoutput_keys := []string{"MOVESRunID", "iterationID", "yearID", "monthID", "dayID", "hourID", "stateID", "countyID", "zoneID", "linkID", "pollutantID", "processID",
-		"sourceTypeID", "regClassID", "fuelTypeID", "fuelSubTypeID", "modelYearID", "roadTypeID", "SCC", "engTechID", "sectorID", "hpID"}
+	//Movesoutput_keys := []string{"MOVESRunID", "iterationID", "yearID", "monthID", "dayID", "hourID", "stateID", "countyID", "zoneID", "linkID", "pollutantID", "processID",
+	//	"sourceTypeID", "regClassID", "fuelTypeID", "fuelSubTypeID", "modelYearID", "roadTypeID", "SCC", "engTechID", "sectorID", "hpID"}
 
 	fmt.Println("opening window #2")
 	w2 := a.NewWindow("window #2")
@@ -57,7 +57,12 @@ func makeWindowTwo(a fyne.App, queryResult [][]string, db *sql.DB, dbSelection s
 			return widget.NewLabel("wide content")
 		},
 		func(i widget.TableCellID, o fyne.CanvasObject) {
-			o.(*widget.Label).SetText(queryResult[i.Row][i.Col])
+			if len(queryResult) >= 2 {
+				o.(*widget.Label).SetText(queryResult[i.Row][i.Col])
+			} else {
+				o.(*widget.Label).SetText("no data")
+				//dialog.ShowCustom("title", "Ok", nil, w2)
+			}
 		})
 
 	//map to hold movesoutput filters
@@ -122,29 +127,37 @@ func makeWindowTwo(a fyne.App, queryResult [][]string, db *sql.DB, dbSelection s
 		//var flags []bool
 		fmt.Println("pressed UPDATE button")
 		//loop through all the keys in mo map and generate a where clause
-		fmt.Println("loop throuth the 21 keys and print")
-		for index := 0; index < len(Movesoutput_keys); index++ {
-			var dummy string
-			value, ok := moFilter[Movesoutput_keys[index]]
+		fmt.Println("loop throuth the whiteList keys and print")
+		for index := 0; index < len(whiteList); index++ {
+			var particalWhere string
+			value, ok := moFilter[whiteList[index]]
 			if ok {
-				fmt.Println(Movesoutput_keys[index], " key found: ", value)
+				fmt.Println(whiteList[index], " key found: ", value)
 				//TODO: detect if need AND
 				if len(whereClause) > 7 { //predefined whereClause with string " where ", so that the size should be 7, if the size over 7, that means we need put AND in the beginning
 					inValue := convertColumnsComma(value)
 					fmt.Println("print in values ", inValue)
-					dummy = " AND " + Movesoutput_keys[index] + " IN ( " + inValue + " ) "
-					fmt.Println("print dummy clause ", dummy)
+					particalWhere = " AND " + whiteList[index] + " IN ( " + inValue + " ) "
+					fmt.Println("print dummy clause ", particalWhere)
 				} else { // otherwise do not put AND
 					inValue := convertColumnsComma(value)
 					fmt.Println("print in values ", inValue)
-					dummy = Movesoutput_keys[index] + " IN ( " + inValue + " ) "
-					fmt.Println("print dummy clause ", dummy)
+					particalWhere = whiteList[index] + " IN ( " + inValue + " ) "
+					fmt.Println("print dummy clause ", particalWhere)
 				}
 
 			} else {
-				fmt.Println(Movesoutput_keys[index], " key not found")
+				fmt.Println(whiteList[index], " key not found")
+				//delete map
+				for key, value := range moFilter {
+					if len(value) == 0 {
+						delete(moFilter, key)
+					}
+				}
+				fmt.Println("print the map at then end of button fuction")
+				fmt.Println(moFilter)
 			}
-			whereClause += dummy
+			whereClause += particalWhere
 
 		}
 		//catch if no checkbox were selected, then remove the default where
@@ -152,9 +165,28 @@ func makeWindowTwo(a fyne.App, queryResult [][]string, db *sql.DB, dbSelection s
 			whereClause = ""
 		}
 
-		whereClause += " ; "
+		//whereClause += " ; "
 		fmt.Println("printing the WHERE clause")
 		fmt.Println(whereClause)
+
+		queryResult, err = getQueryResult(db, dbSelection, tableSelection, whiteList, whereClause)
+		fmt.Println("printing error query result WHERE clause")
+		fmt.Println(err)
+
+		//TODO: make some sort of dialog pop out warning for no result query
+		//if len(queryResult) < 2 {
+		//	dialog.ShowCustom("title", "Ok", nil, w2)
+		//}
+
+		////delete map
+		//for key, value := range moFilter {
+		//	if len(value) == 0 {
+		//		delete(moFilter, key)
+		//	}
+		//}
+		//fmt.Println("print the map at then end of button fuction")
+		//fmt.Println(moFilter)
+
 	})
 
 	innerContainer := container.NewVBox(
@@ -197,6 +229,7 @@ func makeWindowTwo(a fyne.App, queryResult [][]string, db *sql.DB, dbSelection s
 		scrollContainer,
 		tableData,
 	)
+	//screen width distribution of filter panel VS data table panel
 	outerContainer.Offset = 0.08
 	w2.SetContent(outerContainer)
 	w2.Show()

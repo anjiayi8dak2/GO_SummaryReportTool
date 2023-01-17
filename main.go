@@ -37,9 +37,9 @@ func main() {
 		whiteList, whiteListIndex := getWhiteList(db, dbSelection, tableSelection)
 		//fmt.Println("printing white list index in bool")
 		//fmt.Printf("%v", whiteListIndex)
-		queryResult, _ := getQueryResult(db, dbSelection, tableSelection, whiteList)
+		queryResult, _ := getQueryResult(db, dbSelection, tableSelection, whiteList, "")
 
-		makeWindowTwo(a, queryResult, db, dbSelection, tableSelection, whiteListIndex)
+		makeWindowTwo(a, queryResult, db, dbSelection, tableSelection, whiteListIndex, whiteList)
 
 	})
 	menuitemOpenlog := fyne.NewMenuItem("Open Log", nil)   // ignore functions

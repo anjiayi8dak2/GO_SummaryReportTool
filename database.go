@@ -130,10 +130,10 @@ func getDBVersion(db *sql.DB) {
 //	}
 //}
 
-func getQueryResult(db *sql.DB, dbSelection string, tableSelection string, whiteList []string) ([][]string, error) {
+func getQueryResult(db *sql.DB, dbSelection string, tableSelection string, whiteList []string, whereClause string) ([][]string, error) {
 	columns := convertColumnsComma(whiteList)
-	sqlStatement := "SELECT " + columns + " FROM " + dbSelection + "." + tableSelection + " LIMIT 1000 ; "
-
+	sqlStatement := "SELECT " + columns + " FROM " + dbSelection + "." + tableSelection + " " + whereClause + " LIMIT 1000 ; "
+	fmt.Println("printing sql statement: " + sqlStatement)
 	// A 2D array string to hold the table
 	var outFlat [][]string
 	// add the column names in first row
