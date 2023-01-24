@@ -230,6 +230,9 @@ func getOneRow(db *sql.DB, dbSelection string, tableSelection string) (Movesoutp
 }
 
 func getWhiteList(con *sql.DB, dbSelection string, tableSelection string) ([]string, []bool) {
+	moFieldNames := []string{"MOVESRunID", "iterationID", "yearID", "monthID", "dayID", "hourID", "stateID", "countyID",
+		"zoneID", "linkID", "pollutantID", "processID", "sourceTypeID", "regClassID", "fuelTypeID", "fuelSubTypeID",
+		"modelYearID", "roadTypeID", "SCC", "engTechID", "sectorID", "hpID", "emissionQuant"}
 	oneRowResult, _ := getOneRow(con, dbSelection, tableSelection)
 	//fmt.Println("Print one row")
 	//fmt.Printf("%v", &oneRowResult)
@@ -265,6 +268,23 @@ func getWhiteList(con *sql.DB, dbSelection string, tableSelection string) ([]str
 			whiteListIndex = append(whiteListIndex, false)
 		}
 	}
+	// hard code the last column emissionQuant as true, always show
+	whiteListIndex = append(whiteListIndex, true)
+
+	//loop through whiteListIndex, for these columns are not -1, check the count of distinct value = 1,
+	//for example if the MOVESRUNID only has 1, ignore it, there is no point to show them as both column or filter
+	for i := 0; i < len(whiteListIndex)-1; i++ {
+		if whiteListIndex[i] { //if the column value is not null
+			//get distinct query, and see the count or len(returned slice)
+			dummy := getDistinct(con, dbSelection, tableSelection, moFieldNames[i])
+			if len(dummy) == 1 { // if the returned slice only has 1 distinct value, mark the index to false
+				whiteListIndex[i] = false
+				fmt.Print(" found column that only has 1 distinct value ", moFieldNames[i])
+				fmt.Print(" printing updated whiteList v% v%", moFieldNames[i], whiteListIndex[i])
+			}
+		}
+	}
+
 	return whiteList, whiteListIndex
 }
 
