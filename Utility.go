@@ -57,6 +57,7 @@ func makeWindowTwo(a fyne.App, queryResult [][]string, db *sql.DB, dbSelection s
 				o.(*widget.Label).SetText(queryResult[i.Row][i.Col])
 			} else {
 				o.(*widget.Label).SetText("no data")
+				//runPopUp(w2)
 				//dialog.ShowCustom("title", "Ok", nil, w2)
 			}
 		})
@@ -168,9 +169,9 @@ func makeWindowTwo(a fyne.App, queryResult [][]string, db *sql.DB, dbSelection s
 		fmt.Println(err)
 
 		//TODO: make some sort of dialog pop out warning for no result query
-		//if len(queryResult) < 2 {
-		//	dialog.ShowCustom("title", "Ok", nil, w2)
-		//}
+		if len(queryResult) < 2 {
+			runPopUp(w2, "Filter combination return no data, please try different filter")
+		}
 
 	})
 
@@ -242,17 +243,6 @@ func createNewCheckBoxGroup(db *sql.DB, columnsName string, dbSelection string, 
 	return xContainer
 }
 
-//// RemoveElementFromSlice RemoveIndex remove one element from a slice
-//func RemoveElementFromSlice(s []string, bad string) {
-//	// Find and remove "bad"
-//	for i, v := range s {
-//		if v == bad {
-//			s = append(s[:i], s[i+1:]...)
-//			break
-//		}
-//	}
-//}
-
 func RemoveElementFromSlice[T comparable](l []T, item T) []T {
 	for i, other := range l {
 		if other == item {
@@ -260,4 +250,16 @@ func RemoveElementFromSlice[T comparable](l []T, item T) []T {
 		}
 	}
 	return l
+}
+
+func runPopUp(w fyne.Window, msg string) (modal *widget.PopUp) {
+	modal = widget.NewModalPopUp(
+		container.NewVBox(
+			widget.NewLabel(msg),
+			widget.NewButton("ok", func() { modal.Hide() }),
+		),
+		w.Canvas(),
+	)
+	modal.Show()
+	return modal
 }
