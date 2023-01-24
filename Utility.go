@@ -241,3 +241,23 @@ func createNewCheckBoxGroup(db *sql.DB, columnsName string, dbSelection string, 
 	xContainer := container.NewVBox(xButton, xCheckGroup)
 	return xContainer
 }
+
+//// RemoveElementFromSlice RemoveIndex remove one element from a slice
+//func RemoveElementFromSlice(s []string, bad string) {
+//	// Find and remove "bad"
+//	for i, v := range s {
+//		if v == bad {
+//			s = append(s[:i], s[i+1:]...)
+//			break
+//		}
+//	}
+//}
+
+func RemoveElementFromSlice[T comparable](l []T, item T) []T {
+	for i, other := range l {
+		if other == item {
+			return append(l[:i], l[i+1:]...)
+		}
+	}
+	return l
+}

@@ -234,8 +234,6 @@ func getWhiteList(con *sql.DB, dbSelection string, tableSelection string) ([]str
 		"zoneID", "linkID", "pollutantID", "processID", "sourceTypeID", "regClassID", "fuelTypeID", "fuelSubTypeID",
 		"modelYearID", "roadTypeID", "SCC", "engTechID", "sectorID", "hpID", "emissionQuant"}
 	oneRowResult, _ := getOneRow(con, dbSelection, tableSelection)
-	//fmt.Println("Print one row")
-	//fmt.Printf("%v", &oneRowResult)
 
 	values := reflect.ValueOf(oneRowResult)
 	types := values.Type()
@@ -251,36 +249,41 @@ func getWhiteList(con *sql.DB, dbSelection string, tableSelection string) ([]str
 				fmt.Println("found column with valid integer value, add it to whitelist \n", types.Field(i).Name, values.Field(i))
 				whiteList = append(whiteList, types.Field(i).Name)
 			}
-			// float to float, this is only for emissionQuant column
+			// float to float, this is only for emissionQuant column, only emissionQuant column has float
 		} else if values.Field(i).Type() == reflect.TypeOf(3.14) {
 			fmt.Println("this is only for emissionQuant column, add it to whitelist \n", types.Field(i).Name, values.Field(i))
 			whiteList = append(whiteList, types.Field(i).Name)
 		}
 	}
 
+	//else if values.Field(i).Type() == reflect.TypeOf(-1.0)
 	//get whitelist index in bool, length -1 because we don't take emissionQuant as filter button
+	//assign true for not null , false for null value
 	for i := 0; i < values.NumField()-1; i++ {
 		if values.Field(i).Int() != -1 {
 			whiteListIndex = append(whiteListIndex, true)
-		} else if values.Field(i).Type() == reflect.TypeOf(-1.0) {
-			whiteListIndex = append(whiteListIndex, true)
+		} else if values.Field(i).Int() == -1 {
+			whiteListIndex = append(whiteListIndex, false)
 		} else {
+			//catch? what else could be?
+			panic("what else could be? after =-1, and != -1")
 			whiteListIndex = append(whiteListIndex, false)
 		}
 	}
 	// hard code the last column emissionQuant as true, always show
-	whiteListIndex = append(whiteListIndex, true)
+	//whiteListIndex = append(whiteListIndex, true)
 
 	//loop through whiteListIndex, for these columns are not -1, check the count of distinct value = 1,
 	//for example if the MOVESRUNID only has 1, ignore it, there is no point to show them as both column or filter
-	for i := 0; i < len(whiteListIndex)-1; i++ {
+	for i := 0; i < len(whiteListIndex)-1; i++ { // -1 because the last column emissionQuant should always show
 		if whiteListIndex[i] { //if the column value is not null
 			//get distinct query, and see the count or len(returned slice)
-			dummy := getDistinct(con, dbSelection, tableSelection, moFieldNames[i])
-			if len(dummy) == 1 { // if the returned slice only has 1 distinct value, mark the index to false
+			distinctResult := getDistinct(con, dbSelection, tableSelection, moFieldNames[i])
+			if len(distinctResult) <= 1 { // if the returned slice only has 1 distinct value, mark the index to false
 				whiteListIndex[i] = false
 				fmt.Print(" found column that only has 1 distinct value ", moFieldNames[i])
 				fmt.Print(" printing updated whiteList v% v%", moFieldNames[i], whiteListIndex[i])
+				whiteList = RemoveElementFromSlice(whiteList, moFieldNames[i]) // call func that remove #the column that only have 1 distinct value as well
 			}
 		}
 	}
