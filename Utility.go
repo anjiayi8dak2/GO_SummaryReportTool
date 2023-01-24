@@ -1,15 +1,12 @@
 package main
 
 import (
-	"bufio"
 	"database/sql"
 	"fmt"
+	"fyne.io/fyne/theme"
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/widget"
-	"io/ioutil"
-	"log"
-	"os"
 	"os/exec"
 	"runtime"
 	"strings"
@@ -65,7 +62,7 @@ func makeWindowTwo(a fyne.App, queryResult [][]string, db *sql.DB, dbSelection s
 	//map to hold movesoutput filters
 	moFilter := make(map[string][]string)
 
-	//create buttons
+	//create buttons for filters
 	MOVESRunIDContainer := createNewCheckBoxGroup(db, "MOVESRunID", dbSelection, tableSelection, moFilter)
 
 	iterationIDContainer := createNewCheckBoxGroup(db, "iterationID", dbSelection, tableSelection, moFilter)
@@ -111,15 +108,20 @@ func makeWindowTwo(a fyne.App, queryResult [][]string, db *sql.DB, dbSelection s
 	hpIDContainer := createNewCheckBoxGroup(db, "hpID", dbSelection, tableSelection, moFilter)
 
 	//TODO: update button with icon, icon way too small
-	imgUpdate, err := os.Open("update.jpg")
-	r := bufio.NewReader(imgUpdate)
+	//imgUpdate, err := os.Open("update.jpg")
+	//r := bufio.NewReader(imgUpdate)
+	//
+	//b, err := ioutil.ReadAll(r)
+	//if err != nil {
+	//	log.Fatal(err)
+	//}
 
-	b, err := ioutil.ReadAll(r)
-	if err != nil {
-		log.Fatal(err)
-	}
+	//updateButtonIcon, err := fyne.LoadResourceFromPath("update.jpg")
+	//if err != nil {
+	//	panic("unable to LoadResourceFromPath, update.jpg")
+	//}
 
-	updateButton := widget.NewButtonWithIcon("UPDATE", fyne.NewStaticResource("icon", b), func() {
+	updateButton := widget.NewButtonWithIcon("Update", theme.MediaReplayIcon(), func() {
 		whereClause := " WHERE "
 		fmt.Println("pressed UPDATE button")
 		//loop through all the keys in mo map and generate a where clause
@@ -129,7 +131,7 @@ func makeWindowTwo(a fyne.App, queryResult [][]string, db *sql.DB, dbSelection s
 			value, ok := moFilter[whiteList[index]]
 			if ok { //none 0 value
 				fmt.Println(whiteList[index], " key found: ", value)
-				//TODO: detect if need AND
+				//detect if need AND
 				if len(whereClause) > 7 { //predefined whereClause with string " where ", so that the size should be 7, if the size over 7, that means we need put AND in the beginning
 					inValue := convertColumnsComma(value)
 					fmt.Println("print in values ", inValue)
@@ -164,6 +166,7 @@ func makeWindowTwo(a fyne.App, queryResult [][]string, db *sql.DB, dbSelection s
 		fmt.Println(whereClause)
 
 		//update the matrix with the new where clause we just made
+		var err error
 		queryResult, err = getQueryResult(db, dbSelection, tableSelection, whiteList, whereClause)
 		fmt.Println("printing error query result WHERE clause")
 		fmt.Println(err)

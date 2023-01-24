@@ -22,6 +22,7 @@ func main() {
 	a := app.New()
 	w := a.NewWindow("Summary Report Tool")
 	w.Resize(fyne.NewSize(400, 400))
+
 	//Global var
 	var dbSelection string
 	var tableSelection string
