@@ -107,6 +107,12 @@ func makeWindowTwo(a fyne.App, queryResult [][]string, db *sql.DB, dbSelection s
 
 	hpIDContainer := createNewCheckBoxGroup(db, "hpID", dbSelection, tableSelection, moFilter)
 
+	//TODO: aggregation selection
+	//map to hold group by check boxes selection
+	moGroupBy := make(map[string][]string)
+	//pass whitelist?
+	aggregationContainer := createNewAggregationGroup(whiteList, moGroupBy)
+
 	//TODO: update button with icon, icon way too small
 	//imgUpdate, err := os.Open("update.jpg")
 	//r := bufio.NewReader(imgUpdate)
@@ -165,6 +171,8 @@ func makeWindowTwo(a fyne.App, queryResult [][]string, db *sql.DB, dbSelection s
 		fmt.Println("printing the WHERE clause")
 		fmt.Println(whereClause)
 
+		//TODO: enter GROUP BY clause
+
 		//update the matrix with the new where clause we just made
 		var err error
 		queryResult, err = getQueryResult(db, dbSelection, tableSelection, whiteList, whereClause)
@@ -201,6 +209,7 @@ func makeWindowTwo(a fyne.App, queryResult [][]string, db *sql.DB, dbSelection s
 		engTechIDContainer,
 		sectorIDContainer,
 		hpIDContainer,
+		aggregationContainer,
 		updateButton,
 	)
 	//dynamic filter buttons, Use the record of whiteListIndex [] bool, show and hide base on 1 or 0.
@@ -224,6 +233,27 @@ func makeWindowTwo(a fyne.App, queryResult [][]string, db *sql.DB, dbSelection s
 	w2.Show()
 }
 
+func createNewAggregationGroup(whitelist []string, groupBy map[string][]string) *fyne.Container {
+	xButton := widget.NewButton("Aggregation", func() {
+	})
+	dummy := whitelist
+	//whitelist has emssionQuant, delete the last element
+	if len(dummy) > 0 {
+		dummy = dummy[:len(dummy)-1]
+	}
+	fmt.Println("printing dummy whitelist inside createNewAggregationGroup", dummy)
+	xCheckGroup := widget.NewCheckGroup(dummy, func(value []string) {
+		fmt.Println("selected", value)
+		//update map  from checked boxes statues
+		groupBy["Aggregation"] = value
+		fmt.Println("print entire filter map for  ", "Aggregation", " inside func createNewAggregationGroup")
+		fmt.Println(groupBy)
+	})
+
+	xContainer := container.NewVBox(xButton, xCheckGroup)
+	return xContainer
+}
+
 func createNewCheckBoxGroup(db *sql.DB, columnsName string, dbSelection string, tableSelection string, mo map[string][]string) *fyne.Container {
 	//To these filters suppose to have group of checkbox
 	//CheckGroup
@@ -233,6 +263,7 @@ func createNewCheckBoxGroup(db *sql.DB, columnsName string, dbSelection string, 
 	//pollutantidButton + pollutantContainer
 	xButton := widget.NewButton(columnsName, func() {
 	})
+
 	distinctX := getDistinct(db, dbSelection, tableSelection, columnsName)
 	xCheckGroup := widget.NewCheckGroup(distinctX, func(value []string) {
 		fmt.Println("selected", value)
