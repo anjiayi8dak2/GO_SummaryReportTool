@@ -7,7 +7,8 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/widget"
-	"log"
+	grob "github.com/MetalBlueberry/go-plotly/graph_objects"
+	"github.com/MetalBlueberry/go-plotly/offline"
 	"os/exec"
 	"runtime"
 	"strings"
@@ -44,17 +45,34 @@ func makeWindowTwo(a fyne.App, queryResult [][]string, db *sql.DB, dbSelection s
 	window2.Resize(fyne.NewSize(1000, 800))
 
 	toolbar := widget.NewToolbar(
-		widget.NewToolbarAction(theme.DocumentCreateIcon(), func() {
-			log.Println("New document")
+		widget.NewToolbarAction(theme.ViewRefreshIcon(), func() { //plot
+			fmt.Println("I pressed update button")
 		}),
-		widget.NewToolbarSeparator(),
-		widget.NewToolbarAction(theme.ContentCutIcon(), func() {}),
-		widget.NewToolbarAction(theme.ContentCopyIcon(), func() {}),
-		widget.NewToolbarAction(theme.ContentPasteIcon(), func() {}),
+		widget.NewToolbarAction(theme.DocumentCreateIcon(), func() { //plot
+			fmt.Println("I pressed plot button")
+			fig := &grob.Fig{
+				Data: grob.Traces{
+					&grob.Bar{
+						Type: grob.TraceTypeBar,
+						//X:    []float64{1, 2, 3},
+						//Y:    []float64{1, 2, 3},
+						X: []float64{100, 200, 300},
+						Y: []float64{1, 2, 3},
+					},
+				},
+				Layout: &grob.Layout{
+					Title: &grob.LayoutTitle{
+						Text: "A Figure Specified By Go Struct",
+					},
+				},
+			}
+
+			offline.Show(fig)
+		}),
+		widget.NewToolbarAction(theme.DownloadIcon(), func() { //download CSV
+			fmt.Println("I pressed download csv button")
+		}),
 		widget.NewToolbarSpacer(),
-		widget.NewToolbarAction(theme.HelpIcon(), func() {
-			log.Println("Display help")
-		}),
 	)
 
 	tableData := widget.NewTable(
@@ -104,20 +122,6 @@ func makeWindowTwo(a fyne.App, queryResult [][]string, db *sql.DB, dbSelection s
 	moGroupBy := make(map[string][]string)
 	//pass whitelist?
 	aggregationContainer := createNewAggregationGroup(whiteList, moGroupBy)
-
-	//TODO: update button with icon, icon way too small
-	//imgUpdate, err := os.Open("update.jpg")
-	//r := bufio.NewReader(imgUpdate)
-	//
-	//b, err := ioutil.ReadAll(r)
-	//if err != nil {
-	//	log.Fatal(err)
-	//}
-
-	//updateButtonIcon, err := fyne.LoadResourceFromPath("update.jpg")
-	//if err != nil {
-	//	panic("unable to LoadResourceFromPath, update.jpg")
-	//}
 
 	updateButton := widget.NewButtonWithIcon("Update", theme.MediaReplayIcon(), func() {
 		whereClause := " WHERE "
@@ -262,6 +266,10 @@ func makeWindowTwo(a fyne.App, queryResult [][]string, db *sql.DB, dbSelection s
 	//window2.SetContent(outerContainer)
 	window2.SetContent(container.NewBorder(toolbar, nil, nil, nil, outerContainer))
 	window2.Show()
+}
+
+func updateButton() {
+
 }
 
 func createNewAggregationGroup(whitelist []string, groupBy map[string][]string) *fyne.Container {
