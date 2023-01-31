@@ -7,6 +7,7 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/widget"
+	"log"
 	"os/exec"
 	"runtime"
 	"strings"
@@ -41,6 +42,20 @@ func makeWindowTwo(a fyne.App, queryResult [][]string, db *sql.DB, dbSelection s
 	window2 := a.NewWindow("window #2")
 	window2.SetContent(widget.NewLabel("window #2 label"))
 	window2.Resize(fyne.NewSize(1000, 800))
+
+	toolbar := widget.NewToolbar(
+		widget.NewToolbarAction(theme.DocumentCreateIcon(), func() {
+			log.Println("New document")
+		}),
+		widget.NewToolbarSeparator(),
+		widget.NewToolbarAction(theme.ContentCutIcon(), func() {}),
+		widget.NewToolbarAction(theme.ContentCopyIcon(), func() {}),
+		widget.NewToolbarAction(theme.ContentPasteIcon(), func() {}),
+		widget.NewToolbarSpacer(),
+		widget.NewToolbarAction(theme.HelpIcon(), func() {
+			log.Println("Display help")
+		}),
+	)
 
 	tableData := widget.NewTable(
 		func() (int, int) {
@@ -244,7 +259,8 @@ func makeWindowTwo(a fyne.App, queryResult [][]string, db *sql.DB, dbSelection s
 	)
 	//screen width horizontal distribution of filter panel VS data table panel
 	outerContainer.Offset = 0.08
-	window2.SetContent(outerContainer)
+	//window2.SetContent(outerContainer)
+	window2.SetContent(container.NewBorder(toolbar, nil, nil, nil, outerContainer))
 	window2.Show()
 }
 

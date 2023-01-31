@@ -6,6 +6,8 @@ import (
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/layout"
+	"fyne.io/fyne/v2/theme"
+	_ "fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 	_ "github.com/go-sql-driver/mysql"
 	_ "github.com/joho/sqltocsv"
@@ -20,6 +22,7 @@ func main() {
 
 	//Initialize app main window
 	a := app.New()
+	a.Settings().SetTheme(theme.DarkTheme())
 	window1 := a.NewWindow("Summary Report Tool")
 	window1.Resize(fyne.NewSize(400, 400))
 

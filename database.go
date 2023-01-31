@@ -76,64 +76,9 @@ func getDBVersion(db *sql.DB) {
 	fmt.Println("Connected to:", version)
 }
 
-// // TODO: function that have switch assign field value to a query row
-//
-//	func (m *Movesoutput) myUpdater(fieldName, fieldValue string) {
-//		switch fieldName {
-//		case "MOVESRunID":
-//			m.MOVESRunID, _ = strconv.Atoi(fieldValue)
-//		case "iterationID":
-//			m.iterationID, _ = strconv.Atoi(fieldValue)
-//		case "yearID":
-//			m.yearID, _ = strconv.Atoi(fieldValue)
-//		case "monthID":
-//			m.monthID, _ = strconv.Atoi(fieldValue)
-//		case "dayID":
-//			m.dayID, _ = strconv.Atoi(fieldValue)
-//		case "hourID":
-//			m.hourID, _ = strconv.Atoi(fieldValue)
-//		case "stateID":
-//			m.stateID, _ = strconv.Atoi(fieldValue)
-//		case "countyID":
-//			m.countyID, _ = strconv.Atoi(fieldValue)
-//		case "zoneID":
-//			m.zoneID, _ = strconv.Atoi(fieldValue)
-//		case "linkID":
-//			m.linkID, _ = strconv.Atoi(fieldValue)
-//		case "pollutantID":
-//			m.pollutantID, _ = strconv.Atoi(fieldValue)
-//		case "processID":
-//			m.processID, _ = strconv.Atoi(fieldValue)
-//		case "sourceTypeID":
-//			m.sourceTypeID, _ = strconv.Atoi(fieldValue)
-//		case "regClassID":
-//			m.regClassID, _ = strconv.Atoi(fieldValue)
-//		case "fuelTypeID":
-//			m.fuelTypeID, _ = strconv.Atoi(fieldValue)
-//		case "fuelSubTypeID":
-//			m.fuelSubTypeID, _ = strconv.Atoi(fieldValue)
-//		case "modelYearID":
-//			m.modelYearID, _ = strconv.Atoi(fieldValue)
-//		case "roadTypeID":
-//			m.roadTypeID, _ = strconv.Atoi(fieldValue)
-//		case "SCC":
-//			m.SCC, _ = strconv.Atoi(fieldValue)
-//		case "engTechID":
-//			m.engTechID, _ = strconv.Atoi(fieldValue)
-//		case "sectorID":
-//			m.hpID, _ = strconv.Atoi(fieldValue)
-//		case "hpID":
-//			m.processID, _ = strconv.Atoi(fieldValue)
-//		case "emissionQuant":
-//			m.emissionQuant, _ = strconv.ParseFloat(fieldValue, 64)
-//		default:
-//			panic("I don't know that field name: " + fieldName + "!")
-//		}
-//	}
-
 func getQueryResult(db *sql.DB, dbSelection string, tableSelection string, whiteList []string, whereClause string, groupClause string) ([][]string, error) {
 	columns := convertColumnsComma(whiteList)
-	sqlStatement := "SELECT " + columns + " FROM " + dbSelection + "." + tableSelection + " " + whereClause + " " + groupClause + " LIMIT 100 ; "
+	sqlStatement := "SELECT " + columns + " FROM " + dbSelection + "." + tableSelection + " " + whereClause + " " + groupClause + " LIMIT 1000 ; "
 	fmt.Println("printing sql statement: " + sqlStatement)
 	// A 2D array string to hold the table
 	var outFlat [][]string
@@ -169,12 +114,12 @@ func getQueryResult(db *sql.DB, dbSelection string, tableSelection string, white
 		// stick all 1D array into 2D for data table
 		outFlat = append(outFlat, innerFlat)
 	}
-	fmt.Println("printing column name before return ")
-	fmt.Println(whiteList)
-	fmt.Println("printing query result before return ")
-	for i := 0; i < len(outFlat); i++ {
-		fmt.Println(outFlat[i])
-	}
+	//fmt.Println("printing column name before return ")
+	//fmt.Println(whiteList)
+	//fmt.Println("printing query result before return ")
+	//for i := 0; i < len(outFlat); i++ {
+	//	fmt.Println(outFlat[i])
+	//}
 	return outFlat, err
 }
 
