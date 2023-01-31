@@ -20,8 +20,8 @@ func main() {
 
 	//Initialize app main window
 	a := app.New()
-	w := a.NewWindow("Summary Report Tool")
-	w.Resize(fyne.NewSize(400, 400))
+	window1 := a.NewWindow("Summary Report Tool")
+	window1.Resize(fyne.NewSize(400, 400))
 
 	//Global var
 	var dbSelection string
@@ -38,7 +38,7 @@ func main() {
 		whiteList, whiteListIndex := getWhiteList(db, dbSelection, tableSelection)
 		//fmt.Println("printing white list index in bool")
 		//fmt.Printf("%v", whiteListIndex)
-		queryResult, _ := getQueryResult(db, dbSelection, tableSelection, whiteList, "")
+		queryResult, _ := getQueryResult(db, dbSelection, tableSelection, whiteList, "", "")
 
 		makeWindowTwo(a, queryResult, db, dbSelection, tableSelection, whiteListIndex, whiteList)
 
@@ -54,7 +54,7 @@ func main() {
 	newMenu4 := fyne.NewMenu("Help", menuitemAbout, menuitemManual)
 	// New main menu
 	menu := fyne.NewMainMenu(newMenu1, newMenu2, newMenu3, newMenu4)
-	w.SetMainMenu(menu)
+	window1.SetMainMenu(menu)
 
 	// Get DB List
 	var dbList []string
@@ -87,10 +87,10 @@ func main() {
 
 	//// more than one widget. so use container
 	//c := container.NewBorder(nil, dbDropdownResult, dbDropdown, tableDropdown)
-	//w.SetContent(c)
+	//window1.SetContent(c)
 
 	dropdownGrid := container.New(layout.NewGridLayout(2), dbDropdown, tableDropdown)
-	w.SetContent(dropdownGrid)
+	window1.SetContent(dropdownGrid)
 	//show and run
-	w.ShowAndRun()
+	window1.ShowAndRun()
 }
