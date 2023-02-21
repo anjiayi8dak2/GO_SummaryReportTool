@@ -114,18 +114,18 @@ func getQueryResult(db *sql.DB, dbSelection string, tableSelection string, white
 		// stick all 1D array into 2D for data table
 		outFlat = append(outFlat, innerFlat)
 	}
-	//fmt.Println("printing column name before return ")
-	//fmt.Println(whiteList)
-	//fmt.Println("printing query result before return ")
-	//for i := 0; i < len(outFlat); i++ {
-	//	fmt.Println(outFlat[i])
-	//}
 	return outFlat, err
 }
 
 // go-sql driver does not read null value, therefore we use -1 as an indicator for the null value
 func getOneRow(db *sql.DB, dbSelection string, tableSelection string) (Movesoutput, error) {
-	ifNullSQLMovesoutput := `SELECT
+	var ifNullSQL string
+	// there should be a smart way to do it, but I could not find any. stupid but works :(
+	// editing SELECT clause sql statement depends on which table got selected
+	switch tableSelection {
+	case "movesoutput":
+		fmt.Println("movesoutput table selection")
+		ifNullSQL = `SELECT
 		ifnull(MOVESRunID, -1) AS MOVESRunID,
 		ifnull(iterationID, -1) AS iterationID,
 		ifnull(yearID, -1) AS yearID,
@@ -150,10 +150,25 @@ func getOneRow(db *sql.DB, dbSelection string, tableSelection string) (Movesoutp
 		ifnull(hpID, -1) AS hpID,
 		emissionQuant
 		FROM `
-	// select one row
-	sql := ifNullSQLMovesoutput + dbSelection + "." + tableSelection + " LIMIT 1;"
+	case "rateperdistance":
+		fmt.Println("rateperdistance table selection")
+	case "rateperhour":
+		fmt.Println("rateperhour table selection")
+	case "rateperprofile":
+		fmt.Println("rateperprofile table selection")
+	case "rateperstart":
+		fmt.Println("rateperstart table selection")
+	case "ratepervehicle":
+		fmt.Println("ratepervehicle table selection")
+	case "startspervehicle":
+		fmt.Println("startspervehicle table selection")
+	default:
+		fmt.Println("unknown table selection")
+	}
+
+	// put sql statement together and select one row
+	sql := ifNullSQL + dbSelection + "." + tableSelection + " LIMIT 1;"
 	var movesout Movesoutput
-	//fmt.Println("sql statement is :", sql)
 	rows, err := db.Query(sql)
 	if err != nil {
 		panic(err)
@@ -161,22 +176,40 @@ func getOneRow(db *sql.DB, dbSelection string, tableSelection string) (Movesoutp
 	}
 	defer rows.Close()
 
-	// Loop through each column, using Scan to assign column data to struct fields.
-	for rows.Next() {
-		rows.Scan(&movesout.MOVESRunID, &movesout.iterationID, &movesout.yearID,
-			&movesout.monthID, &movesout.dayID, &movesout.hourID, &movesout.stateID,
-			&movesout.countyID, &movesout.zoneID, &movesout.linkID, &movesout.pollutantID,
-			&movesout.processID, &movesout.sourceTypeID, &movesout.regClassID, &movesout.fuelTypeID,
-			&movesout.fuelSubTypeID, &movesout.modelYearID, &movesout.roadTypeID, &movesout.SCC,
-			&movesout.engTechID, &movesout.sectorID, &movesout.hpID, &movesout.emissionQuant)
-		if err != nil {
-			panic(err) // Error related to the scan
+	//oh shit here we go again,
+	switch tableSelection {
+	case "movesoutput":
+		// Loop through each column, using Scan to assign column data to struct fields.
+		for rows.Next() {
+			rows.Scan(&movesout.MOVESRunID, &movesout.iterationID, &movesout.yearID,
+				&movesout.monthID, &movesout.dayID, &movesout.hourID, &movesout.stateID,
+				&movesout.countyID, &movesout.zoneID, &movesout.linkID, &movesout.pollutantID,
+				&movesout.processID, &movesout.sourceTypeID, &movesout.regClassID, &movesout.fuelTypeID,
+				&movesout.fuelSubTypeID, &movesout.modelYearID, &movesout.roadTypeID, &movesout.SCC,
+				&movesout.engTechID, &movesout.sectorID, &movesout.hpID, &movesout.emissionQuant)
+			if err != nil {
+				panic(err) // Error related to the scan
+			}
+			if err = rows.Err(); err != nil {
+				panic(err) // Error related to the iteration of rows
+			}
 		}
-		if err = rows.Err(); err != nil {
-			panic(err) // Error related to the iteration of rows
-		}
-		//fmt.Printf("current row is %v\\n", movesout)
+	case "rateperdistance":
+		fmt.Println("rateperdistance table selection")
+	case "rateperhour":
+		fmt.Println("rateperhour table selection")
+	case "rateperprofile":
+		fmt.Println("rateperprofile table selection")
+	case "rateperstart":
+		fmt.Println("rateperstart table selection")
+	case "ratepervehicle":
+		fmt.Println("ratepervehicle table selection")
+	case "startspervehicle":
+		fmt.Println("startspervehicle table selection")
+	default:
+		fmt.Println("unknown table selection")
 	}
+
 	return movesout, nil
 
 }
