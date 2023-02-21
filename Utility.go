@@ -46,6 +46,13 @@ func makeWindowTwo(a fyne.App, queryResult [][]string, db *sql.DB, dbSelection s
 	window2.SetContent(widget.NewLabel("window #2 label"))
 	window2.Resize(fyne.NewSize(1000, 800))
 
+	//TODO: This is the message tab on top of screen, should update this text on the fly
+
+	dummyToolBarString_Where := fmt.Sprint(dbSelection)      //test some random variable print in the label, maybe update later somewhere
+	dummyToolBarString_GroupBy := fmt.Sprint(tableSelection) //test some random variable print in the label, maybe update later somewhere
+	dummyToolBarString := "Filters: " + dummyToolBarString_Where + "Aggregated by: " + dummyToolBarString_GroupBy
+	dummyLable := widget.NewLabel(dummyToolBarString)
+
 	toolbar := widget.NewToolbar(
 		widget.NewToolbarAction(theme.ViewRefreshIcon(), func() { //update
 			fmt.Println("I pressed update button")
@@ -53,9 +60,9 @@ func makeWindowTwo(a fyne.App, queryResult [][]string, db *sql.DB, dbSelection s
 		widget.NewToolbarAction(theme.DocumentCreateIcon(), func() { //plot
 			fmt.Println("I pressed plot button")
 			//TODO: make X and Y here
-			// bar names should be elements on the first row, except last column(emissionQuant)
-			// how many bar, count of X = total row-1, because the first row is title
-			// value of Y should be at first row with last column(emissionQuant)
+			// bar names should be elements on the first row, except last element(emissionQuant)
+			// how many bar, count of X = total row-1, because the first row is header
+			// value of Y should be at last column(emissionQuant) except for first row
 
 			temp_queryResult := queryResult
 			plot_row_count := len(temp_queryResult) - 1 //total row - 1 because the first row is title
@@ -108,6 +115,9 @@ func makeWindowTwo(a fyne.App, queryResult [][]string, db *sql.DB, dbSelection s
 
 		}),
 		widget.NewToolbarSpacer(),
+		//TODO: the text space on the toolbar, to show what filtered has applied and/or aggregated by
+		//dummyLable:= widget.NewLabel(dummyToolBarString),
+		dummyLable,
 	)
 
 	tableData := widget.NewTable(
@@ -193,6 +203,7 @@ func makeWindowTwo(a fyne.App, queryResult [][]string, db *sql.DB, dbSelection s
 				}
 				fmt.Println("print the map at then end of button function")
 				fmt.Println(moFilter)
+				//dummyToolBarString_Where = fmt.Sprint(moFilter)
 			}
 			//append inner string to outer string
 			whereClause += partialWhere
@@ -204,6 +215,9 @@ func makeWindowTwo(a fyne.App, queryResult [][]string, db *sql.DB, dbSelection s
 
 		fmt.Println("printing the WHERE clause")
 		fmt.Println(whereClause)
+		//test update dummy toolbar label on the fly
+		dummyToolBarString_Where = whereClause
+		dummyLable.SetText("this is updated dummy lable")
 
 		//TODO: enter GROUP BY claus
 		// if there is 1 item is checked, have GROUP BY xxx
