@@ -124,46 +124,158 @@ func getOneRow(db *sql.DB, dbSelection string, tableSelection string) (Movesoutp
 	// editing SELECT clause sql statement depends on which table got selected
 	switch tableSelection {
 	case "movesoutput":
-		fmt.Println("movesoutput table selection")
 		ifNullSQL = `SELECT
-		ifnull(MOVESRunID, -1) AS MOVESRunID,
-		ifnull(iterationID, -1) AS iterationID,
-		ifnull(yearID, -1) AS yearID,
-		ifnull(monthID, -1) AS monthID,
-		ifnull(dayID, -1) AS dayID,
-		ifnull(hourID, -1) AS hourID,
-		ifnull(stateID, -1) AS stateID,
-		ifnull(countyID, -1) AS countyID,
-		ifnull(zoneID, -1) AS zoneID,
-		ifnull(linkID, -1) AS linkID,
-		ifnull(pollutantID, -1) AS pollutantID,
-		ifnull(processID, -1) AS processID,
-		ifnull(sourceTypeID, -1) AS sourceTypeID,
-		ifnull(regClassID, -1) AS regClassID,
-		ifnull(fuelTypeID, -1) AS fuelTypeID,
-		ifnull(fuelSubTypeID, -1) AS fuelSubTypeID,
-		ifnull(modelYearID, -1) AS modelYearID,
-		ifnull(roadTypeID, -1) AS roadTypeID,
-		ifnull(SCC, -1) AS SCC,
-		ifnull(engTechID, -1) AS engTechID,
-		ifnull(sectorID, -1) AS sectorID,
-		ifnull(hpID, -1) AS hpID,
-		emissionQuant
-		FROM `
+					ifnull(MOVESRunID, -1) AS MOVESRunID,
+					ifnull(iterationID, -1) AS iterationID,
+					ifnull(yearID, -1) AS yearID,
+					ifnull(monthID, -1) AS monthID,
+					ifnull(dayID, -1) AS dayID,
+					ifnull(hourID, -1) AS hourID,
+					ifnull(stateID, -1) AS stateID,
+					ifnull(countyID, -1) AS countyID,
+					ifnull(zoneID, -1) AS zoneID,
+					ifnull(linkID, -1) AS linkID,
+					ifnull(pollutantID, -1) AS pollutantID,
+					ifnull(processID, -1) AS processID,
+					ifnull(sourceTypeID, -1) AS sourceTypeID,
+					ifnull(regClassID, -1) AS regClassID,
+					ifnull(fuelTypeID, -1) AS fuelTypeID,
+					ifnull(fuelSubTypeID, -1) AS fuelSubTypeID,
+					ifnull(modelYearID, -1) AS modelYearID,
+					ifnull(roadTypeID, -1) AS roadTypeID,
+					ifnull(SCC, -1) AS SCC,
+					ifnull(engTechID, -1) AS engTechID,
+					ifnull(sectorID, -1) AS sectorID,
+					ifnull(hpID, -1) AS hpID,
+					emissionQuant
+					FROM `
+
 	case "rateperdistance":
-		fmt.Println("rateperdistance table selection")
+		ifNullSQL = `SELECT  
+					ifnull(MOVESScenarioID, -1) AS MOVESScenarioID,
+					ifnull(MOVESRunID, -1) AS MOVESRunID,
+					ifnull(yearID, -1) AS yearID,
+					ifnull(monthID, -1) AS monthID,
+					ifnull(dayID, -1) AS dayID,
+					ifnull(hourID, -1) AS hourID,
+					ifnull(linkID, -1) AS linkID,
+					ifnull(pollutantID, -1) AS pollutantID,
+					ifnull(processID, -1) AS processID,
+					ifnull(sourceTypeID, -1) AS sourceTypeID,
+					ifnull(regClassID, -1) AS regClassID,
+					ifnull(SCC, -1) AS SCC,
+					ifnull(fuelTypeID, -1) AS fuelTypeID,
+					ifnull(modelYearID, -1) AS modelYearID,
+					ifnull(roadTypeID, -1) AS roadTypeID,
+					ifnull(avgSpeedBinID, -1) AS avgSpeedBinID,
+					ifnull(temperature, -1) AS temperature,
+					ifnull(relHumidity, -1) AS relHumidity,
+					ifnull(ratePerDistance, -1) AS ratePerDistance
+					FROM `
+
 	case "rateperhour":
-		fmt.Println("rateperhour table selection")
+		ifNullSQL = `SELECT  
+					ifnull(MOVESScenarioID, -1) AS MOVESScenarioID,
+					ifnull(MOVESRunID, -1) AS MOVESRunID,
+					ifnull(yearID, -1) AS yearID,
+					ifnull(monthID, -1) AS monthID,
+					ifnull(dayID, -1) AS dayID,
+					ifnull(hourID, -1) AS hourID,
+					ifnull(linkID, -1) AS linkID,
+					ifnull(pollutantID, -1) AS pollutantID,
+					ifnull(processID, -1) AS processID,
+					ifnull(sourceTypeID, -1) AS sourceTypeID,
+					ifnull(regClassID, -1) AS regClassID,
+					ifnull(SCC, -1) AS SCC,
+					ifnull(fuelTypeID, -1) AS fuelTypeID,
+					ifnull(modelYearID, -1) AS modelYearID,
+					ifnull(roadTypeID, -1) AS roadTypeID,
+					ifnull(temperature, -1) AS temperature,
+					ifnull(relHumidity, -1) AS relHumidity,
+					ifnull(ratePerHour, -1) AS ratePerHour
+					FROM `
+
 	case "rateperprofile":
-		fmt.Println("rateperprofile table selection")
+		ifNullSQL = `SELECT  
+					ifnull(MOVESScenarioID, -1) AS MOVESScenarioID,
+					ifnull(MOVESRunID, -1) AS MOVESRunID,
+					ifnull(temperatureProfileID, -1) AS temperatureProfileID,
+					ifnull(yearID, -1) AS yearID,
+					ifnull(dayID, -1) AS dayID,
+					ifnull(hourID, -1) AS hourID,
+					ifnull(pollutantID, -1) AS pollutantID,
+					ifnull(processID, -1) AS processID,
+					ifnull(sourceTypeID, -1) AS sourceTypeID,
+					ifnull(regClassID, -1) AS regClassID,
+					ifnull(SCC, -1) AS SCC,
+					ifnull(fuelTypeID, -1) AS fuelTypeID,
+					ifnull(modelYearID, -1) AS modelYearID,
+					ifnull(temperature, -1) AS temperature,
+					ifnull(relHumidity, -1) AS relHumidity,
+					ifnull(ratePerVehicle, -1) AS ratePerVehicle
+					FROM  `
+
 	case "rateperstart":
-		fmt.Println("rateperstart table selection")
+		ifNullSQL = `SELECT  
+					ifnull(MOVESScenarioID, -1) AS MOVESScenarioID,
+					ifnull(MOVESRunID, -1) AS MOVESRunID,
+					ifnull(yearID, -1) AS yearID,
+					ifnull(monthID, -1) AS monthID,
+					ifnull(dayID, -1) AS dayID,
+					ifnull(hourID, -1) AS hourID,
+					ifnull(zoneID, -1) AS zoneID,
+					ifnull(sourceTypeID, -1) AS sourceTypeID,
+					ifnull(regClassID, -1) AS regClassID,
+					ifnull(SCC, -1) AS SCC,
+					ifnull(fuelTypeID, -1) AS fuelTypeID,
+					ifnull(modelYearID, -1) AS modelYearID,
+					ifnull(pollutantID, -1) AS pollutantID,
+					ifnull(processID, -1) AS processID,
+					ifnull(temperature, -1) AS temperature,
+					ifnull(relHumidity, -1) AS relHumidity,
+					ifnull(ratePerStart, -1) AS ratePerStart
+					FROM  `
+
 	case "ratepervehicle":
-		fmt.Println("ratepervehicle table selection")
+		ifNullSQL = `SELECT  
+					ifnull(MOVESScenarioID, -1) AS MOVESScenarioID,
+					ifnull(MOVESRunID, -1) AS MOVESRunID,
+					ifnull(yearID, -1) AS yearID,
+					ifnull(monthID, -1) AS monthID,
+					ifnull(dayID, -1) AS dayID,
+					ifnull(hourID, -1) AS hourID,
+					ifnull(zoneID, -1) AS zoneID,
+					ifnull(pollutantID, -1) AS pollutantID,
+					ifnull(processID, -1) AS processID,
+					ifnull(sourceTypeID, -1) AS sourceTypeID,
+					ifnull(regClassID, -1) AS regClassID,
+					ifnull(SCC, -1) AS SCC,
+					ifnull(fuelTypeID, -1) AS fuelTypeID,
+					ifnull(modelYearID, -1) AS modelYearID,
+					ifnull(temperature, -1) AS temperature,
+					ifnull(relHumidity, -1) AS relHumidity,
+					ifnull(ratePerVehicle, -1) AS ratePerVehicle
+					FROM  `
+
 	case "startspervehicle":
-		fmt.Println("startspervehicle table selection")
+		ifNullSQL = `SELECT  
+					ifnull(MOVESScenarioID, -1) AS MOVESScenarioID,
+					ifnull(MOVESRunID, -1) AS MOVESRunID,
+					ifnull(yearID, -1) AS yearID,
+					ifnull(monthID, -1) AS monthID,
+					ifnull(dayID, -1) AS dayID,
+					ifnull(hourID, -1) AS hourID,
+					ifnull(zoneID, -1) AS zoneID,
+					ifnull(sourceTypeID, -1) AS sourceTypeID,
+					ifnull(regClassID, -1) AS regClassID,
+					ifnull(SCC, -1) AS SCC,
+					ifnull(fuelTypeID, -1) AS fuelTypeID,
+					ifnull(modelYearID, -1) AS modelYearID,
+					ifnull(startsPerVehicle, -1) AS startsPerVehicle
+					FROM  `
+
 	default:
-		fmt.Println("unknown table selection")
+		fmt.Println("unknown table selection inside getOneRow")
 	}
 
 	// put sql statement together and select one row
@@ -195,19 +307,82 @@ func getOneRow(db *sql.DB, dbSelection string, tableSelection string) (Movesoutp
 			}
 		}
 	case "rateperdistance":
-		fmt.Println("rateperdistance table selection")
+		// Loop through each column, using Scan to assign column data to struct fields.
+		for rows.Next() {
+			rows.Scan()
+			if err != nil {
+				panic(err) // Error related to the scan
+			}
+			if err = rows.Err(); err != nil {
+				panic(err) // Error related to the iteration of rows
+			}
+		}
 	case "rateperhour":
-		fmt.Println("rateperhour table selection")
+		// Loop through each column, using Scan to assign column data to struct fields.
+		for rows.Next() {
+			rows.Scan()
+			if err != nil {
+				panic(err) // Error related to the scan
+			}
+			if err = rows.Err(); err != nil {
+				panic(err) // Error related to the iteration of rows
+			}
+		}
 	case "rateperprofile":
-		fmt.Println("rateperprofile table selection")
+		// Loop through each column, using Scan to assign column data to struct fields.
+		for rows.Next() {
+			rows.Scan()
+			if err != nil {
+				panic(err) // Error related to the scan
+			}
+			if err = rows.Err(); err != nil {
+				panic(err) // Error related to the iteration of rows
+			}
+		}
 	case "rateperstart":
-		fmt.Println("rateperstart table selection")
+		// Loop through each column, using Scan to assign column data to struct fields.
+		for rows.Next() {
+			rows.Scan()
+			if err != nil {
+				panic(err) // Error related to the scan
+			}
+			if err = rows.Err(); err != nil {
+				panic(err) // Error related to the iteration of rows
+			}
+		}
 	case "ratepervehicle":
-		fmt.Println("ratepervehicle table selection")
+		// Loop through each column, using Scan to assign column data to struct fields.
+		for rows.Next() {
+			rows.Scan()
+			if err != nil {
+				panic(err) // Error related to the scan
+			}
+			if err = rows.Err(); err != nil {
+				panic(err) // Error related to the iteration of rows
+			}
+		}
 	case "startspervehicle":
-		fmt.Println("startspervehicle table selection")
+		// Loop through each column, using Scan to assign column data to struct fields.
+		for rows.Next() {
+			rows.Scan()
+			if err != nil {
+				panic(err) // Error related to the scan
+			}
+			if err = rows.Err(); err != nil {
+				panic(err) // Error related to the iteration of rows
+			}
+		}
 	default:
-		fmt.Println("unknown table selection")
+		// Loop through each column, using Scan to assign column data to struct fields.
+		for rows.Next() {
+			rows.Scan()
+			if err != nil {
+				panic(err) // Error related to the scan
+			}
+			if err = rows.Err(); err != nil {
+				panic(err) // Error related to the iteration of rows
+			}
+		}
 	}
 
 	return movesout, nil
@@ -215,6 +390,7 @@ func getOneRow(db *sql.DB, dbSelection string, tableSelection string) (Movesoutp
 }
 
 func getWhiteList(con *sql.DB, dbSelection string, tableSelection string) ([]string, []bool) {
+	//TODO: need switch to split 7 possible table selection
 	moFieldNames := []string{"MOVESRunID", "iterationID", "yearID", "monthID", "dayID", "hourID", "stateID", "countyID",
 		"zoneID", "linkID", "pollutantID", "processID", "sourceTypeID", "regClassID", "fuelTypeID", "fuelSubTypeID",
 		"modelYearID", "roadTypeID", "SCC", "engTechID", "sectorID", "hpID", "emissionQuant"}
@@ -238,11 +414,14 @@ func getWhiteList(con *sql.DB, dbSelection string, tableSelection string) ([]str
 		} else if values.Field(i).Type() == reflect.TypeOf(3.14) {
 			fmt.Println("this is only for emissionQuant column, add it to whitelist \n", types.Field(i).Name, values.Field(i))
 			whiteList = append(whiteList, types.Field(i).Name)
+			// string to string, the MOVESScenarioID unfortunately can be a string :(
+		} else if values.Field(i).Type() == reflect.TypeOf("word") {
+			fmt.Println("found column with valid string value, add it to whitelist \n", types.Field(i).Name, values.Field(i))
+			whiteList = append(whiteList, types.Field(i).Name)
 		}
 	}
 
-	//else if values.Field(i).Type() == reflect.TypeOf(-1.0)
-	//get whitelist index in bool, length -1 because we don't take emissionQuant as filter button
+	//get whitelist index in bool, iteration length -1 times because we will always need the last column for all 7 output tables
 	//assign true for not null , false for null value
 	for i := 0; i < values.NumField()-1; i++ {
 		if values.Field(i).Int() != -1 {
@@ -255,7 +434,7 @@ func getWhiteList(con *sql.DB, dbSelection string, tableSelection string) ([]str
 			whiteListIndex = append(whiteListIndex, false)
 		}
 	}
-	// hard code the last column emissionQuant as true, always show
+	// hard code the last column  as true, always show
 	//whiteListIndex = append(whiteListIndex, true)
 
 	//loop through whiteListIndex, for these columns are not -1, check the count of distinct value = 1,

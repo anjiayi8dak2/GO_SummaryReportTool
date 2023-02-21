@@ -36,7 +36,7 @@ type Movesoutput struct {
 }
 
 type rateperdistance struct {
-	MOVESScenarioID int
+	MOVESScenarioID string
 	MOVESRunID      int
 	yearID          int
 	monthID         int
@@ -58,7 +58,7 @@ type rateperdistance struct {
 }
 
 type rateperhou struct {
-	MOVESScenarioID int
+	MOVESScenarioID string
 	MOVESRunID      int
 	yearID          int
 	monthID         int
@@ -79,7 +79,7 @@ type rateperhou struct {
 }
 
 type rateperprofile struct {
-	MOVESScenarioID      int
+	MOVESScenarioID      string
 	MOVESRunID           int
 	temperatureProfileID int
 	yearID               int
@@ -98,7 +98,7 @@ type rateperprofile struct {
 }
 
 type rateperstart struct {
-	MOVESScenarioID int
+	MOVESScenarioID string
 	MOVESRunID      int
 	yearID          int
 	monthID         int
@@ -118,7 +118,7 @@ type rateperstart struct {
 }
 
 type ratepervehicle struct {
-	MOVESScenarioID int
+	MOVESScenarioID string
 	MOVESRunID      int
 	yearID          int
 	monthID         int
@@ -138,7 +138,7 @@ type ratepervehicle struct {
 }
 
 type startpervehicle struct {
-	MOVESScenarioID  int
+	MOVESScenarioID  string
 	MOVESRunID       int
 	yearID           int
 	monthID          int
