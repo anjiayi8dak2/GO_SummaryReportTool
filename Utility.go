@@ -47,11 +47,8 @@ func makeWindowTwo(a fyne.App, queryResult [][]string, db *sql.DB, dbSelection s
 	window2.Resize(fyne.NewSize(1000, 800))
 
 	//TODO: This is the message tab on top of screen, should update this text on the fly
-
-	dummyToolBarString_Where := fmt.Sprint(dbSelection)      //test some random variable print in the label, maybe update later somewhere
-	dummyToolBarString_GroupBy := fmt.Sprint(tableSelection) //test some random variable print in the label, maybe update later somewhere
-	dummyToolBarString := "Filters: " + dummyToolBarString_Where + "Aggregated by: " + dummyToolBarString_GroupBy
-	dummyLable := widget.NewLabel(dummyToolBarString)
+	//default display for DB and Table selection
+	ToolbarLabel := widget.NewLabel("DB Selection: " + dbSelection + "Table Selection: " + tableSelection)
 
 	toolbar := widget.NewToolbar(
 		widget.NewToolbarAction(theme.ViewRefreshIcon(), func() { //update
@@ -116,8 +113,7 @@ func makeWindowTwo(a fyne.App, queryResult [][]string, db *sql.DB, dbSelection s
 		}),
 		widget.NewToolbarSpacer(),
 		//TODO: the text space on the toolbar, to show what filtered has applied and/or aggregated by
-		//dummyLable:= widget.NewLabel(dummyToolBarString),
-		dummyLable,
+		ToolbarLabel,
 	)
 
 	tableData := widget.NewTable(
@@ -215,9 +211,6 @@ func makeWindowTwo(a fyne.App, queryResult [][]string, db *sql.DB, dbSelection s
 
 		fmt.Println("printing the WHERE clause")
 		fmt.Println(whereClause)
-		//test update dummy toolbar label on the fly
-		dummyToolBarString_Where = whereClause
-		dummyLable.SetText("this is updated dummy lable")
 
 		//TODO: enter GROUP BY claus
 		// if there is 1 item is checked, have GROUP BY xxx
@@ -260,6 +253,7 @@ func makeWindowTwo(a fyne.App, queryResult [][]string, db *sql.DB, dbSelection s
 		queryResult, err = getQueryResult(db, dbSelection, tableSelection, columnSelection, whereClause, groupbyClause)
 		fmt.Println("printing error query result WHERE clause")
 		fmt.Println(err)
+		updateToolbarMessage(ToolbarLabel, whereClause, groupbyClause)
 
 		//dialog box pop out warning for no result query
 		if len(queryResult) < 2 {
@@ -411,4 +405,10 @@ func csvExport(data [][]string) error {
 		}
 	}
 	return nil
+}
+
+func updateToolbarMessage(l *widget.Label, where string, group string) {
+	var message string
+	message = "Filters: " + where + "Aggregated by : " + group
+	l.SetText(message)
 }
