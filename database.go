@@ -118,7 +118,7 @@ func getQueryResult(db *sql.DB, dbSelection string, tableSelection string, white
 }
 
 // go-sql driver does not read null value, therefore we use -1 as an indicator for the null value
-func getOneRow(db *sql.DB, dbSelection string, tableSelection string) (Movesoutput, error) {
+func getOneRow(db *sql.DB, dbSelection string, tableSelection string) (interface{}, error) {
 	var ifNullSQL string
 	// there should be a smart way to do it, but I could not find any. stupid but works :(
 	// editing SELECT clause sql statement depends on which table got selected
@@ -151,6 +151,7 @@ func getOneRow(db *sql.DB, dbSelection string, tableSelection string) (Movesoutp
 					FROM `
 
 	case "rateperdistance":
+		fmt.Println("I AM INSIDE RATE PER DISTANCE")
 		ifNullSQL = `SELECT  
 					ifnull(MOVESScenarioID, -1) AS MOVESScenarioID,
 					ifnull(MOVESRunID, -1) AS MOVESRunID,
@@ -276,29 +277,31 @@ func getOneRow(db *sql.DB, dbSelection string, tableSelection string) (Movesoutp
 
 	default:
 		fmt.Println("unknown table selection inside getOneRow")
+		panic("unknown table selection inside getOneRow")
 	}
 
 	// put sql statement together and select one row
 	sql := ifNullSQL + dbSelection + "." + tableSelection + " LIMIT 1;"
-	var movesout Movesoutput
 	rows, err := db.Query(sql)
 	if err != nil {
 		panic(err)
-		return movesout, err
+		return nil, err
 	}
 	defer rows.Close()
 
-	//oh shit here we go again,
+	// TODO: depends on the table selection string value, create different instance of the struct,
+	// then scan the query result into struct specific field for next steps
 	switch tableSelection {
 	case "movesoutput":
+		var output Movesoutput
 		// Loop through each column, using Scan to assign column data to struct fields.
 		for rows.Next() {
-			rows.Scan(&movesout.MOVESRunID, &movesout.iterationID, &movesout.yearID,
-				&movesout.monthID, &movesout.dayID, &movesout.hourID, &movesout.stateID,
-				&movesout.countyID, &movesout.zoneID, &movesout.linkID, &movesout.pollutantID,
-				&movesout.processID, &movesout.sourceTypeID, &movesout.regClassID, &movesout.fuelTypeID,
-				&movesout.fuelSubTypeID, &movesout.modelYearID, &movesout.roadTypeID, &movesout.SCC,
-				&movesout.engTechID, &movesout.sectorID, &movesout.hpID, &movesout.emissionQuant)
+			rows.Scan(&output.MOVESRunID, &output.iterationID, &output.yearID,
+				&output.monthID, &output.dayID, &output.hourID, &output.stateID,
+				&output.countyID, &output.zoneID, &output.linkID, &output.pollutantID,
+				&output.processID, &output.sourceTypeID, &output.regClassID, &output.fuelTypeID,
+				&output.fuelSubTypeID, &output.modelYearID, &output.roadTypeID, &output.SCC,
+				&output.engTechID, &output.sectorID, &output.hpID, &output.emissionQuant)
 			if err != nil {
 				panic(err) // Error related to the scan
 			}
@@ -306,10 +309,15 @@ func getOneRow(db *sql.DB, dbSelection string, tableSelection string) (Movesoutp
 				panic(err) // Error related to the iteration of rows
 			}
 		}
+		return output, nil
 	case "rateperdistance":
+		var output Rateperdistance
 		// Loop through each column, using Scan to assign column data to struct fields.
 		for rows.Next() {
-			rows.Scan()
+			rows.Scan(&output.MOVESScenarioID, &output.MOVESRunID, &output.yearID, &output.monthID,
+				&output.dayID, &output.hourID, &output.linkID, &output.pollutantID, &output.processID,
+				&output.sourceTypeID, &output.regClassID, &output.SCC, &output.fuelTypeID, &output.modelYearID,
+				&output.roadTypeID, &output.avgSpeedBinID, &output.temperature, &output.relHumidity, &output.ratePerDistance)
 			if err != nil {
 				panic(err) // Error related to the scan
 			}
@@ -317,10 +325,16 @@ func getOneRow(db *sql.DB, dbSelection string, tableSelection string) (Movesoutp
 				panic(err) // Error related to the iteration of rows
 			}
 		}
+		return output, nil
 	case "rateperhour":
+		var output Rateperhour
 		// Loop through each column, using Scan to assign column data to struct fields.
 		for rows.Next() {
-			rows.Scan()
+			rows.Scan(&output.MOVESScenarioID, &output.MOVESRunID, &output.yearID, &output.monthID,
+				&output.dayID, &output.hourID, &output.linkID, &output.pollutantID,
+				&output.processID, &output.sourceTypeID, &output.regClassID, &output.SCC,
+				&output.fuelTypeID, &output.modelYearID, &output.roadTypeID, &output.temperature,
+				&output.relHumidity, &output.ratePerHour)
 			if err != nil {
 				panic(err) // Error related to the scan
 			}
@@ -328,10 +342,16 @@ func getOneRow(db *sql.DB, dbSelection string, tableSelection string) (Movesoutp
 				panic(err) // Error related to the iteration of rows
 			}
 		}
+		return output, nil
 	case "rateperprofile":
+		var output Rateperprofile
 		// Loop through each column, using Scan to assign column data to struct fields.
 		for rows.Next() {
-			rows.Scan()
+			rows.Scan(&output.MOVESScenarioID, &output.MOVESRunID, &output.temperatureProfileID,
+				&output.yearID, &output.dayID, &output.hourID, &output.pollutantID,
+				&output.processID, &output.sourceTypeID, &output.regClassID, &output.SCC,
+				&output.fuelTypeID, &output.modelYearID, &output.temperature, &output.relHumidity,
+				&output.ratePerVehicle)
 			if err != nil {
 				panic(err) // Error related to the scan
 			}
@@ -339,10 +359,15 @@ func getOneRow(db *sql.DB, dbSelection string, tableSelection string) (Movesoutp
 				panic(err) // Error related to the iteration of rows
 			}
 		}
+		return output, nil
 	case "rateperstart":
+		var output Rateperstart
 		// Loop through each column, using Scan to assign column data to struct fields.
 		for rows.Next() {
-			rows.Scan()
+			rows.Scan(&output.MOVESScenarioID, &output.MOVESRunID, &output.yearID, &output.monthID, &output.dayID,
+				&output.hourID, &output.zoneID, &output.sourceTypeID, &output.regClassID, &output.SCC,
+				&output.fuelTypeID, &output.modelYearID, &output.pollutantID, &output.processID, &output.temperature,
+				&output.relHumidity, &output.ratePerStart)
 			if err != nil {
 				panic(err) // Error related to the scan
 			}
@@ -350,10 +375,14 @@ func getOneRow(db *sql.DB, dbSelection string, tableSelection string) (Movesoutp
 				panic(err) // Error related to the iteration of rows
 			}
 		}
+		return output, nil
 	case "ratepervehicle":
+		var output Ratepervehicle
 		// Loop through each column, using Scan to assign column data to struct fields.
 		for rows.Next() {
-			rows.Scan()
+			rows.Scan(&output.MOVESRunID, &output.yearID, &output.monthID, &output.dayID, &output.hourID, &output.zoneID,
+				&output.pollutantID, &output.processID, &output.sourceTypeID, &output.regClassID, &output.SCC, &output.fuelTypeID,
+				&output.modelYearID, &output.temperature, &output.relHumidity, &output.ratePerVehicle)
 			if err != nil {
 				panic(err) // Error related to the scan
 			}
@@ -361,10 +390,14 @@ func getOneRow(db *sql.DB, dbSelection string, tableSelection string) (Movesoutp
 				panic(err) // Error related to the iteration of rows
 			}
 		}
+		return output, nil
 	case "startspervehicle":
+		var output Startspervehicle
 		// Loop through each column, using Scan to assign column data to struct fields.
 		for rows.Next() {
-			rows.Scan()
+			rows.Scan(&output.MOVESScenarioID, &output.MOVESRunID, &output.yearID, &output.monthID, &output.dayID,
+				&output.hourID, &output.zoneID, &output.sourceTypeID, &output.regClassID, &output.SCC,
+				&output.fuelTypeID, &output.modelYearID, &output.startsPerVehicle)
 			if err != nil {
 				panic(err) // Error related to the scan
 			}
@@ -372,28 +405,51 @@ func getOneRow(db *sql.DB, dbSelection string, tableSelection string) (Movesoutp
 				panic(err) // Error related to the iteration of rows
 			}
 		}
+		return output, nil
 	default:
-		// Loop through each column, using Scan to assign column data to struct fields.
-		for rows.Next() {
-			rows.Scan()
-			if err != nil {
-				panic(err) // Error related to the scan
-			}
-			if err = rows.Err(); err != nil {
-				panic(err) // Error related to the iteration of rows
-			}
-		}
+		//unknow selection
+		panic("unknow selection found in the table selection drop down box")
+		break
 	}
 
-	return movesout, nil
+	//should not run to here
+	return nil, nil
 
 }
 
 func getWhiteList(con *sql.DB, dbSelection string, tableSelection string) ([]string, []bool) {
 	//TODO: need switch to split 7 possible table selection
-	moFieldNames := []string{"MOVESRunID", "iterationID", "yearID", "monthID", "dayID", "hourID", "stateID", "countyID",
-		"zoneID", "linkID", "pollutantID", "processID", "sourceTypeID", "regClassID", "fuelTypeID", "fuelSubTypeID",
-		"modelYearID", "roadTypeID", "SCC", "engTechID", "sectorID", "hpID", "emissionQuant"}
+	var fieldNames []string
+
+	switch tableSelection {
+	case "movesoutput":
+		fieldNames = []string{"MOVESRunID", "iterationID", "yearID", "monthID", "dayID", "hourID", "stateID", "countyID",
+			"zoneID", "linkID", "pollutantID", "processID", "sourceTypeID", "regClassID", "fuelTypeID", "fuelSubTypeID",
+			"modelYearID", "roadTypeID", "SCC", "engTechID", "sectorID", "hpID", "emissionQuant"}
+	case "rateperdistance":
+		fieldNames = []string{"MOVESScenarioID", "MOVESRunID", "yearID", "monthID", "dayID", "hourID", "linkID", "pollutantID",
+			"processID", "sourceTypeID", "regClassID", "SCC", "fuelTypeID", "modelYearID", "roadTypeID", "avgSpeedBinID",
+			"temperature", "relHumidity", "ratePerDistance"}
+	case "rateperhour":
+		fieldNames = []string{"MOVESScenarioID", "MOVESRunID", "yearID", "monthID", "dayID", "hourID", "linkID", "pollutantID",
+			"processID", "sourceTypeID", "regClassID", "SCC", "fuelTypeID", "modelYearID", "roadTypeID", "temperature", "relHumidity", "ratePerHour"}
+	case "rateperprofile":
+		fieldNames = []string{"MOVESScenarioID", "MOVESRunID", "temperatureProfileID", "yearID", "dayID", "hourID", "pollutantID",
+			"processID", "sourceTypeID", "regClassID", "SCC", "fuelTypeID", "modelYearID", "temperature", "relHumidity", "ratePerVehicle"}
+	case "rateperstart":
+		fieldNames = []string{"MOVESScenarioID", "MOVESRunID", "yearID", "monthID", "dayID", "hourID", "zoneID", "sourceTypeID",
+			"regClassID", "SCC", "fuelTypeID", "modelYearID", "pollutantID", "processID", "temperature", "relHumidity", "ratePerStart"}
+	case "ratepervehicle":
+		fieldNames = []string{"MOVESScenarioID", "MOVESRunID", "yearID", "monthID", "dayID", "hourID", "zoneID", "pollutantID",
+			"processID", "sourceTypeID", "regClassID", "SCC", "fuelTypeID", "modelYearID", "temperature", "relHumidity", "ratePerVehicle"}
+	case "startspervehicle":
+		fieldNames = []string{"MOVESScenarioID", "MOVESRunID", "yearID", "monthID", "dayID", "hourID", "zoneID",
+			"sourceTypeID", "regClassID", "SCC", "fuelTypeID", "modelYearID", "startsPerVehicle"}
+	default:
+		panic("unknown table selection ")
+
+	}
+
 	oneRowResult, _ := getOneRow(con, dbSelection, tableSelection)
 
 	values := reflect.ValueOf(oneRowResult)
@@ -412,7 +468,7 @@ func getWhiteList(con *sql.DB, dbSelection string, tableSelection string) ([]str
 			}
 			// float to float, this is only for emissionQuant column, only emissionQuant column has float
 		} else if values.Field(i).Type() == reflect.TypeOf(3.14) {
-			fmt.Println("this is only for emissionQuant column, add it to whitelist \n", types.Field(i).Name, values.Field(i))
+			fmt.Println("found column with valid float value, add it to whitelist  \n", types.Field(i).Name, values.Field(i))
 			whiteList = append(whiteList, types.Field(i).Name)
 			// string to string, the MOVESScenarioID unfortunately can be a string :(
 		} else if values.Field(i).Type() == reflect.TypeOf("word") {
@@ -442,12 +498,12 @@ func getWhiteList(con *sql.DB, dbSelection string, tableSelection string) ([]str
 	for i := 0; i < len(whiteListIndex)-1; i++ { // -1 because the last column emissionQuant should always show
 		if whiteListIndex[i] { //if the column value is not null
 			//get distinct query, and see the count or len(returned slice)
-			distinctResult := getDistinct(con, dbSelection, tableSelection, moFieldNames[i])
+			distinctResult := getDistinct(con, dbSelection, tableSelection, fieldNames[i])
 			if len(distinctResult) <= 1 { // if the returned slice only has 1 distinct value, mark the index to false
 				whiteListIndex[i] = false
-				fmt.Print(" found column that only has 1 distinct value ", moFieldNames[i])
-				fmt.Print(" printing updated whiteList v% v%", moFieldNames[i], whiteListIndex[i])
-				whiteList = RemoveElementFromSlice(whiteList, moFieldNames[i]) // call func that remove #the column that only have 1 distinct value as well
+				fmt.Print(" found column that only has 1 distinct value ", fieldNames[i])
+				fmt.Print(" printing updated whiteList v% v%", fieldNames[i], whiteListIndex[i])
+				whiteList = RemoveElementFromSlice(whiteList, fieldNames[i]) // call func that remove #the column that only have 1 distinct value as well
 			}
 		}
 	}

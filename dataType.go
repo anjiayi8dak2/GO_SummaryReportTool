@@ -35,7 +35,7 @@ type Movesoutput struct {
 	emissionQuant float64
 }
 
-type rateperdistance struct {
+type Rateperdistance struct {
 	MOVESScenarioID string
 	MOVESRunID      int
 	yearID          int
@@ -57,7 +57,7 @@ type rateperdistance struct {
 	ratePerDistance float64
 }
 
-type rateperhou struct {
+type Rateperhour struct {
 	MOVESScenarioID string
 	MOVESRunID      int
 	yearID          int
@@ -78,7 +78,7 @@ type rateperhou struct {
 	ratePerHour     float64
 }
 
-type rateperprofile struct {
+type Rateperprofile struct {
 	MOVESScenarioID      string
 	MOVESRunID           int
 	temperatureProfileID int
@@ -97,7 +97,7 @@ type rateperprofile struct {
 	ratePerVehicle       float64
 }
 
-type rateperstart struct {
+type Rateperstart struct {
 	MOVESScenarioID string
 	MOVESRunID      int
 	yearID          int
@@ -117,7 +117,7 @@ type rateperstart struct {
 	ratePerStart    float64
 }
 
-type ratepervehicle struct {
+type Ratepervehicle struct {
 	MOVESScenarioID string
 	MOVESRunID      int
 	yearID          int
@@ -137,7 +137,7 @@ type ratepervehicle struct {
 	ratePerVehicle  float64
 }
 
-type startpervehicle struct {
+type Startspervehicle struct {
 	MOVESScenarioID  string
 	MOVESRunID       int
 	yearID           int
