@@ -188,8 +188,6 @@ func makeWindowTwo(a fyne.App, queryResult [][]string, db *sql.DB, dbSelection s
 		innerContainer.Add(sectorIDContainer)
 		innerContainer.Add(hpIDContainer)
 	case "rateperdistance":
-		//MOVESScenarioID, MOVESRunID, yearID, monthID, dayID, hourID, linkID, pollutantID, processID, sourceTypeID,
-		//regClassID, SCC, fuelTypeID, modelYearID, roadTypeID, avgSpeedBinID, temperature, relHumidity, ratePerDistance
 		MOVESScenarioIDContainer := createNewCheckBoxGroup(db, "MOVESScenarioID", dbSelection, tableSelection, filter)
 		MOVESRunIDContainer := createNewCheckBoxGroup(db, "MOVESRunID", dbSelection, tableSelection, filter)
 		yearIDContainer := createNewCheckBoxGroup(db, "yearID", dbSelection, tableSelection, filter)
@@ -225,21 +223,163 @@ func makeWindowTwo(a fyne.App, queryResult [][]string, db *sql.DB, dbSelection s
 		innerContainer.Add(avgSpeedBinIDContainer)
 
 	case "rateperhour":
-		//123
+		MOVESScenarioIDContainer := createNewCheckBoxGroup(db, "MOVESScenarioID", dbSelection, tableSelection, filter)
+		MOVESRunIDContainer := createNewCheckBoxGroup(db, "MOVESRunID", dbSelection, tableSelection, filter)
+		yearIDContainer := createNewCheckBoxGroup(db, "yearID", dbSelection, tableSelection, filter)
+		monthIDContainer := createNewCheckBoxGroup(db, "monthID", dbSelection, tableSelection, filter)
+		dayIDContainer := createNewCheckBoxGroup(db, "dayID", dbSelection, tableSelection, filter)
+		hourIDContainer := createNewCheckBoxGroup(db, "hourID", dbSelection, tableSelection, filter)
+		linkIDContainer := createNewCheckBoxGroup(db, "linkID", dbSelection, tableSelection, filter)
+		pollutantIDContainer := createNewCheckBoxGroup(db, "pollutantID", dbSelection, tableSelection, filter)
+		processIDContainer := createNewCheckBoxGroup(db, "processID", dbSelection, tableSelection, filter)
+		sourceTypeIDContainer := createNewCheckBoxGroup(db, "sourceTypeID", dbSelection, tableSelection, filter)
+		regClassIDContainer := createNewCheckBoxGroup(db, "regClassID", dbSelection, tableSelection, filter)
+		SCCContainer := createNewCheckBoxGroup(db, "SCC", dbSelection, tableSelection, filter)
+		fuelTypeIDContainer := createNewCheckBoxGroup(db, "fuelTypeID", dbSelection, tableSelection, filter)
+		modelYearIDContainer := createNewCheckBoxGroup(db, "modelYearID", dbSelection, tableSelection, filter)
+		roadTypeIDContainer := createNewCheckBoxGroup(db, "roadTypeID", dbSelection, tableSelection, filter)
+
+		innerContainer.Add(MOVESScenarioIDContainer)
+		innerContainer.Add(MOVESRunIDContainer)
+		innerContainer.Add(yearIDContainer)
+		innerContainer.Add(monthIDContainer)
+		innerContainer.Add(dayIDContainer)
+		innerContainer.Add(hourIDContainer)
+		innerContainer.Add(linkIDContainer)
+		innerContainer.Add(pollutantIDContainer)
+		innerContainer.Add(processIDContainer)
+		innerContainer.Add(sourceTypeIDContainer)
+		innerContainer.Add(regClassIDContainer)
+		innerContainer.Add(SCCContainer)
+		innerContainer.Add(fuelTypeIDContainer)
+		innerContainer.Add(modelYearIDContainer)
+		innerContainer.Add(roadTypeIDContainer)
+
 	case "rateperprofile":
-		//123
+		MOVESScenarioIDContainer := createNewCheckBoxGroup(db, "MOVESScenarioID", dbSelection, tableSelection, filter)
+		MOVESRunIDContainer := createNewCheckBoxGroup(db, "MOVESRunID", dbSelection, tableSelection, filter)
+		temperatureProfileIDContainer := createNewCheckBoxGroup(db, "temperatureProfileID", dbSelection, tableSelection, filter)
+		yearIDContainer := createNewCheckBoxGroup(db, "yearID", dbSelection, tableSelection, filter)
+		dayIDContainer := createNewCheckBoxGroup(db, "dayID", dbSelection, tableSelection, filter)
+		hourIDContainer := createNewCheckBoxGroup(db, "hourID", dbSelection, tableSelection, filter)
+		pollutantIDContainer := createNewCheckBoxGroup(db, "pollutantID", dbSelection, tableSelection, filter)
+		processIDContainer := createNewCheckBoxGroup(db, "processID", dbSelection, tableSelection, filter)
+		sourceTypeIDContainer := createNewCheckBoxGroup(db, "sourceTypeID", dbSelection, tableSelection, filter)
+		regClassIDContainer := createNewCheckBoxGroup(db, "regClassID", dbSelection, tableSelection, filter)
+		SCCContainer := createNewCheckBoxGroup(db, "SCC", dbSelection, tableSelection, filter)
+		fuelTypeIDContainer := createNewCheckBoxGroup(db, "fuelTypeID", dbSelection, tableSelection, filter)
+		modelYearIDContainer := createNewCheckBoxGroup(db, "modelYearID", dbSelection, tableSelection, filter)
+
+		innerContainer.Add(MOVESScenarioIDContainer)
+		innerContainer.Add(MOVESRunIDContainer)
+		innerContainer.Add(temperatureProfileIDContainer)
+		innerContainer.Add(yearIDContainer)
+		innerContainer.Add(dayIDContainer)
+		innerContainer.Add(hourIDContainer)
+		innerContainer.Add(pollutantIDContainer)
+		innerContainer.Add(processIDContainer)
+		innerContainer.Add(sourceTypeIDContainer)
+		innerContainer.Add(regClassIDContainer)
+		innerContainer.Add(SCCContainer)
+		innerContainer.Add(fuelTypeIDContainer)
+		innerContainer.Add(modelYearIDContainer)
+
 	case "rateperstart":
+		MOVESScenarioIDContainer := createNewCheckBoxGroup(db, "MOVESScenarioID", dbSelection, tableSelection, filter)
+		MOVESRunIDContainer := createNewCheckBoxGroup(db, "MOVESRunID", dbSelection, tableSelection, filter)
+		yearIDContainer := createNewCheckBoxGroup(db, "yearID", dbSelection, tableSelection, filter)
+		monthIDContainer := createNewCheckBoxGroup(db, "monthID", dbSelection, tableSelection, filter)
+		dayIDContainer := createNewCheckBoxGroup(db, "dayID", dbSelection, tableSelection, filter)
+		hourIDContainer := createNewCheckBoxGroup(db, "hourID", dbSelection, tableSelection, filter)
+		zoneIDContainer := createNewCheckBoxGroup(db, "zoneID", dbSelection, tableSelection, filter)
+		sourceTypeIDContainer := createNewCheckBoxGroup(db, "sourceTypeID", dbSelection, tableSelection, filter)
+		regClassIDContainer := createNewCheckBoxGroup(db, "regClassID", dbSelection, tableSelection, filter)
+		SCCContainer := createNewCheckBoxGroup(db, "SCC", dbSelection, tableSelection, filter)
+		fuelTypeIDContainer := createNewCheckBoxGroup(db, "fuelTypeID", dbSelection, tableSelection, filter)
+		modelYearIDContainer := createNewCheckBoxGroup(db, "modelYearID", dbSelection, tableSelection, filter)
+		pollutantIDContainer := createNewCheckBoxGroup(db, "pollutantID", dbSelection, tableSelection, filter)
+		processIDContainer := createNewCheckBoxGroup(db, "processID", dbSelection, tableSelection, filter)
+
+		innerContainer.Add(MOVESScenarioIDContainer)
+		innerContainer.Add(MOVESRunIDContainer)
+		innerContainer.Add(yearIDContainer)
+		innerContainer.Add(monthIDContainer)
+		innerContainer.Add(dayIDContainer)
+		innerContainer.Add(hourIDContainer)
+		innerContainer.Add(zoneIDContainer)
+		innerContainer.Add(sourceTypeIDContainer)
+		innerContainer.Add(regClassIDContainer)
+		innerContainer.Add(SCCContainer)
+		innerContainer.Add(fuelTypeIDContainer)
+		innerContainer.Add(modelYearIDContainer)
+		innerContainer.Add(pollutantIDContainer)
+		innerContainer.Add(processIDContainer)
+
 	case "ratepervehicle":
-		//
+		//, , , , , , , , , , , , , , temperature, relHumidity, ratePerVehicle
+		MOVESScenarioIDContainer := createNewCheckBoxGroup(db, "MOVESScenarioID", dbSelection, tableSelection, filter)
+		MOVESRunIDContainer := createNewCheckBoxGroup(db, "MOVESRunID", dbSelection, tableSelection, filter)
+		yearIDContainer := createNewCheckBoxGroup(db, "yearID", dbSelection, tableSelection, filter)
+		monthIDContainer := createNewCheckBoxGroup(db, "monthID", dbSelection, tableSelection, filter)
+		dayIDContainer := createNewCheckBoxGroup(db, "dayID", dbSelection, tableSelection, filter)
+		hourIDContainer := createNewCheckBoxGroup(db, "hourID", dbSelection, tableSelection, filter)
+		zoneIDContainer := createNewCheckBoxGroup(db, "zoneID", dbSelection, tableSelection, filter)
+		pollutantIDContainer := createNewCheckBoxGroup(db, "pollutantID", dbSelection, tableSelection, filter)
+		processIDContainer := createNewCheckBoxGroup(db, "processID", dbSelection, tableSelection, filter)
+		sourceTypeIDContainer := createNewCheckBoxGroup(db, "sourceTypeID", dbSelection, tableSelection, filter)
+		regClassIDContainer := createNewCheckBoxGroup(db, "regClassID", dbSelection, tableSelection, filter)
+		SCCContainer := createNewCheckBoxGroup(db, "SCC", dbSelection, tableSelection, filter)
+		fuelTypeIDContainer := createNewCheckBoxGroup(db, "fuelTypeID", dbSelection, tableSelection, filter)
+		modelYearIDContainer := createNewCheckBoxGroup(db, "modelYearID", dbSelection, tableSelection, filter)
+
+		innerContainer.Add(MOVESScenarioIDContainer)
+		innerContainer.Add(MOVESRunIDContainer)
+		innerContainer.Add(yearIDContainer)
+		innerContainer.Add(monthIDContainer)
+		innerContainer.Add(dayIDContainer)
+		innerContainer.Add(hourIDContainer)
+		innerContainer.Add(zoneIDContainer)
+		innerContainer.Add(pollutantIDContainer)
+		innerContainer.Add(processIDContainer)
+		innerContainer.Add(sourceTypeIDContainer)
+		innerContainer.Add(regClassIDContainer)
+		innerContainer.Add(SCCContainer)
+		innerContainer.Add(fuelTypeIDContainer)
+		innerContainer.Add(modelYearIDContainer)
+
 	case "startspervehicle":
+		MOVESScenarioIDContainer := createNewCheckBoxGroup(db, "MOVESScenarioID", dbSelection, tableSelection, filter)
+		MOVESRunIDContainer := createNewCheckBoxGroup(db, "MOVESRunID", dbSelection, tableSelection, filter)
+		yearIDContainer := createNewCheckBoxGroup(db, "yearID", dbSelection, tableSelection, filter)
+		monthIDContainer := createNewCheckBoxGroup(db, "monthID", dbSelection, tableSelection, filter)
+		dayIDContainer := createNewCheckBoxGroup(db, "dayID", dbSelection, tableSelection, filter)
+		hourIDContainer := createNewCheckBoxGroup(db, "hourID", dbSelection, tableSelection, filter)
+		zoneIDContainer := createNewCheckBoxGroup(db, "zoneID", dbSelection, tableSelection, filter)
+		sourceTypeIDContainer := createNewCheckBoxGroup(db, "sourceTypeID", dbSelection, tableSelection, filter)
+		regClassIDContainer := createNewCheckBoxGroup(db, "regClassID", dbSelection, tableSelection, filter)
+		SCCContainer := createNewCheckBoxGroup(db, "SCC", dbSelection, tableSelection, filter)
+		fuelTypeIDContainer := createNewCheckBoxGroup(db, "fuelTypeID", dbSelection, tableSelection, filter)
+		modelYearIDContainer := createNewCheckBoxGroup(db, "modelYearID", dbSelection, tableSelection, filter)
+
+		innerContainer.Add(MOVESScenarioIDContainer)
+		innerContainer.Add(MOVESRunIDContainer)
+		innerContainer.Add(yearIDContainer)
+		innerContainer.Add(monthIDContainer)
+		innerContainer.Add(dayIDContainer)
+		innerContainer.Add(hourIDContainer)
+		innerContainer.Add(zoneIDContainer)
+		innerContainer.Add(sourceTypeIDContainer)
+		innerContainer.Add(regClassIDContainer)
+		innerContainer.Add(SCCContainer)
+		innerContainer.Add(fuelTypeIDContainer)
+		innerContainer.Add(modelYearIDContainer)
 	default:
 		//unknown table selection
 	}
 
 	//aggregation container
-
 	aggregationContainer := container.NewVBox()
-	if tableSelection == "movesoutput" {
+	if tableSelection == "movesoutput" || tableSelection == "startspervehicle" { //these two table have 1 numeric column in the end that shows result
 		aggregationContainer = createNewAggregationGroup(whiteList, groupBy, 1)
 	} else {
 		aggregationContainer = createNewAggregationGroup(whiteList, groupBy, 3)
@@ -309,7 +449,6 @@ func makeWindowTwo(a fyne.App, queryResult [][]string, db *sql.DB, dbSelection s
 			groupbyClause = ""
 			columnSelection = whiteList
 		} else if len(groupBy["Aggregation"]) >= 1 { //if there is anything in the group by map
-			//update SELECT clause PLUS sum of emissionQuant
 			//update GROUP BY
 			//loop through the group by map, and copy selected box into a temp slice
 			for _, value := range groupBy["Aggregation"] {
@@ -318,9 +457,7 @@ func makeWindowTwo(a fyne.App, queryResult [][]string, db *sql.DB, dbSelection s
 				fmt.Println("printing updated group by slice", groupbySelection)
 			}
 
-			//pass the selected box name, PLUS sum(emissionQuant) AS emissionQuant) in the end of select statement
-			//since columnSelection is []string, just throw the "sum(emissionQuant) AS emissionQuant)" in, as an element
-			//getQuery will handle comma separate format later
+			//update SELECT clause PLUS sum of emissionQuant or acivity or rates
 			columnSelection = groupbySelection
 			//TODO: switch here, depends on different table, sum activity? emissionQuant? or rate, how to sum rate, does it make sense? maybe average
 			//TODO: add activity
@@ -328,10 +465,22 @@ func makeWindowTwo(a fyne.App, queryResult [][]string, db *sql.DB, dbSelection s
 				columnSelection = append(columnSelection, "sum(emissionQuant) ")
 			} else if tableSelection == "startspervehicle" {
 				columnSelection = append(columnSelection, "ROUND(avg(startsPerVehicle),2) AS average_startsPerVehicle ")
-			} else {
+			} else { //this should include "rateperdistance", "rateperhour", "rateperprofile", "rateperstart", and "ratepervehicle", because they all have temperature and relHumidity columns
 				columnSelection = append(columnSelection, "ROUND( avg(temperature),2) AS average_temperature ")
 				columnSelection = append(columnSelection, "ROUND( avg(relHumidity) , 2)AS average_relHumidity ")
-				columnSelection = append(columnSelection, "ROUND( avg(rateperdistance) , 2)AS average_rateperdistance ")
+				//then add the last column rateperxxx to the end
+				switch tableSelection {
+				case "rateperdistance":
+					columnSelection = append(columnSelection, "ROUND( avg(rateperdistance) , 2)AS average_rateperdistance ")
+				case "rateperhour":
+					columnSelection = append(columnSelection, "ROUND( avg(rateperhour) , 2)AS average_rateperhour ")
+				case "rateperprofile":
+					columnSelection = append(columnSelection, "ROUND( avg(rateperprofile) , 2)AS average_rateperprofile ")
+				case "rateperstart":
+					columnSelection = append(columnSelection, "ROUND( avg(rateperstart) , 2)AS average_rateperstart ")
+				case "ratepervehicle":
+					columnSelection = append(columnSelection, "ROUND( avg(ratepervehicle) , 2)AS average_ratepervehicle ")
+				}
 			}
 
 			//pass the selected box name to GROUP BY clause, convert list of name into comma seperated format

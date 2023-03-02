@@ -496,10 +496,8 @@ func getWhiteList(con *sql.DB, dbSelection string, tableSelection string) ([]str
 	}
 
 	var numericColumnsInTheEnd int
-	if tableSelection == "movesoutput" {
+	if tableSelection == "movesoutput" || tableSelection == "startspervehicle" {
 		numericColumnsInTheEnd = 1
-	} else if tableSelection == "startspervehicle" {
-		numericColumnsInTheEnd = 2
 	} else {
 		numericColumnsInTheEnd = 3
 	}
