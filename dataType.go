@@ -8,6 +8,8 @@ import (
 	"math"
 )
 
+//TODO: add activity output
+
 // Movesoutput all the field in movesoutput table
 type Movesoutput struct {
 	MOVESRunID    int

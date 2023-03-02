@@ -466,7 +466,7 @@ func getWhiteList(con *sql.DB, dbSelection string, tableSelection string) ([]str
 				fmt.Println("found column with valid integer value, add it to whitelist \n", types.Field(i).Name, values.Field(i))
 				whiteList = append(whiteList, types.Field(i).Name)
 			}
-			// float to float, this is only for emissionQuant column, only emissionQuant column has float
+			// float to float
 		} else if values.Field(i).Type() == reflect.TypeOf(3.14) {
 			fmt.Println("found column with valid float value, add it to whitelist  \n", types.Field(i).Name, values.Field(i))
 			whiteList = append(whiteList, types.Field(i).Name)
@@ -493,29 +493,23 @@ func getWhiteList(con *sql.DB, dbSelection string, tableSelection string) ([]str
 			}
 		}
 
-		//if values.Field(i).Int() != -1 {
-		//	whiteListIndex = append(whiteListIndex, true)
-		//} else if values.Field(i).Int() == -1 {
-		//	whiteListIndex = append(whiteListIndex, false)
-		//} else if values.Field(i).String() != "-1" {
-		//	whiteListIndex = append(whiteListIndex, true)
-		//} else if values.Field(i).String() == "1" {
-		//	whiteListIndex = append(whiteListIndex, false)
-		//} else {
-		//	//catch? what else could be?
-		//	fmt.Println("found unknown type of -1 ")
-		//	panic("what else could be? after =-1, and != -1")
-		//	whiteListIndex = append(whiteListIndex, false)
-		//}
 	}
 
+	var numericColumnsInTheEnd int
+	if tableSelection == "movesoutput" {
+		numericColumnsInTheEnd = 1
+	} else if tableSelection == "startspervehicle" {
+		numericColumnsInTheEnd = 2
+	} else {
+		numericColumnsInTheEnd = 3
+	}
 	//loop through whiteListIndex, for these columns are not -1, check the count of distinct value = 1,
 	//for example if the MOVESRUNID only has 1, ignore it, there is no point to show them as both column or filter
-	for i := 0; i < len(whiteListIndex)-1; i++ { // -1 because the last column emissionQuant should always show
+	for i := 0; i < len(whiteListIndex)-numericColumnsInTheEnd; i++ { //loop to the position before numeric column such as emissionQuant/activity
 		if whiteListIndex[i] { //if the column value is not null
 			//get distinct query, and see the count or len(returned slice)
 			distinctResult := getDistinct(con, dbSelection, tableSelection, fieldNames[i])
-			if len(distinctResult) <= 1 { // if the returned slice only has 1 distinct value, mark the index to false
+			if len(distinctResult) <= 1 { // if the returned slice only has <= 1 distinct value, mark the index to false
 				whiteListIndex[i] = false
 				fmt.Print(" found column that only has 1 distinct value ", fieldNames[i])
 				fmt.Print(" printing updated whiteList v% v%", fieldNames[i], whiteListIndex[i])

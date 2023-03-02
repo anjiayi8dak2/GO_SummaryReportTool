@@ -131,38 +131,119 @@ func makeWindowTwo(a fyne.App, queryResult [][]string, db *sql.DB, dbSelection s
 			}
 		})
 
-	//map to hold movesoutput filters selection in checkbox group
-	moFilter := make(map[string][]string)
+	//TODO: switch here to split 7 table selections
+	//map to hold filters selection in checkbox group for where clause
+	filter := make(map[string][]string)
+	//map to hold group by check boxes selection for group by clause
+	groupBy := make(map[string][]string)
+	//container sections
+	innerContainer := container.NewVBox()
 
-	//fyne containers, create buttons for filters with checkbox selection saved in the map moFilter
-	MOVESRunIDContainer := createNewCheckBoxGroup(db, "MOVESRunID", dbSelection, tableSelection, moFilter)
-	iterationIDContainer := createNewCheckBoxGroup(db, "iterationID", dbSelection, tableSelection, moFilter)
-	yearIDContainer := createNewCheckBoxGroup(db, "yearID", dbSelection, tableSelection, moFilter)
-	monthIDContainer := createNewCheckBoxGroup(db, "monthID", dbSelection, tableSelection, moFilter)
-	dayIDContainer := createNewCheckBoxGroup(db, "dayID", dbSelection, tableSelection, moFilter)
-	hourIDContainer := createNewCheckBoxGroup(db, "hourID", dbSelection, tableSelection, moFilter)
-	stateIDContainer := createNewCheckBoxGroup(db, "stateID", dbSelection, tableSelection, moFilter)
-	countyIDContainer := createNewCheckBoxGroup(db, "countyID", dbSelection, tableSelection, moFilter)
-	zoneIDContainer := createNewCheckBoxGroup(db, "zoneID", dbSelection, tableSelection, moFilter)
-	linkIDContainer := createNewCheckBoxGroup(db, "linkID", dbSelection, tableSelection, moFilter)
-	pollutantContainer := createNewCheckBoxGroup(db, "pollutantID", dbSelection, tableSelection, moFilter)
-	processIDContainer := createNewCheckBoxGroup(db, "processID", dbSelection, tableSelection, moFilter)
-	sourceTypeIDContainer := createNewCheckBoxGroup(db, "sourceTypeID", dbSelection, tableSelection, moFilter)
-	regClassIDContainer := createNewCheckBoxGroup(db, "regClassID", dbSelection, tableSelection, moFilter)
-	fuelTypeIDContainer := createNewCheckBoxGroup(db, "fuelTypeID", dbSelection, tableSelection, moFilter)
-	fuelSubTypeIDContainer := createNewCheckBoxGroup(db, "fuelSubTypeID", dbSelection, tableSelection, moFilter)
-	modelYearContainerContainer := createNewCheckBoxGroup(db, "modelYearID", dbSelection, tableSelection, moFilter)
-	roadTypeIDContainer := createNewCheckBoxGroup(db, "roadTypeID", dbSelection, tableSelection, moFilter)
-	SCCContainer := createNewCheckBoxGroup(db, "SCC", dbSelection, tableSelection, moFilter)
-	engTechIDContainer := createNewCheckBoxGroup(db, "engTechID", dbSelection, tableSelection, moFilter)
-	sectorIDContainer := createNewCheckBoxGroup(db, "sectorID", dbSelection, tableSelection, moFilter)
-	hpIDContainer := createNewCheckBoxGroup(db, "hpID", dbSelection, tableSelection, moFilter)
+	switch tableSelection {
+	case "movesoutput":
+		//fyne containers, create buttons for filters with checkbox selection saved in the map filter
+		MOVESRunIDContainer := createNewCheckBoxGroup(db, "MOVESRunID", dbSelection, tableSelection, filter)
+		iterationIDContainer := createNewCheckBoxGroup(db, "iterationID", dbSelection, tableSelection, filter)
+		yearIDContainer := createNewCheckBoxGroup(db, "yearID", dbSelection, tableSelection, filter)
+		monthIDContainer := createNewCheckBoxGroup(db, "monthID", dbSelection, tableSelection, filter)
+		dayIDContainer := createNewCheckBoxGroup(db, "dayID", dbSelection, tableSelection, filter)
+		hourIDContainer := createNewCheckBoxGroup(db, "hourID", dbSelection, tableSelection, filter)
+		stateIDContainer := createNewCheckBoxGroup(db, "stateID", dbSelection, tableSelection, filter)
+		countyIDContainer := createNewCheckBoxGroup(db, "countyID", dbSelection, tableSelection, filter)
+		zoneIDContainer := createNewCheckBoxGroup(db, "zoneID", dbSelection, tableSelection, filter)
+		linkIDContainer := createNewCheckBoxGroup(db, "linkID", dbSelection, tableSelection, filter)
+		pollutantContainer := createNewCheckBoxGroup(db, "pollutantID", dbSelection, tableSelection, filter)
+		processIDContainer := createNewCheckBoxGroup(db, "processID", dbSelection, tableSelection, filter)
+		sourceTypeIDContainer := createNewCheckBoxGroup(db, "sourceTypeID", dbSelection, tableSelection, filter)
+		regClassIDContainer := createNewCheckBoxGroup(db, "regClassID", dbSelection, tableSelection, filter)
+		fuelTypeIDContainer := createNewCheckBoxGroup(db, "fuelTypeID", dbSelection, tableSelection, filter)
+		fuelSubTypeIDContainer := createNewCheckBoxGroup(db, "fuelSubTypeID", dbSelection, tableSelection, filter)
+		modelYearContainer := createNewCheckBoxGroup(db, "modelYearID", dbSelection, tableSelection, filter)
+		roadTypeIDContainer := createNewCheckBoxGroup(db, "roadTypeID", dbSelection, tableSelection, filter)
+		SCCContainer := createNewCheckBoxGroup(db, "SCC", dbSelection, tableSelection, filter)
+		engTechIDContainer := createNewCheckBoxGroup(db, "engTechID", dbSelection, tableSelection, filter)
+		sectorIDContainer := createNewCheckBoxGroup(db, "sectorID", dbSelection, tableSelection, filter)
+		hpIDContainer := createNewCheckBoxGroup(db, "hpID", dbSelection, tableSelection, filter)
 
-	//TODO: aggregation selection
-	//map to hold group by check boxes selection
-	moGroupBy := make(map[string][]string)
-	//pass whitelist?
-	aggregationContainer := createNewAggregationGroup(whiteList, moGroupBy)
+		innerContainer.Add(MOVESRunIDContainer)
+		innerContainer.Add(iterationIDContainer)
+		innerContainer.Add(yearIDContainer)
+		innerContainer.Add(monthIDContainer)
+		innerContainer.Add(dayIDContainer)
+		innerContainer.Add(hourIDContainer)
+		innerContainer.Add(stateIDContainer)
+		innerContainer.Add(countyIDContainer)
+		innerContainer.Add(zoneIDContainer)
+		innerContainer.Add(linkIDContainer)
+		innerContainer.Add(pollutantContainer)
+		innerContainer.Add(processIDContainer)
+		innerContainer.Add(sourceTypeIDContainer)
+		innerContainer.Add(regClassIDContainer)
+		innerContainer.Add(fuelTypeIDContainer)
+		innerContainer.Add(fuelSubTypeIDContainer)
+		innerContainer.Add(modelYearContainer)
+		innerContainer.Add(roadTypeIDContainer)
+		innerContainer.Add(SCCContainer)
+		innerContainer.Add(engTechIDContainer)
+		innerContainer.Add(sectorIDContainer)
+		innerContainer.Add(hpIDContainer)
+	case "rateperdistance":
+		//MOVESScenarioID, MOVESRunID, yearID, monthID, dayID, hourID, linkID, pollutantID, processID, sourceTypeID,
+		//regClassID, SCC, fuelTypeID, modelYearID, roadTypeID, avgSpeedBinID, temperature, relHumidity, ratePerDistance
+		MOVESScenarioIDContainer := createNewCheckBoxGroup(db, "MOVESScenarioID", dbSelection, tableSelection, filter)
+		MOVESRunIDContainer := createNewCheckBoxGroup(db, "MOVESRunID", dbSelection, tableSelection, filter)
+		yearIDContainer := createNewCheckBoxGroup(db, "yearID", dbSelection, tableSelection, filter)
+		monthIDContainer := createNewCheckBoxGroup(db, "monthID", dbSelection, tableSelection, filter)
+		dayIDContainer := createNewCheckBoxGroup(db, "dayID", dbSelection, tableSelection, filter)
+		hourIDContainer := createNewCheckBoxGroup(db, "hourID", dbSelection, tableSelection, filter)
+		linkIDContainer := createNewCheckBoxGroup(db, "linkID", dbSelection, tableSelection, filter)
+		pollutantIDContainer := createNewCheckBoxGroup(db, "pollutantID", dbSelection, tableSelection, filter)
+		processIDContainer := createNewCheckBoxGroup(db, "processID", dbSelection, tableSelection, filter)
+		sourceTypeIDContainer := createNewCheckBoxGroup(db, "sourceTypeID", dbSelection, tableSelection, filter)
+		regClassIDContainer := createNewCheckBoxGroup(db, "regClassID", dbSelection, tableSelection, filter)
+		SCCContainer := createNewCheckBoxGroup(db, "SCC", dbSelection, tableSelection, filter)
+		fuelTypeIDContainer := createNewCheckBoxGroup(db, "fuelTypeID", dbSelection, tableSelection, filter)
+		modelYearIDContainer := createNewCheckBoxGroup(db, "modelYearID", dbSelection, tableSelection, filter)
+		roadTypeIDContainer := createNewCheckBoxGroup(db, "roadTypeID", dbSelection, tableSelection, filter)
+		avgSpeedBinIDContainer := createNewCheckBoxGroup(db, "avgSpeedBinID", dbSelection, tableSelection, filter)
+
+		innerContainer.Add(MOVESScenarioIDContainer)
+		innerContainer.Add(MOVESRunIDContainer)
+		innerContainer.Add(yearIDContainer)
+		innerContainer.Add(monthIDContainer)
+		innerContainer.Add(dayIDContainer)
+		innerContainer.Add(hourIDContainer)
+		innerContainer.Add(linkIDContainer)
+		innerContainer.Add(pollutantIDContainer)
+		innerContainer.Add(processIDContainer)
+		innerContainer.Add(sourceTypeIDContainer)
+		innerContainer.Add(regClassIDContainer)
+		innerContainer.Add(SCCContainer)
+		innerContainer.Add(fuelTypeIDContainer)
+		innerContainer.Add(modelYearIDContainer)
+		innerContainer.Add(roadTypeIDContainer)
+		innerContainer.Add(avgSpeedBinIDContainer)
+
+	case "rateperhour":
+		//123
+	case "rateperprofile":
+		//123
+	case "rateperstart":
+	case "ratepervehicle":
+		//
+	case "startspervehicle":
+	default:
+		//unknown table selection
+	}
+
+	//aggregation container
+
+	aggregationContainer := container.NewVBox()
+	if tableSelection == "movesoutput" {
+		aggregationContainer = createNewAggregationGroup(whiteList, groupBy, 1)
+	} else {
+		aggregationContainer = createNewAggregationGroup(whiteList, groupBy, 3)
+	}
 
 	updateButton := widget.NewButtonWithIcon("Update", theme.MediaReplayIcon(), func() {
 		whereClause := " WHERE "
@@ -174,7 +255,7 @@ func makeWindowTwo(a fyne.App, queryResult [][]string, db *sql.DB, dbSelection s
 		// hence, we should detect empty value and delete that key before disaster happen
 		for index := 0; index < len(whiteList); index++ {
 			var partialWhere string
-			value, ok := moFilter[whiteList[index]]
+			value, ok := filter[whiteList[index]]
 			if ok { //none 0 value
 				fmt.Println(whiteList[index], " key found: ", value)
 				//detect if need AND
@@ -192,14 +273,14 @@ func makeWindowTwo(a fyne.App, queryResult [][]string, db *sql.DB, dbSelection s
 			} else {
 				fmt.Println(whiteList[index], " key not found")
 				//delete map that has empty value, they looks like hpID:[], they will eventually cause an empty IN() in the where clause
-				for key, value := range moFilter {
+				for key, value := range filter {
 					if len(value) == 0 {
-						delete(moFilter, key)
+						delete(filter, key)
 					}
 				}
 				fmt.Println("print the map at then end of button function")
-				fmt.Println(moFilter)
-				//dummyToolBarString_Where = fmt.Sprint(moFilter)
+				fmt.Println(filter)
+				//dummyToolBarString_Where = fmt.Sprint(filter)
 			}
 			//append inner string to outer string
 			whereClause += partialWhere
@@ -212,26 +293,26 @@ func makeWindowTwo(a fyne.App, queryResult [][]string, db *sql.DB, dbSelection s
 		fmt.Println("printing the WHERE clause")
 		fmt.Println(whereClause)
 
-		//TODO: enter GROUP BY claus
+		// enter GROUP BY claus
 		// if there is 1 item is checked, have GROUP BY xxx
 		// else if, >1 items are checked, call func convertColumnsComma, get comma seperated field name, then have GROUP BY xxx,xxx, .....
 		// else there is 0 item is checked, remove the "GROUP BY"
 
-		// TODO: if 1 or more items are checked, update the select columns same as the GROUP BY, Plus the sum of emissionQuant, maybe override func getQueryResult with direct sql statement
+		//  if 1 or more items are checked, update the select columns same as the GROUP BY, Plus the sum of emissionQuant, maybe override func getQueryResult with direct sql statement
 
 		groupbyClause := " GROUP BY "
 		var columnSelection []string
 		var groupbySelection []string
 
-		if len(moGroupBy["Aggregation"]) == 0 { //if nothing in the group by map
-			//TODO: when select 0 checkbox, do not need group clause AND the select column should same as whiteList
+		if len(groupBy["Aggregation"]) == 0 { //if nothing in the group by map
+			//when select 0 checkbox, do not need group clause AND the select column should same as whiteList
 			groupbyClause = ""
 			columnSelection = whiteList
-		} else if len(moGroupBy["Aggregation"]) >= 1 { //if there is anything in the group by map
-			//TODO: update SELECT clause PLUS sum of emissionQuant
-			//TODO: update GROUP BY
+		} else if len(groupBy["Aggregation"]) >= 1 { //if there is anything in the group by map
+			//update SELECT clause PLUS sum of emissionQuant
+			//update GROUP BY
 			//loop through the group by map, and copy selected box into a temp slice
-			for _, value := range moGroupBy["Aggregation"] {
+			for _, value := range groupBy["Aggregation"] {
 				groupbySelection = append(groupbySelection, value)
 				fmt.Println("copy group by map value into slice", value)
 				fmt.Println("printing updated group by slice", groupbySelection)
@@ -241,11 +322,22 @@ func makeWindowTwo(a fyne.App, queryResult [][]string, db *sql.DB, dbSelection s
 			//since columnSelection is []string, just throw the "sum(emissionQuant) AS emissionQuant)" in, as an element
 			//getQuery will handle comma separate format later
 			columnSelection = groupbySelection
-			columnSelection = append(columnSelection, "sum(emissionQuant) ")
+			//TODO: switch here, depends on different table, sum activity? emissionQuant? or rate, how to sum rate, does it make sense? maybe average
+			//TODO: add activity
+			if tableSelection == "movesoutput" {
+				columnSelection = append(columnSelection, "sum(emissionQuant) ")
+			} else if tableSelection == "startspervehicle" {
+				columnSelection = append(columnSelection, "ROUND(avg(startsPerVehicle),2) AS average_startsPerVehicle ")
+			} else {
+				columnSelection = append(columnSelection, "ROUND( avg(temperature),2) AS average_temperature ")
+				columnSelection = append(columnSelection, "ROUND( avg(relHumidity) , 2)AS average_relHumidity ")
+				columnSelection = append(columnSelection, "ROUND( avg(rateperdistance) , 2)AS average_rateperdistance ")
+			}
+
 			//pass the selected box name to GROUP BY clause, convert list of name into comma seperated format
 			groupbyClause += convertColumnsComma(groupbySelection)
 		} else {
-			panic("detect length of moGroupBy map size <0, WHY")
+			panic("detect length of groupBy map size <0, WHY")
 		}
 
 		//update the matrix with the new where clause and group by we just made
@@ -262,32 +354,9 @@ func makeWindowTwo(a fyne.App, queryResult [][]string, db *sql.DB, dbSelection s
 
 	})
 
-	innerContainer := container.NewVBox(
-		MOVESRunIDContainer,
-		iterationIDContainer,
-		yearIDContainer,
-		monthIDContainer,
-		dayIDContainer,
-		hourIDContainer,
-		stateIDContainer,
-		countyIDContainer,
-		zoneIDContainer,
-		linkIDContainer,
-		pollutantContainer,
-		processIDContainer,
-		sourceTypeIDContainer,
-		regClassIDContainer,
-		fuelTypeIDContainer,
-		fuelSubTypeIDContainer,
-		modelYearContainerContainer,
-		roadTypeIDContainer,
-		SCCContainer,
-		engTechIDContainer,
-		sectorIDContainer,
-		hpIDContainer,
-		aggregationContainer,
-		updateButton,
-	)
+	innerContainer.Add(aggregationContainer)
+	innerContainer.Add(updateButton)
+
 	//dynamic filter buttons, Use the record of whiteListIndex [] bool, show and hide base on 1 or 0.
 	//we initialized all 25 columns when the window #2 started
 	for index, boo := range whiteListIndex {
@@ -315,13 +384,17 @@ func updateButton() {
 
 }
 
-func createNewAggregationGroup(whitelist []string, groupBy map[string][]string) *fyne.Container {
+func createNewAggregationGroup(whitelist []string, groupBy map[string][]string, numericColumnsInTheEnd int) *fyne.Container {
 	xButton := widget.NewButton("Aggregation", func() {
 	})
 	whitelist2 := whitelist
-	//whitelist has emssionQuant, delete the last element
+	//following table has different count of columns in the very end that always have non-filter value,
+	// for example raterpervehicle has startsPerVehicle, movesoutput has emissionQuant, meanwhile rateperdistance has temperature, relHumidity and ratePerDistance
+	// This is based on how we defined the struct, NOT always look at MOVES DB schema, check it in the dataType.go
+	// count 1: Movesoutput, TODO: add activity
+	// count 3: Rateperdistance, Rateperhour, Rateperprofile, Rateperstart, Ratepervehicle Startspervehicle
 	if len(whitelist2) > 0 {
-		whitelist2 = whitelist2[:len(whitelist2)-1]
+		whitelist2 = whitelist2[:len(whitelist2)-numericColumnsInTheEnd]
 	}
 	fmt.Println("printing whitelist2 slice inside createNewAggregationGroup", whitelist2)
 	xCheckGroup := widget.NewCheckGroup(whitelist2, func(value []string) {
