@@ -143,7 +143,7 @@ func getOneRow(db *sql.DB, dbSelection string, tableSelection string) (interface
 					ifnull(fuelSubTypeID, -1) AS fuelSubTypeID,
 					ifnull(modelYearID, -1) AS modelYearID,
 					ifnull(roadTypeID, -1) AS roadTypeID,
-					ifnull(SCC, -1) AS SCC,
+					IF(SCC IS NULL or SCC = '', -1, SCC) as SCC,
 					ifnull(engTechID, -1) AS engTechID,
 					ifnull(sectorID, -1) AS sectorID,
 					ifnull(hpID, -1) AS hpID,
@@ -164,7 +164,7 @@ func getOneRow(db *sql.DB, dbSelection string, tableSelection string) (interface
 					ifnull(processID, -1) AS processID,
 					ifnull(sourceTypeID, -1) AS sourceTypeID,
 					ifnull(regClassID, -1) AS regClassID,
-					ifnull(SCC, -1) AS SCC,
+					IF(SCC IS NULL or SCC = '', -1, SCC) as SCC,
 					ifnull(fuelTypeID, -1) AS fuelTypeID,
 					ifnull(modelYearID, -1) AS modelYearID,
 					ifnull(roadTypeID, -1) AS roadTypeID,
@@ -187,7 +187,7 @@ func getOneRow(db *sql.DB, dbSelection string, tableSelection string) (interface
 					ifnull(processID, -1) AS processID,
 					ifnull(sourceTypeID, -1) AS sourceTypeID,
 					ifnull(regClassID, -1) AS regClassID,
-					ifnull(SCC, -1) AS SCC,
+					IF(SCC IS NULL or SCC = '', -1, SCC) as SCC,
 					ifnull(fuelTypeID, -1) AS fuelTypeID,
 					ifnull(modelYearID, -1) AS modelYearID,
 					ifnull(roadTypeID, -1) AS roadTypeID,
@@ -208,7 +208,7 @@ func getOneRow(db *sql.DB, dbSelection string, tableSelection string) (interface
 					ifnull(processID, -1) AS processID,
 					ifnull(sourceTypeID, -1) AS sourceTypeID,
 					ifnull(regClassID, -1) AS regClassID,
-					ifnull(SCC, -1) AS SCC,
+					IF(SCC IS NULL or SCC = '', -1, SCC) as SCC,
 					ifnull(fuelTypeID, -1) AS fuelTypeID,
 					ifnull(modelYearID, -1) AS modelYearID,
 					ifnull(temperature, -1) AS temperature,
@@ -227,7 +227,7 @@ func getOneRow(db *sql.DB, dbSelection string, tableSelection string) (interface
 					ifnull(zoneID, -1) AS zoneID,
 					ifnull(sourceTypeID, -1) AS sourceTypeID,
 					ifnull(regClassID, -1) AS regClassID,
-					ifnull(SCC, -1) AS SCC,
+					IF(SCC IS NULL or SCC = '', -1, SCC) as SCC,
 					ifnull(fuelTypeID, -1) AS fuelTypeID,
 					ifnull(modelYearID, -1) AS modelYearID,
 					ifnull(pollutantID, -1) AS pollutantID,
@@ -250,7 +250,7 @@ func getOneRow(db *sql.DB, dbSelection string, tableSelection string) (interface
 					ifnull(processID, -1) AS processID,
 					ifnull(sourceTypeID, -1) AS sourceTypeID,
 					ifnull(regClassID, -1) AS regClassID,
-					ifnull(SCC, -1) AS SCC,
+					IF(SCC IS NULL or SCC = '', -1, SCC) as SCC,
 					ifnull(fuelTypeID, -1) AS fuelTypeID,
 					ifnull(modelYearID, -1) AS modelYearID,
 					ifnull(temperature, -1) AS temperature,
@@ -269,7 +269,7 @@ func getOneRow(db *sql.DB, dbSelection string, tableSelection string) (interface
 					ifnull(zoneID, -1) AS zoneID,
 					ifnull(sourceTypeID, -1) AS sourceTypeID,
 					ifnull(regClassID, -1) AS regClassID,
-					ifnull(SCC, -1) AS SCC,
+					IF(SCC IS NULL or SCC = '', -1, SCC) as SCC,
 					ifnull(fuelTypeID, -1) AS fuelTypeID,
 					ifnull(modelYearID, -1) AS modelYearID,
 					ifnull(startsPerVehicle, -1) AS startsPerVehicle
@@ -477,21 +477,37 @@ func getWhiteList(con *sql.DB, dbSelection string, tableSelection string) ([]str
 		}
 	}
 
-	//get whitelist index in bool, iteration length -1 times because we will always need the last column for all 7 output tables
-	//assign true for not null , false for null value
-	for i := 0; i < values.NumField()-1; i++ {
-		if values.Field(i).Int() != -1 {
-			whiteListIndex = append(whiteListIndex, true)
-		} else if values.Field(i).Int() == -1 {
-			whiteListIndex = append(whiteListIndex, false)
-		} else {
-			//catch? what else could be?
-			panic("what else could be? after =-1, and != -1")
-			whiteListIndex = append(whiteListIndex, false)
+	//loop through values and update its boolean value when detect -1
+	for i := 0; i < values.NumField(); i++ {
+		if values.Field(i).Type() == reflect.TypeOf(1) {
+			if values.Field(i).Int() != -1 {
+				whiteListIndex = append(whiteListIndex, true)
+			} else if values.Field(i).Int() == -1 {
+				whiteListIndex = append(whiteListIndex, false)
+			}
+		} else if values.Field(i).Type() == reflect.TypeOf("word") {
+			if values.Field(i).String() != "-1" {
+				whiteListIndex = append(whiteListIndex, true)
+			} else if values.Field(i).String() == "1" {
+				whiteListIndex = append(whiteListIndex, false)
+			}
 		}
+
+		//if values.Field(i).Int() != -1 {
+		//	whiteListIndex = append(whiteListIndex, true)
+		//} else if values.Field(i).Int() == -1 {
+		//	whiteListIndex = append(whiteListIndex, false)
+		//} else if values.Field(i).String() != "-1" {
+		//	whiteListIndex = append(whiteListIndex, true)
+		//} else if values.Field(i).String() == "1" {
+		//	whiteListIndex = append(whiteListIndex, false)
+		//} else {
+		//	//catch? what else could be?
+		//	fmt.Println("found unknown type of -1 ")
+		//	panic("what else could be? after =-1, and != -1")
+		//	whiteListIndex = append(whiteListIndex, false)
+		//}
 	}
-	// hard code the last column  as true, always show
-	//whiteListIndex = append(whiteListIndex, true)
 
 	//loop through whiteListIndex, for these columns are not -1, check the count of distinct value = 1,
 	//for example if the MOVESRUNID only has 1, ignore it, there is no point to show them as both column or filter
