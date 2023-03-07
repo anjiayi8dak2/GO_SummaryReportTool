@@ -84,6 +84,7 @@ func getQueryResult(db *sql.DB, dbSelection string, tableSelection string, white
 	var outFlat [][]string
 	// add the column names in first row
 	outFlat = append(outFlat, whiteList)
+
 	// exe sql statement
 	rows, err := db.Query(sqlStatement)
 	if err != nil {
@@ -114,7 +115,46 @@ func getQueryResult(db *sql.DB, dbSelection string, tableSelection string, white
 		// stick all 1D array into 2D for data table
 		outFlat = append(outFlat, innerFlat)
 	}
+	//TODO: adding data, add the mass/distance unit for the (first column, last row)
+	// also, depending what table is selected, the unit can be different. for example, grams or grams per mil
+	//outFlat[0][len(whiteList)-1] = getUnit(db, dbSelection, tableSelection)
 	return outFlat, err
+}
+
+func getUnit(db *sql.DB, dbSelection string, tableSelection string) string {
+	var massUnit string
+	var distanceUnit string
+	var columnName string
+	var query string
+
+	query = "SELECT massUnits FROM " + dbSelection + ".movesrun LIMIT 1;"
+	db.QueryRow(query).Scan(&massUnit)
+	fmt.Println("Mass unit is  :", massUnit)
+
+	query = "SELECT distanceUnits FROM " + dbSelection + ".movesrun LIMIT 1;"
+	db.QueryRow(query).Scan(&distanceUnit)
+	fmt.Println("Distance unit is  :", distanceUnit)
+
+	switch tableSelection {
+	case "movesoutput":
+		columnName = "emissionQuant_" + massUnit
+	case "rateperdistance":
+		columnName = massUnit + "_per_" + distanceUnit
+	case "rateperhour":
+		columnName = massUnit + "_perHour"
+	case "rateperprofile":
+		columnName = massUnit + "_perVehicle"
+	case "rateperstart":
+		columnName = massUnit + "_perStarts"
+	case "ratepervehicle":
+		columnName = massUnit + "_perVehicle"
+	case "startspervehicle":
+		columnName = "starts_perVehicle"
+	default:
+		columnName = "unit error"
+
+	}
+	return columnName
 }
 
 // go-sql driver does not read null value, therefore we use -1 as an indicator for the null value

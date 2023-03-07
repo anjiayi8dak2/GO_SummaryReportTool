@@ -30,7 +30,7 @@ func openMariaFolder(db *sql.DB) {
 
 }
 
-// take a list of columns name, return one piece string with commas like roadTypeID, sourceTypeID, emissionQuant
+// take a slice of string names, return one piece string with commas like roadTypeID, sourceTypeID, emissionQuant
 func convertColumnsComma(columns []string) string {
 
 	// prepend single quote, perform joins, append single quote
@@ -459,8 +459,9 @@ func makeWindowTwo(a fyne.App, queryResult [][]string, db *sql.DB, dbSelection s
 
 			//update SELECT clause PLUS sum of emissionQuant or acivity or rates
 			columnSelection = groupbySelection
-			//TODO: switch here, depends on different table, sum activity? emissionQuant? or rate, how to sum rate, does it make sense? maybe average
-			//TODO: add activity
+			//TODO: switch here, depends on different table, sum activity? emissionQuant?
+			//TODO: disable rate aggregation for now, averaging/summing rate can be misleading
+			// because it is not considered many factors such as population distribution, and all kinds of adjustments.
 			if tableSelection == "movesoutput" {
 				columnSelection = append(columnSelection, "sum(emissionQuant) ")
 			} else if tableSelection == "startspervehicle" {
@@ -503,6 +504,10 @@ func makeWindowTwo(a fyne.App, queryResult [][]string, db *sql.DB, dbSelection s
 
 	})
 
+	// TODO: temporary disable aggreagation for rate
+	if tableSelection != "movesoutput" {
+		aggregationContainer.Hide()
+	}
 	innerContainer.Add(aggregationContainer)
 	innerContainer.Add(updateButton)
 
