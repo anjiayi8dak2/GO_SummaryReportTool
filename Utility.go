@@ -48,7 +48,10 @@ func makeWindowTwo(a fyne.App, queryResult [][]string, db *sql.DB, dbSelection s
 
 	//TODO: This is the message tab on top of screen, should update this text on the fly
 	//default display for DB and Table selection
-	ToolbarLabel := widget.NewLabel("DB Selection: " + dbSelection + "Table Selection: " + tableSelection)
+	distanceUnits := getMOVESrun(db, dbSelection, "distanceUnits")
+	massUnits := getMOVESrun(db, dbSelection, "massUnits")
+	energyUnits := getMOVESrun(db, dbSelection, "energyUnits")
+	ToolbarLabel := widget.NewLabel("DB Selection: " + dbSelection + "Table Selection: " + tableSelection + " Energy Unit: " + energyUnits + " Distance Unit: " + distanceUnits + " Mass Unit: " + massUnits)
 
 	toolbar := widget.NewToolbar(
 		widget.NewToolbarAction(theme.ViewRefreshIcon(), func() { //update
@@ -495,7 +498,7 @@ func makeWindowTwo(a fyne.App, queryResult [][]string, db *sql.DB, dbSelection s
 		queryResult, err = getQueryResult(db, dbSelection, tableSelection, columnSelection, whereClause, groupbyClause)
 		fmt.Println("printing error query result WHERE clause")
 		fmt.Println(err)
-		updateToolbarMessage(ToolbarLabel, whereClause, groupbyClause)
+		updateToolbarMessage(ToolbarLabel, whereClause, groupbyClause, db, dbSelection)
 
 		//dialog box pop out warning for no result query
 		if len(queryResult) < 2 {
@@ -634,8 +637,21 @@ func csvExport(data [][]string) error {
 	return nil
 }
 
-func updateToolbarMessage(l *widget.Label, where string, group string) {
+func updateToolbarMessage(l *widget.Label, where string, group string, db *sql.DB, dbSelection string) {
 	var message string
-	message = "Filters: " + where + "Aggregated by : " + group
+	distanceUnits := getMOVESrun(db, dbSelection, "distanceUnits")
+	massUnits := getMOVESrun(db, dbSelection, "massUnits")
+	energyUnits := getMOVESrun(db, dbSelection, "energyUnits")
+
+	message = "Filters: " + where + "Aggregated by : " + group + " Energy Unit: " + energyUnits + " Distance Unit: " + distanceUnits + " Mass Unit: " + massUnits
 	l.SetText(message)
+}
+
+func getMOVESrun(db *sql.DB, dbSelection string, columnName string) string {
+	var query string
+	var unit string
+	query = "SELECT " + columnName + " FROM " + dbSelection + ".movesrun LIMIT 1;"
+	db.QueryRow(query).Scan(&unit)
+
+	return unit
 }

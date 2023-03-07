@@ -43,8 +43,8 @@ func getDBList(db *sql.DB) []string {
 }
 
 func getDistinct(db *sql.DB, dbSelection string, tableSelection string, targetColumn string) []string {
-	sqlStatement := "SELECT DISTINCT " + targetColumn + " AS dummy FROM " + dbSelection + "." + tableSelection + " ORDER BY dummy ASC ; "
-	fmt.Println("sql statement is :", sqlStatement)
+	sqlStatement := "SELECT DISTINCT " + targetColumn + " AS distinctValues FROM " + dbSelection + "." + tableSelection + " ORDER BY distinctValues ASC ; "
+	fmt.Println("Running sql statement  :", sqlStatement)
 	rows, err := db.Query(sqlStatement)
 	var distinctResults []string
 	if err != nil {
@@ -78,7 +78,10 @@ func getDBVersion(db *sql.DB) {
 
 func getQueryResult(db *sql.DB, dbSelection string, tableSelection string, whiteList []string, whereClause string, groupClause string) ([][]string, error) {
 	columns := convertColumnsComma(whiteList)
+	//unit := getUnit(db, dbSelection, tableSelection)
+	//columns += " AS " + unit
 	sqlStatement := "SELECT " + columns + " FROM " + dbSelection + "." + tableSelection + " " + whereClause + " " + groupClause + " LIMIT 1000 ; "
+
 	fmt.Println("printing sql statement: " + sqlStatement)
 	// A 2D array string to hold the table
 	var outFlat [][]string
@@ -117,7 +120,7 @@ func getQueryResult(db *sql.DB, dbSelection string, tableSelection string, white
 	}
 	//TODO: adding data, add the mass/distance unit for the (first column, last row)
 	// also, depending what table is selected, the unit can be different. for example, grams or grams per mil
-	//outFlat[0][len(whiteList)-1] = getUnit(db, dbSelection, tableSelection)
+	// outFlat[0][len(whiteList)-1] = getUnit(db, dbSelection, tableSelection)
 	return outFlat, err
 }
 
@@ -187,7 +190,7 @@ func getOneRow(db *sql.DB, dbSelection string, tableSelection string) (interface
 					ifnull(engTechID, -1) AS engTechID,
 					ifnull(sectorID, -1) AS sectorID,
 					ifnull(hpID, -1) AS hpID,
-					emissionQuant
+					emissionQuant 
 					FROM `
 
 	case "rateperdistance":
@@ -498,29 +501,32 @@ func getWhiteList(con *sql.DB, dbSelection string, tableSelection string) ([]str
 	var whiteList []string
 	var whiteListIndex []bool
 
-	// get whitelist in [] string
+	// loop through all the columns from OneRow, if a column has valid number(not equal -1), append it into whitelist [] string
 	for i := 0; i < values.NumField(); i++ {
 		// TODO: make exception for pollutantID, pollutantID shall never be ignored
 		if types.Field(i).Name == "pollutantID" {
 			whiteList = append(whiteList, types.Field(i).Name)
-			fmt.Println("pollutantID \n", types.Field(i).Name, "add pollutantID into whitelist")
-		} else if values.Field(i).Type() == reflect.TypeOf(1) {
+			fmt.Println("pollutantID found \n", types.Field(i).Name, "add pollutantID into whitelist")
+		} else if values.Field(i).Type() == reflect.TypeOf(1) { //type int
 			if values.Field(i).Int() != -1 {
 				fmt.Println("found column with valid integer value, add it to whitelist \n", types.Field(i).Name, values.Field(i))
 				whiteList = append(whiteList, types.Field(i).Name)
 			}
-			// float to float
-		} else if values.Field(i).Type() == reflect.TypeOf(3.14) {
+		} else if values.Field(i).Type() == reflect.TypeOf(3.14) { // type float
 			fmt.Println("found column with valid float value, add it to whitelist  \n", types.Field(i).Name, values.Field(i))
 			whiteList = append(whiteList, types.Field(i).Name)
 			// string to string, the MOVESScenarioID unfortunately can be a string :(
-		} else if values.Field(i).Type() == reflect.TypeOf("word") {
+		} else if values.Field(i).Type() == reflect.TypeOf("word") { //type string
 			fmt.Println("found column with valid string value, add it to whitelist \n", types.Field(i).Name, values.Field(i))
 			whiteList = append(whiteList, types.Field(i).Name)
 		}
 	}
 
 	//loop through values and update its boolean value when detect -1
+	//whiteListIndex [] bool size = corresponding MOVES table, the order of the column is also same
+	//whiteListIndex flags can is being used to determinate which column to show/hide containers in the future
+	//TODO: Why not have one for loop to update both whiteList and whiteListIndex above?
+
 	for i := 0; i < values.NumField(); i++ {
 		// TODO: make exception for pollutantID, pollutantID shall never be ignored
 		if types.Field(i).Name == "pollutantID" {
@@ -548,8 +554,10 @@ func getWhiteList(con *sql.DB, dbSelection string, tableSelection string) ([]str
 	} else {
 		numericColumnsInTheEnd = 3
 	}
-	//loop through whiteListIndex, for these columns are not -1, check the count of distinct value = 1,
+	//loop through whiteListIndex, for these columns survived for the null value check, check the count of distinct value = 1,
 	//for example if the MOVESRUNID only has 1, ignore it, there is no point to show them as both column or filter
+	//TODO: is it possible to use count distinct instead of distinct? are these distinct value saved somewhere to reuse?
+	// SELECT COUNT(DISTINCT(modelyearid)) FROM 123rate.rateperdistance;
 	for i := 0; i < len(whiteListIndex)-numericColumnsInTheEnd; i++ { //loop to the position before numeric column such as emissionQuant/activity
 		if whiteListIndex[i] && fieldNames[i] != "pollutantID" { //if the column value is not null, skip pollutantID
 			//get distinct query, and see the count or len(returned slice)
