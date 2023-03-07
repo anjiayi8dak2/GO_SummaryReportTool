@@ -460,8 +460,11 @@ func getWhiteList(con *sql.DB, dbSelection string, tableSelection string) ([]str
 
 	// get whitelist in [] string
 	for i := 0; i < values.NumField(); i++ {
-		// int to int
-		if values.Field(i).Type() == reflect.TypeOf(1) {
+		// TODO: make exception for pollutantID, pollutantID shall never be ignored
+		if types.Field(i).Name == "pollutantID" {
+			whiteList = append(whiteList, types.Field(i).Name)
+			fmt.Println("pollutantID \n", types.Field(i).Name, "add pollutantID into whitelist")
+		} else if values.Field(i).Type() == reflect.TypeOf(1) {
 			if values.Field(i).Int() != -1 {
 				fmt.Println("found column with valid integer value, add it to whitelist \n", types.Field(i).Name, values.Field(i))
 				whiteList = append(whiteList, types.Field(i).Name)
@@ -479,7 +482,11 @@ func getWhiteList(con *sql.DB, dbSelection string, tableSelection string) ([]str
 
 	//loop through values and update its boolean value when detect -1
 	for i := 0; i < values.NumField(); i++ {
-		if values.Field(i).Type() == reflect.TypeOf(1) {
+		// TODO: make exception for pollutantID, pollutantID shall never be ignored
+		if types.Field(i).Name == "pollutantID" {
+			whiteListIndex = append(whiteListIndex, true)
+			fmt.Println("pollutantID \n", types.Field(i).Name, "add pollutantID into whitelist index")
+		} else if values.Field(i).Type() == reflect.TypeOf(1) {
 			if values.Field(i).Int() != -1 {
 				whiteListIndex = append(whiteListIndex, true)
 			} else if values.Field(i).Int() == -1 {
@@ -504,7 +511,7 @@ func getWhiteList(con *sql.DB, dbSelection string, tableSelection string) ([]str
 	//loop through whiteListIndex, for these columns are not -1, check the count of distinct value = 1,
 	//for example if the MOVESRUNID only has 1, ignore it, there is no point to show them as both column or filter
 	for i := 0; i < len(whiteListIndex)-numericColumnsInTheEnd; i++ { //loop to the position before numeric column such as emissionQuant/activity
-		if whiteListIndex[i] { //if the column value is not null
+		if whiteListIndex[i] && fieldNames[i] != "pollutantID" { //if the column value is not null, skip pollutantID
 			//get distinct query, and see the count or len(returned slice)
 			distinctResult := getDistinct(con, dbSelection, tableSelection, fieldNames[i])
 			if len(distinctResult) <= 1 { // if the returned slice only has <= 1 distinct value, mark the index to false
