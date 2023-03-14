@@ -1,6 +1,10 @@
 package main
 
 import (
+	"github.com/pkg/browser"
+	_ "github.com/pkg/browser"
+)
+import (
 	"database/sql"
 	"encoding/csv"
 	"fmt"
@@ -49,16 +53,18 @@ func makeWindowTwo(a fyne.App, queryResult [][]string, db *sql.DB, dbSelection s
 	distanceUnits := getMOVESrun(db, dbSelection, "distanceUnits")
 	massUnits := getMOVESrun(db, dbSelection, "massUnits")
 	energyUnits := getMOVESrun(db, dbSelection, "energyUnits")
+	var field1, field2 string
 	ToolbarLabel := widget.NewLabel("DB Selection: " + dbSelection + "Table Selection: " + tableSelection + " Energy Unit: " + energyUnits + " Distance Unit: " + distanceUnits + " Mass Unit: " + massUnits)
 
 	toolbar := widget.NewToolbar(
-		widget.NewToolbarAction(theme.ViewRefreshIcon(), func() { //update
+		widget.NewToolbarAction(theme.ViewRefreshIcon(), func() { //update button
 			fmt.Println("I pressed update button")
 		}),
-		widget.NewToolbarAction(theme.DocumentCreateIcon(), func() { //plot
+		widget.NewToolbarAction(theme.DocumentCreateIcon(), func() { //plot button TODO
 			fmt.Println("I pressed plot button")
-			runPlot() //TODO: pass something for the plot class??
-
+			runPlot(distanceUnits, massUnits, energyUnits, queryResult, field1, field2) //TODO: pass something for the plot class??
+			const url = "http://golang.org/"
+			browser.OpenURL(url)
 		}),
 		widget.NewToolbarAction(theme.DownloadIcon(), func() { //download CSV
 			fmt.Println("I pressed download csv button")
@@ -66,7 +72,8 @@ func makeWindowTwo(a fyne.App, queryResult [][]string, db *sql.DB, dbSelection s
 
 		}),
 		widget.NewToolbarSpacer(),
-		//TODO: the text space on the toolbar, to show what filtered has applied and/or aggregated by
+		//TODO: two drop downbox
+
 		ToolbarLabel,
 	)
 
@@ -458,7 +465,7 @@ func makeWindowTwo(a fyne.App, queryResult [][]string, db *sql.DB, dbSelection s
 
 	})
 
-	// TODO: temporary disable aggreagation for rate
+	// TODO: temporary disable aggregation for rate
 	if tableSelection != "movesoutput" {
 		aggregationContainer.Hide()
 	}

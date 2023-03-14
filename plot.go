@@ -1,27 +1,32 @@
 package main
 
 import (
+	_ "flag"
+	_ "fmt"
 	"github.com/go-echarts/go-echarts/v2/charts"
 	"github.com/go-echarts/go-echarts/v2/opts"
+	_ "github.com/pkg/browser"
+	_ "log"
 	"net/http"
+	_ "os"
 )
 
 var (
 
 	//Most part of the variables should pass from fyne window
 
-	//pollutant name should be here
+	//pollutant name should be here, it should pass from the caller
 	titleName = "Defualt Title"
 	// This count is useful to generate plot, user can select 1 or 2 field for aggregation
 	// if count =1, make regular bar, if count =2, then make stack bar
 	xAxisCount = 2
-	//Y name could also be activity
+	//Y name could also be activity, it must located at (first row, last element)
 	YAxisName = "EmissionQuant"
-	// X name is selected by user
+	// X name is selected by user, they must located at first row, except last element
 	XAxisName = "dummyRegClass"
-	// first field
+	// first field, it should pass from the caller
 	dummyRegClassItems = []string{"reg20", "reg41"}
-	// second field
+	// second field, it should pass from the caller
 	dummyFuelTypeItems = []string{"gas", "diesel", "EV"}
 	// this is the data table passing in, possible have header??
 	dummyEmissionQuant = [][]float64{
@@ -116,7 +121,26 @@ func httpserver(w http.ResponseWriter, _ *http.Request) {
 
 	stackBar.Render(w)
 }
-func runPlot() {
+func runPlot(distanceUnits string, massUnits string, energyUnits string, queryResult [][]string, field1 string, field2 string) {
+
+	//pollutant name should be here, it should pass from the caller
+	titleName = "Defualt Title"
+	// This count is useful to generate plot, user can select 1 or 2 field for aggregation
+	// if count =1, make regular bar, if count =2, then make stack bar
+	xAxisCount = 2
+	//Y name could also be activity, it must located at (first row, last element)
+	YAxisName = "EmissionQuant"
+	// X name is selected by user, they must located at first row, except last element
+	XAxisName = "dummyRegClass"
+	// first field, it should pass from the caller
+	dummyRegClassItems = []string{"reg20", "reg41"}
+	// second field, it should pass from the caller
+	dummyFuelTypeItems = []string{"gas", "diesel", "EV"}
+	// this is the data table passing in, possible have header??
+	dummyEmissionQuant = [][]float64{
+		{201, 202, 209}, {411, 412, 419},
+	}
+
 	http.HandleFunc("/", httpserver)
 	http.ListenAndServe(":8081", nil)
 }
