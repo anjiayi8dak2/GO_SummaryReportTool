@@ -7,6 +7,7 @@ require (
 	fyne.io/fyne/v2 v2.2.0
 	github.com/MetalBlueberry/go-plotly v0.4.0
 	github.com/blockloop/scan v1.3.0
+	github.com/go-echarts/go-echarts/v2 v2.2.5
 	github.com/go-sql-driver/mysql v1.6.0
 	github.com/joho/sqltocsv v0.0.0-20210428211105-a6d6801d59df
 )
