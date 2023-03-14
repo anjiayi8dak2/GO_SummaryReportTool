@@ -8,8 +8,6 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/widget"
-	grob "github.com/MetalBlueberry/go-plotly/graph_objects"
-	"github.com/MetalBlueberry/go-plotly/offline"
 	"os"
 	"os/exec"
 	"runtime"
@@ -59,55 +57,8 @@ func makeWindowTwo(a fyne.App, queryResult [][]string, db *sql.DB, dbSelection s
 		}),
 		widget.NewToolbarAction(theme.DocumentCreateIcon(), func() { //plot
 			fmt.Println("I pressed plot button")
-			//TODO: make X and Y here
-			// bar names should be elements on the first row, except last element(emissionQuant)
-			// how many bar, count of X = total row-1, because the first row is header
-			// value of Y should be at last column(emissionQuant) except for first row
+			runPlot() //TODO: pass something for the plot class??
 
-			temp_queryResult := queryResult
-			plot_row_count := len(temp_queryResult) - 1 //total row - 1 because the first row is title
-			fmt.Println("Printing row count without header", plot_row_count)
-			//plot_column_count := len(temp_queryResult[0])
-			//fmt.Println("Printing column count", plot_column_count)
-
-			//TODO: add the checker in the beginning for size of queryResult, if it is empty then skip all
-			//get X title, bar title
-			var X_title []string
-			for row := 1; row < len(temp_queryResult); row++ {
-				X_title = append(X_title, temp_queryResult[row][0])
-			}
-
-			//X_title := temp_queryResult[0]
-			//delete element emissionQuant from X title
-			//RemoveElementFromSlice(X_title, "sum(emissionQuant)")
-			fmt.Printf("Printing X title %v\n", X_title)
-			//get Y title
-			Y_title := "sum(emissionQuant)"
-			fmt.Printf("Printing Y title %v\n\n", Y_title)
-			//get Y value
-			var Y_value []string
-			for row := 1; row < len(temp_queryResult); row++ { //skip first row, start from second row
-				Y_value = append(Y_value, temp_queryResult[row][len(temp_queryResult[0])-1]) //the index for last column = total column count -1
-			}
-			fmt.Printf("Printing Y value %v\n\n", Y_value)
-
-			fig := &grob.Fig{
-				Data: grob.Traces{
-					&grob.Bar{
-						Type: grob.TraceTypeBar,
-						X:    X_title,
-						Y:    Y_value,
-					},
-				},
-
-				Layout: &grob.Layout{
-					Title: &grob.LayoutTitle{
-						Text: "Aggregation Result Plot",
-					},
-				},
-			}
-
-			offline.Show(fig)
 		}),
 		widget.NewToolbarAction(theme.DownloadIcon(), func() { //download CSV
 			fmt.Println("I pressed download csv button")
@@ -537,6 +488,7 @@ func makeWindowTwo(a fyne.App, queryResult [][]string, db *sql.DB, dbSelection s
 	window2.Show()
 }
 
+// TODO: move update button on top tool bar, not all the way in the bottom of scrollbar
 func updateButton() {
 
 }
