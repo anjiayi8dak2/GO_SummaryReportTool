@@ -88,10 +88,6 @@ func main() {
 			tableDropdownResult.Refresh()
 		})
 
-	//// more than one widget. so use container
-	//c := container.NewBorder(nil, dbDropdownResult, dbDropdown, tableDropdown)
-	//window1.SetContent(c)
-
 	dropdownGrid := container.New(layout.NewGridLayout(2), dbDropdown, tableDropdown)
 	window1.SetContent(dropdownGrid)
 	//show and run

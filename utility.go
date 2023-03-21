@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/pkg/browser"
+	"fyne.io/fyne/v2/layout"
 	_ "github.com/pkg/browser"
 )
 import (
@@ -48,12 +48,12 @@ func makeWindowTwo(a fyne.App, queryResult [][]string, db *sql.DB, dbSelection s
 	window2.SetContent(widget.NewLabel("window #2 label"))
 	window2.Resize(fyne.NewSize(1000, 800))
 
-	//TODO: This is the message tab on top of screen, should update this text on the fly
+	//the message tab on top of screen, should update this text on the fly
 	//default display for DB and Table selection
 	distanceUnits := getMOVESrun(db, dbSelection, "distanceUnits")
 	massUnits := getMOVESrun(db, dbSelection, "massUnits")
 	energyUnits := getMOVESrun(db, dbSelection, "energyUnits")
-	var field1, field2 string
+	//var field1, field2 string
 	ToolbarLabel := widget.NewLabel("DB Selection: " + dbSelection + "Table Selection: " + tableSelection + " Energy Unit: " + energyUnits + " Distance Unit: " + distanceUnits + " Mass Unit: " + massUnits)
 
 	toolbar := widget.NewToolbar(
@@ -62,9 +62,10 @@ func makeWindowTwo(a fyne.App, queryResult [][]string, db *sql.DB, dbSelection s
 		}),
 		widget.NewToolbarAction(theme.DocumentCreateIcon(), func() { //plot button TODO
 			fmt.Println("I pressed plot button")
-			runPlot(distanceUnits, massUnits, energyUnits, queryResult, field1, field2) //TODO: pass something for the plot class??
-			const url = "http://golang.org/"
-			browser.OpenURL(url)
+			selectAggregationField(a, queryResult)
+
+			//runPlot(distanceUnits, massUnits, energyUnits, queryResult) //TODO: need to select two field or use first two column?
+
 		}),
 		widget.NewToolbarAction(theme.DownloadIcon(), func() { //download CSV
 			fmt.Println("I pressed download csv button")
@@ -72,8 +73,6 @@ func makeWindowTwo(a fyne.App, queryResult [][]string, db *sql.DB, dbSelection s
 
 		}),
 		widget.NewToolbarSpacer(),
-		//TODO: two drop downbox
-
 		ToolbarLabel,
 	)
 
@@ -493,6 +492,95 @@ func makeWindowTwo(a fyne.App, queryResult [][]string, db *sql.DB, dbSelection s
 	//window2.SetContent(outerContainer)
 	window2.SetContent(container.NewBorder(toolbar, nil, nil, nil, outerContainer))
 	window2.Show()
+}
+
+// open new window when hit the plot button, user should select 1 or 2 field for plotting
+// then this function will pass all the parameter to the plotting library
+func selectAggregationField(a fyne.App, queryResult [][]string) {
+	var fieldSelection1, fieldSelection2, pollutantSelection string
+
+	selectAggregationFieldWindow := a.NewWindow("Select 1 or 2 field that for X axis")
+	selectAggregationFieldWindow.Resize(fyne.NewSize(400, 400))
+
+	//get the list of field columns and the result column
+	//field columns serve for dropdown box
+	//iteration for the first row of the data grid, first row must be header.
+	// TODO: #1 selection shall be full list
+	// #2 list should be full list - the first selection
+
+	headersList := queryResult[0]
+	var headerList2 []string
+	var resultColumn string
+
+	if len(headersList) > 0 {
+		//assign last element in the header into resultColumn before delete
+		resultColumn = headersList[len(headersList)-1]
+		//remove the last element in the header, this should be usually be result column such as activity or emissionQuant
+		headersList = headersList[:len(headersList)-1]
+
+		headerList2 = headersList
+	}
+
+	//TODO: Select pollutant
+
+	tableList := []string{"pollutant1", "pollutant2", "pollutant3", "pollutant4"}
+	//Create dropdown for pollutant
+	pollutantSelectionResult := widget.NewLabel("Select A Pollutant")
+	//pollutant dropdown box option
+	pollutantSelectionDropdown := widget.NewSelect(
+		tableList,
+		func(selection string) {
+			fmt.Printf("I selected %selection as pollutant..", selection)
+			pollutantSelectionResult.Text = selection
+			pollutantSelection = selection
+			pollutantSelectionResult.Refresh()
+		})
+
+	//Create dropdown for field selection #1
+	fieldSelectionResult1 := widget.NewLabel("Select field 1")
+	//Use headersList to update dropdown box option
+	fieldSelectionDropdown1 := widget.NewSelect(
+		headersList,
+		func(selection string) {
+			fmt.Printf("I selected %selection as field 1..", selection)
+			fieldSelectionResult1.Text = selection
+			fieldSelection1 = selection
+			fieldSelectionResult1.Refresh()
+		})
+
+	//Create dropdown for field selection #2
+	fieldSelectionResult2 := widget.NewLabel("Select field 2")
+	//Use header list EXCLUDE first selection to update dropdown box option
+	headerList2 = RemoveElementFromSlice(headerList2, fieldSelection1)
+	fieldSelectionDropdown2 := widget.NewSelect(
+		headerList2,
+		func(selection string) {
+			fieldSelectionResult2.Refresh()
+			fmt.Printf("I selected %selection as field 2..", selection)
+			fieldSelectionResult2.Text = selection
+			fieldSelection2 = selection
+			fieldSelectionResult2.Refresh()
+		})
+
+	//TODO: put ok button
+	submitButton := widget.NewButton("Submit", func() {
+		fmt.Println("Submit button pressed")
+		fmt.Println("Printing field selection #1  " + fieldSelection1 + " field #2 " + fieldSelection2 + " value column " + resultColumn + " pollutant selection " + pollutantSelection)
+	})
+
+	cancelButton := widget.NewButton("Cancel", func() {
+		fmt.Println("Cancel button pressed")
+		selectAggregationFieldWindow.Close()
+	})
+	buttonContainer := container.New(layout.NewGridLayout(2), submitButton, cancelButton)
+
+	dropdownGrid := container.New(layout.NewGridLayout(3), pollutantSelectionDropdown, fieldSelectionDropdown1, fieldSelectionDropdown2)
+	outerContainer := container.NewVSplit(dropdownGrid, buttonContainer)
+	outerContainer.Offset = 0.8
+	selectAggregationFieldWindow.SetContent(outerContainer)
+
+	selectAggregationFieldWindow.Show()
+
 }
 
 // TODO: move update button on top tool bar, not all the way in the bottom of scrollbar

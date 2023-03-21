@@ -121,20 +121,20 @@ func httpserver(w http.ResponseWriter, _ *http.Request) {
 
 	stackBar.Render(w)
 }
-func runPlot(distanceUnits string, massUnits string, energyUnits string, queryResult [][]string, field1 string, field2 string) {
+func runPlot(distanceUnits string, massUnits string, energyUnits string, pollutant string, X1 string, X2 string, Y string, queryResult [][]string) {
 
 	//pollutant name should be here, it should pass from the caller
-	titleName = "Defualt Title"
+	titleName = "Plot for " + pollutant + " VS " + X1 + " with " + X2
 	// This count is useful to generate plot, user can select 1 or 2 field for aggregation
 	// if count =1, make regular bar, if count =2, then make stack bar
 	xAxisCount = 2
 	//Y name could also be activity, it must located at (first row, last element)
-	YAxisName = "EmissionQuant"
+	YAxisName = Y
 	// X name is selected by user, they must located at first row, except last element
-	XAxisName = "dummyRegClass"
-	// first field, it should pass from the caller
-	dummyRegClassItems = []string{"reg20", "reg41"}
-	// second field, it should pass from the caller
+	XAxisName = X1
+	// #1 field, it should pass from the caller
+	field1 = []string{"reg20", "reg41"}
+	// #2 field, it should pass from the caller
 	dummyFuelTypeItems = []string{"gas", "diesel", "EV"}
 	// this is the data table passing in, possible have header??
 	dummyEmissionQuant = [][]float64{
