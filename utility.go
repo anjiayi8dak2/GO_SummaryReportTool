@@ -566,6 +566,7 @@ func selectAggregationField(a fyne.App, queryResult [][]string) {
 	submitButton := widget.NewButton("Submit", func() {
 		fmt.Println("Submit button pressed")
 		fmt.Println("Printing field selection #1  " + fieldSelection1 + " field #2 " + fieldSelection2 + " value column " + resultColumn + " pollutant selection " + pollutantSelection)
+		runPlot("distance", "mass", "energy", pollutantSelection, fieldSelection1, fieldSelection2, resultColumn, queryResult)
 	})
 
 	cancelButton := widget.NewButton("Cancel", func() {
@@ -694,6 +695,7 @@ func updateToolbarMessage(l *widget.Label, where string, group string, db *sql.D
 	l.SetText(message)
 }
 
+// pass distanceUnits/massUnits/energyUnits in string, return unit name in string such as "kg" or "mile"
 func getMOVESrun(db *sql.DB, dbSelection string, columnName string) string {
 	var query string
 	var unit string
