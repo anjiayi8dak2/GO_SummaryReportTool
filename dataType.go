@@ -146,3 +146,9 @@ type Startspervehicle struct {
 	modelYearID      int
 	startsPerVehicle float64
 }
+
+// reshape query result from long to wide, in go we use map to represent contingency table
+// prepare for map
+type wideTableShapeStruct struct {
+	field1, field2 string
+}

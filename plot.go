@@ -11,6 +11,7 @@ import (
 	"net/http"
 	_ "os"
 	"strconv"
+	"strings"
 )
 
 var (
@@ -39,6 +40,8 @@ var (
 	//// this is the data table passing in, possible have header??
 
 	dummyEmissionQuant = [][]string{}
+	dummyGlobalTable   = map[wideTableShapeStruct]float64{}
+	dummyGlobalCounter = 0
 )
 
 // transpose a 2d matrix
@@ -57,38 +60,20 @@ func transpose(slice [][]string) [][]string {
 	return result
 }
 
-func generateBarItems(columnIndex int) []opts.BarData {
+func generateBarItems(stackBarCount int, field1_key string, field2_key string) []opts.BarData {
 
 	//eCharts only take BarData type to generate plot
 	items := make([]opts.BarData, 0)
-	// transpose data matrix
-	// the iteration order of eCharts for stack bar is loop through all series(a color on a bar) then the SetXAxis (a bar)
-	// for example first field selection = regClass(20,41), second = fuelType(1,2,9)
-	// It will iterate in order of reg20+fuel1, reg20+fuel2, reg20+fuel9 then do the same for 41+1 41+2 41+9 combination
 
-	// what we need return here is a slice of emissionQuant that represent field#1 + field#2 combination,
-	// but the data matrix format we have has no easy way to return the value of a column.
-	// hence, we transpose the matrix first, then return the row to achieve same goal
-	//dummyEmissionQuant2 := transpose(dummyEmissionQuant)
-	//columnCount := len(dummyEmissionQuant2[0])
-	//save all element that associated with row # selection
-
-	//for j := 0; j < len(field2); j++ {
-	//	println("inside generate bar printing dummyEmissionQuant[][] string", dummyEmissionQuant[rowNumber][j])
-	//	f, _ := strconv.ParseFloat(dummyEmissionQuant[rowNumber][j], 16)
-	//	items = append(items, opts.BarData{Value: f})
-	//	println("inside generate bar printing dummyEmissionQuant[][] that assigned into BarData", f)
-	//}
-
-	//println("inside generate bar printing dummyEmissionQuant[][] string", valueColumnRow[columnIndex])
-	f, _ := strconv.ParseFloat(valueColumnRow[columnIndex], 16)
-	items = append(items, opts.BarData{Value: f})
-	columnIndex++
-	f, _ = strconv.ParseFloat(valueColumnRow[columnIndex], 16)
-	items = append(items, opts.BarData{Value: f})
-
-	//println("inside generate bar printing dummyEmissionQuant[][] that assigned into BarData", f)
-
+	for i := 0; i < stackBarCount; i++ {
+		f := dummyGlobalTable[wideTableShapeStruct{field1_key, field2_key}]
+		items = append(items, opts.BarData{Value: f})
+		fmt.Println("inside generate bar item print key, ", field1_key, " ", field2_key+" ", f, " small stack bar count ", stackBarCount)
+		fmt.Println("print global counter ", dummyGlobalCounter, " and field1 with counter index ", field1[dummyGlobalCounter])
+		dummyGlobalCounter++
+	}
+	dummyGlobalCounter = 0
+	//fmt.Println("generate bar item ", f)
 	return items
 }
 
@@ -103,7 +88,7 @@ func barStack() *charts.Bar {
 			Name: YAxisName,
 		}),
 		charts.WithTitleOpts(opts.Title{
-			Title: "stack bar",
+			Title: titleName,
 		}),
 
 		charts.WithTooltipOpts(opts.Tooltip{Show: true}),
@@ -126,41 +111,31 @@ func barStack() *charts.Bar {
 		),
 	)
 
-	fmt.Println("printing matrix dummyEmissionQuant before generating bar items")
-	fmt.Println("this is debugging flags that see before")
-	fmt.Println(dummyEmissionQuant)
+	distinctField1 := removeDuplicateStr(field1) //2 ,5
+	fmt.Println("print distinct ", distinctField1)
+	distinctField2 := removeDuplicateStr(field2) //1, 100
+	fmt.Println("print distinct ", distinctField2)
 
-	//
-	//for i := 0; i < len(field2); i++ {
-	//	bar.SetXAxis(field1). // []string for name of the bars
-	//		AddSeries(field2[i], generateBarItems(i)).
-	//		SetSeriesOptions(charts.WithBarChartOpts(opts.BarChart{
-	//			Stack: "Stack",
-	//		}))
-	//}
-
-	dummyValueColumnCounter := 0
-	distinctField1 := removeDuplicateStr(field1)
-	distinctField2 := removeDuplicateStr(field2)
+	//iterate small bars on big bar
 	for i := 0; i < len(distinctField2); i++ {
-		//fmt.Println("value column value in for loop", valueColumnRow[i])
-		bar.SetXAxis(distinctField1). // []string for name of the bars
-						AddSeries(distinctField2[i], generateBarItems(dummyValueColumnCounter)).
-						SetSeriesOptions(charts.WithBarChartOpts(opts.BarChart{
-				Stack: "Stack",
+		bar.SetXAxis(distinctField1). // big bars horizontal
+			//small vertical bars
+			AddSeries(distinctField2[i], generateBarItems(len(distinctField2), distinctField1[dummyGlobalCounter], distinctField2[i])). //pass small stack bar count, field1 and field2 for key combination
+			SetSeriesOptions(charts.WithBarChartOpts(opts.BarChart{
+				Stack: "dummy",
 			}))
-		dummyValueColumnCounter = dummyValueColumnCounter + len(distinctField2)
 	}
-	dummyValueColumnCounter = 0
-
+	dummyGlobalCounter = 0
 	return bar
 }
 
 func httpserver(w http.ResponseWriter, _ *http.Request) {
 	// create a new stack bar instance
-	stackBar := barStack()
 
+	stackBar := barStack()
+	fmt.Println("after call bar")
 	stackBar.Render(w)
+	fmt.Println("after call render")
 }
 func runPlot(distanceUnits string, massUnits string, energyUnits string, pollutant string, X1 string, X2 string, Y string, queryResult [][]string) {
 
@@ -173,29 +148,74 @@ func runPlot(distanceUnits string, massUnits string, energyUnits string, polluta
 	YAxisName = Y
 	// X name is selected by user, they must locate at first row, except last element
 	XAxisName = X1
-	//transposed QueryResult
-	transposedQueryResult := transpose(queryResult)
-	// #1 field, search X1 in the transposed matrix, if detect then copy the rest of the row
 
-	for i := 0; i < len(transposedQueryResult); i++ {
-		//only loop the first element of each row for header
-		if transposedQueryResult[i][0] == X1 { //find field1
-			columnSize := len(transposedQueryResult[0])
-			field1 = transposedQueryResult[i] //copy row
-			field1 = field1[1:columnSize]     //delete header that located at first position of the row
+	field1_position := 0
+	field2_position := 0
+	valueColumn_position := 0
+
+	//loop the existing table, and reshape long to wide end up in map
+	dummyMap := map[wideTableShapeStruct]float64{}
+
+	//find column position for field1, field2, and value in the queryResult matrix by searching the first row and do string comparing
+	for col := 0; col < len(queryResult[0]); col++ {
+		if queryResult[0][col] == X1 { //find field1
+			field1_position = col
 		}
-		if transposedQueryResult[i][0] == X2 { //find field2
-			columnSize := len(transposedQueryResult[0])
-			field2 = transposedQueryResult[i]
-			field2 = field2[1:columnSize]
+		if queryResult[0][col] == X2 {
+			field2_position = col
 		}
-		if transposedQueryResult[i][0] == Y { //find value column like emissionQuant or activity
-			columnSize := len(transposedQueryResult[0])
-			valueColumnRow = transposedQueryResult[i]
-			valueColumnRow = valueColumnRow[1:columnSize]
+		if queryResult[0][col] == Y {
+			valueColumn_position = col
 		}
 	}
-	fmt.Println("inside runPlot before remove duplicate field 1  ", field1, " and field 2 ", field2)
+	fmt.Println("print field1 field2 and value columns position ", field1_position, field2_position, valueColumn_position)
+
+	//loop through the query result and assign key and value into map
+	//skip first row, that is header
+	for row := 1; row < len(queryResult); row++ {
+		// {firstKey,secondKey} = value
+		stringToFloat, _ := strconv.ParseFloat(strings.TrimSpace(queryResult[row][valueColumn_position]), 64)
+		fmt.Println("print string convert to float", stringToFloat)
+		dummyMap[wideTableShapeStruct{queryResult[row][field1_position], queryResult[row][field2_position]}] = stringToFloat
+		//update field1 []string
+		field1 = append(field1, queryResult[row][field1_position])
+		//and field2 []string
+		field2 = append(field2, queryResult[row][field2_position])
+	}
+
+	mapCopy(dummyGlobalTable, dummyMap)
+
+	fmt.Println("print map")
+	for key, value := range dummyMap {
+		fmt.Printf("%s  value is %v\n", key, value)
+	}
+
+	fmt.Println("print field1", field1)
+
+	//
+	////transposed QueryResult
+	//transposedQueryResult := transpose(queryResult)
+	//// #1 field, search X1 in the transposed matrix, if detect then copy the rest of the row
+	//
+	//for i := 0; i < len(transposedQueryResult); i++ {
+	//	//only loop the first element of each row for header
+	//	if transposedQueryResult[i][0] == X1 { //find field1
+	//		columnSize := len(transposedQueryResult[0])
+	//		field1 = transposedQueryResult[i] //copy row
+	//		field1 = field1[1:columnSize]     //delete header that located at first position of the row
+	//	}
+	//	if transposedQueryResult[i][0] == X2 { //find field2
+	//		columnSize := len(transposedQueryResult[0])
+	//		field2 = transposedQueryResult[i]
+	//		field2 = field2[1:columnSize]
+	//	}
+	//	if transposedQueryResult[i][0] == Y { //find value column like emissionQuant or activity
+	//		columnSize := len(transposedQueryResult[0])
+	//		valueColumnRow = transposedQueryResult[i]
+	//		valueColumnRow = valueColumnRow[1:columnSize]
+	//	}
+	//}
+	//fmt.Println("inside runPlot before remove duplicate field 1  ", field1, " and field 2 ", field2)
 
 	//dummyMatrixCounter := 0
 	//field1 = removeDuplicate(field1)
@@ -207,13 +227,13 @@ func runPlot(distanceUnits string, massUnits string, energyUnits string, polluta
 	//	dummyMatrix[i] = make([]string, len(field2))
 	//}
 
-	var dummyMatrix = [][]string{}
-	dummyMatrix = append(dummyMatrix, field1)
-	dummyMatrix = append(dummyMatrix, field2)
-	dummyMatrix = append(dummyMatrix, valueColumnRow)
-
-	//fmt.Println("inside runPlot after remove duplicate field 1  ", field1, " and field 2 ", field2)
-	fmt.Println("inside runPlot dummyMatrix = ", dummyMatrix)
+	//var dummyMatrix = [][]string{}
+	//dummyMatrix = append(dummyMatrix, field1)
+	//dummyMatrix = append(dummyMatrix, field2)
+	//dummyMatrix = append(dummyMatrix, valueColumnRow)
+	//
+	////fmt.Println("inside runPlot after remove duplicate field 1  ", field1, " and field 2 ", field2)
+	//fmt.Println("inside runPlot dummyMatrix = ", dummyMatrix)
 
 	//for i := 0; i < len(field1); i++ {
 	//	for j := 0; j < len(field2); j++ {
@@ -223,19 +243,20 @@ func runPlot(distanceUnits string, massUnits string, energyUnits string, polluta
 	//}
 	//dummyMatrixCounter = 0
 
-	fmt.Println("inside runPlot printing field 1  ", field1, " and field 2 ", field2)
-	fmt.Println("inside runPlot printing dummy value column")
-	fmt.Println(valueColumnRow)
+	//fmt.Println("inside runPlot printing field 1  ", field1, " and field 2 ", field2)
+	//fmt.Println("inside runPlot printing dummy value column")
+	//fmt.Println(valueColumnRow)
 
 	//copy it to global var
 	//dummyEmissionQuant = dummyMatrix
 	//copy(dummyEmissionQuant, dummyMatrix)
-	dummyEmissionQuant = dummyMatrix
-	fmt.Println("copy dummyEmissionQuant")
-	fmt.Println(dummyEmissionQuant)
+	//dummyEmissionQuant = dummyMatrix
+	//fmt.Println("copy dummyEmissionQuant")
+	fmt.Println("before call http server")
 
 	http.HandleFunc("/", httpserver)
 	http.ListenAndServe(":8081", nil)
+	fmt.Println("after call http server")
 }
 
 func setMatrix(dataTable [][]string) {
