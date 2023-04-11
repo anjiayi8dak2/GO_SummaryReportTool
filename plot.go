@@ -39,7 +39,6 @@ var (
 )
 
 func generateBarItems(field2_key string) []opts.BarData {
-
 	//eCharts only take BarData type to generate plot
 	items := make([]opts.BarData, 0)
 
@@ -68,7 +67,7 @@ func barStack() *charts.Bar {
 		}),
 
 		charts.WithTooltipOpts(opts.Tooltip{Show: true}),
-		charts.WithLegendOpts(opts.Legend{Bottom: "50%"}),
+		charts.WithLegendOpts(opts.Legend{Show: true, Bottom: "0", Right: "120"}),
 		charts.WithToolboxOpts(opts.Toolbox{
 			Show:  true,
 			Right: "20%",
