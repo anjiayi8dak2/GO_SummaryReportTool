@@ -42,6 +42,9 @@ var (
 	dummyEmissionQuant = [][]string{}
 	dummyGlobalTable   = map[wideTableShapeStruct]float64{}
 	dummyGlobalCounter = 0
+
+	distinctField1 []string
+	distinctField2 []string
 )
 
 // transpose a 2d matrix
@@ -60,19 +63,30 @@ func transpose(slice [][]string) [][]string {
 	return result
 }
 
-func generateBarItems(stackBarCount int, field1_key string, field2_key string) []opts.BarData {
+func generateBarItems(field2_key string) []opts.BarData {
 
 	//eCharts only take BarData type to generate plot
 	items := make([]opts.BarData, 0)
 
-	for i := 0; i < stackBarCount; i++ {
+	//a := []string{"Foo", "Bar"}
+	//for i, s := range a {
+	//	fmt.Println(i, s)
+	//}
+
+	for _, field1_key := range distinctField1 {
 		f := dummyGlobalTable[wideTableShapeStruct{field1_key, field2_key}]
 		items = append(items, opts.BarData{Value: f})
-		fmt.Println("inside generate bar item print key, ", field1_key, " ", field2_key+" ", f, " small stack bar count ", stackBarCount)
-		fmt.Println("print global counter ", dummyGlobalCounter, " and field1 with counter index ", field1[dummyGlobalCounter])
-		dummyGlobalCounter++
+		fmt.Println("inside generate bar item print key, ", field1_key, " ", field2_key+" ", f)
 	}
-	dummyGlobalCounter = 0
+
+	//for i := 0; i < stackBarCount; i++ {
+	//	f := dummyGlobalTable[wideTableShapeStruct{field1_key, field2_key}]
+	//	items = append(items, opts.BarData{Value: f})
+	//	fmt.Println("inside generate bar item print key, ", field1_key, " ", field2_key+" ", f, " small stack bar count ", stackBarCount)
+	//	fmt.Println("print global counter ", dummyGlobalCounter, " and field1 with counter index ", field1[dummyGlobalCounter])
+	//	dummyGlobalCounter++
+	//}
+	//dummyGlobalCounter = 0
 	//fmt.Println("generate bar item ", f)
 	return items
 }
@@ -111,16 +125,16 @@ func barStack() *charts.Bar {
 		),
 	)
 
-	distinctField1 := removeDuplicateStr(field1) //2 ,5
+	distinctField1 = removeDuplicateStr(field1) //2 ,5
 	fmt.Println("print distinct ", distinctField1)
-	distinctField2 := removeDuplicateStr(field2) //1, 100
+	distinctField2 = removeDuplicateStr(field2) //1, 100
 	fmt.Println("print distinct ", distinctField2)
 
 	//iterate small bars on big bar
 	for i := 0; i < len(distinctField2); i++ {
 		bar.SetXAxis(distinctField1). // big bars horizontal
 			//small vertical bars
-			AddSeries(distinctField2[i], generateBarItems(len(distinctField2), distinctField1[dummyGlobalCounter], distinctField2[i])). //pass small stack bar count, field1 and field2 for key combination
+			AddSeries(distinctField2[i], generateBarItems(distinctField2[i])). //pass small stack bar count, field1 and field2 for key combination
 			SetSeriesOptions(charts.WithBarChartOpts(opts.BarChart{
 				Stack: "dummy",
 			}))
