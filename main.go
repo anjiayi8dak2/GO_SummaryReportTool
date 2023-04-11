@@ -33,17 +33,8 @@ func main() {
 	//Top menu bar
 	menuitemMaria := fyne.NewMenuItem("Open Maria Data Folder", func() {
 		openMariaFolder(db)
-	}) // ignore functions
-	//menuitemRefresh := fyne.NewMenuItem("Refresh (F5)", buttonSubmit(db, dbSelection, tableSelection)) // ignore functions
-	//TODO: all the test goes refresh button here
+	})
 	menuitemRefresh := fyne.NewMenuItem("Refresh (F5)", func() {
-		//whiteList []string only contains column names, whiteListIndex [] bool contains all columns from movesoutput
-		whiteList, whiteListIndex := getWhiteList(db, dbSelection, tableSelection)
-		//fmt.Println("printing white list index in bool")
-		//fmt.Printf("%v", whiteListIndex)
-		queryResult, _ := getQueryResult(db, dbSelection, tableSelection, whiteList, "", "")
-
-		makeWindowTwo(a, queryResult, db, dbSelection, tableSelection, whiteListIndex, whiteList)
 
 	})
 	menuitemOpenlog := fyne.NewMenuItem("Open Log", nil)   // ignore functions
@@ -89,7 +80,16 @@ func main() {
 		})
 
 	dropdownGrid := container.New(layout.NewGridLayout(2), dbDropdown, tableDropdown)
-	window1.SetContent(dropdownGrid)
+	submitButton := widget.NewButton("Submit", func() {
+		//whiteList []string only contains column names, whiteListIndex [] bool contains all columns from movesoutput
+		whiteList, whiteListIndex := getWhiteList(db, dbSelection, tableSelection)
+		queryResult, _ := getQueryResult(db, dbSelection, tableSelection, whiteList, "", "")
+		makeWindowTwo(a, queryResult, db, dbSelection, tableSelection, whiteListIndex, whiteList)
+	})
+	outerContainer := container.NewVSplit(dropdownGrid, submitButton)
+	outerContainer.Offset = 0.8
+
+	window1.SetContent(outerContainer)
 	//show and run
 	window1.ShowAndRun()
 }

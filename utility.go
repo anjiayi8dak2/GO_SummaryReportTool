@@ -59,7 +59,9 @@ func makeWindowTwo(a fyne.App, queryResult [][]string, db *sql.DB, dbSelection s
 	toolbar := widget.NewToolbar(
 		widget.NewToolbarAction(theme.ViewRefreshIcon(), func() { //update button
 			fmt.Println("I pressed update button")
+
 		}),
+		widget.NewToolbarSeparator(),
 		widget.NewToolbarAction(theme.DocumentCreateIcon(), func() { //plot button TODO
 			fmt.Println("I pressed plot button")
 			selectAggregationField(a, queryResult)
@@ -67,6 +69,7 @@ func makeWindowTwo(a fyne.App, queryResult [][]string, db *sql.DB, dbSelection s
 			//runPlot(distanceUnits, massUnits, energyUnits, queryResult) //TODO: need to select two field or use first two column?
 
 		}),
+		widget.NewToolbarSeparator(),
 		widget.NewToolbarAction(theme.DownloadIcon(), func() { //download CSV
 			fmt.Println("I pressed download csv button")
 			csvExport(queryResult)
@@ -709,4 +712,41 @@ func mapCopy[M1, M2 ~map[K]V, K comparable, V any](dst M1, src M2) {
 	for k, v := range src {
 		dst[k] = v
 	}
+}
+
+func removeDuplicateStr(strSlice []string) []string {
+	allKeys := make(map[string]bool)
+	list := []string{}
+	for _, item := range strSlice {
+		if _, value := allKeys[item]; !value {
+			allKeys[item] = true
+			list = append(list, item)
+		}
+	}
+	return list
+}
+
+func removeDuplicateInt(intSlice []int) []int {
+	allKeys := make(map[int]bool)
+	list := []int{}
+	for _, item := range intSlice {
+		if _, value := allKeys[item]; !value {
+			allKeys[item] = true
+			list = append(list, item)
+		}
+	}
+	return list
+}
+
+// Generic solution
+func removeDuplicate[T string | int](sliceList []T) []T {
+	allKeys := make(map[T]bool)
+	list := []T{}
+	for _, item := range sliceList {
+		if _, value := allKeys[item]; !value {
+			allKeys[item] = true
+			list = append(list, item)
+		}
+	}
+	return list
 }
