@@ -18,6 +18,13 @@ import (
 	"strings"
 )
 
+var (
+	distanceUnits string
+	massUnits     string
+	energyUnits   string
+	tableList     []string
+)
+
 func openMariaFolder(db *sql.DB) {
 	dataDir := getDataDir(db)
 	dataDir = "\"" + dataDir + "\""
@@ -50,9 +57,9 @@ func makeWindowTwo(a fyne.App, queryResult [][]string, db *sql.DB, dbSelection s
 
 	//the message tab on top of screen, should update this text on the fly
 	//default display for DB and Table selection
-	distanceUnits := getMOVESrun(db, dbSelection, "distanceUnits")
-	massUnits := getMOVESrun(db, dbSelection, "massUnits")
-	energyUnits := getMOVESrun(db, dbSelection, "energyUnits")
+	distanceUnits = getMOVESrun(db, dbSelection, "distanceUnits")
+	massUnits = getMOVESrun(db, dbSelection, "massUnits")
+	energyUnits = getMOVESrun(db, dbSelection, "energyUnits")
 	//var field1, field2 string
 	ToolbarLabel := widget.NewLabel("DB Selection: " + dbSelection + "Table Selection: " + tableSelection + " Energy Unit: " + energyUnits + " Distance Unit: " + distanceUnits + " Mass Unit: " + massUnits)
 
@@ -569,7 +576,7 @@ func selectAggregationField(a fyne.App, queryResult [][]string) {
 	submitButton := widget.NewButton("Submit", func() {
 		fmt.Println("Submit button pressed")
 		fmt.Println("Printing field selection #1  " + fieldSelection1 + " field #2 " + fieldSelection2 + " value column " + resultColumn + " pollutant selection " + pollutantSelection)
-		runPlot("distance", "mass", "energy", pollutantSelection, fieldSelection1, fieldSelection2, resultColumn, queryResult)
+		runPlot(distanceUnits, massUnits, energyUnits, pollutantSelection, fieldSelection1, fieldSelection2, resultColumn, queryResult)
 	})
 
 	cancelButton := widget.NewButton("Cancel", func() {

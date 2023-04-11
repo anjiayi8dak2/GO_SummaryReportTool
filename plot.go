@@ -17,7 +17,7 @@ import (
 var (
 
 	//Most part of the variables should pass from fyne window
-	distanceUnits, massUnits, energyUnits string
+	//distanceUnits, massUnits, energyUnits string
 	//pollutant name should be here, it should pass from the caller
 	titleName = "Defualt Title"
 	// This count is useful to generate plot, user can select 1 or 2 field for aggregation
@@ -116,7 +116,8 @@ func runPlot(distanceUnits string, massUnits string, energyUnits string, polluta
 	// if count =1, make regular bar, if count =2, then make stack bar
 	xAxisCount = 2
 	//Y name could also be activity, it must locate at (first row, last element)
-	YAxisName = Y
+	YAxisName = Y + " in " + massUnits + "/" + distanceUnits + "/" + energyUnits
+
 	// X name is selected by user, they must locate at first row, except last element
 	XAxisName = X1
 
