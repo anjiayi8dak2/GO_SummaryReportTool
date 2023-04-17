@@ -55,6 +55,14 @@ func makeWindowTwo(a fyne.App, queryResult [][]string, db *sql.DB, dbSelection s
 	window2.SetContent(widget.NewLabel("window #2 label"))
 	window2.Resize(fyne.NewSize(1000, 800))
 
+	//TODO: switch here to split 7 table selections
+	//map to hold filters selection in checkbox group for where clause
+	filter := make(map[string][]string)
+	//map to hold group by check boxes selection for group by clause
+	groupBy := make(map[string][]string)
+	//container sections
+	innerContainer := container.NewVBox()
+
 	//the message tab on top of screen, should update this text on the fly
 	//default display for DB and Table selection
 	distanceUnits = getMOVESrun(db, dbSelection, "distanceUnits")
@@ -66,7 +74,7 @@ func makeWindowTwo(a fyne.App, queryResult [][]string, db *sql.DB, dbSelection s
 	toolbar := widget.NewToolbar(
 		widget.NewToolbarAction(theme.ViewRefreshIcon(), func() { //update button
 			fmt.Println("I pressed update button")
-
+			updateButtonToolbar(db, window2, tableSelection, dbSelection, whiteList, filter, groupBy, &queryResult, ToolbarLabel)
 		}),
 		widget.NewToolbarSeparator(),
 		widget.NewToolbarAction(theme.DocumentCreateIcon(), func() { //plot button TODO
@@ -100,14 +108,6 @@ func makeWindowTwo(a fyne.App, queryResult [][]string, db *sql.DB, dbSelection s
 				o.(*widget.Label).SetText("no data")
 			}
 		})
-
-	//TODO: switch here to split 7 table selections
-	//map to hold filters selection in checkbox group for where clause
-	filter := make(map[string][]string)
-	//map to hold group by check boxes selection for group by clause
-	groupBy := make(map[string][]string)
-	//container sections
-	innerContainer := container.NewVBox()
 
 	switch tableSelection {
 	case "movesoutput":
@@ -356,121 +356,121 @@ func makeWindowTwo(a fyne.App, queryResult [][]string, db *sql.DB, dbSelection s
 	}
 
 	updateButton := widget.NewButtonWithIcon("Update", theme.MediaReplayIcon(), func() {
-		whereClause := " WHERE "
-		fmt.Println("pressed UPDATE button")
-		//loop through all the keys in mo map and generate a where clause
-		fmt.Println("loop throuth the whiteList keys and print")
-		// there is no easy loop solution for select and then unselect operation on the run time, because it will generate a key with empty value such as hpid {}
-		// these empty values will cause empty IN() statement in the where clause that make future problems.
-		// hence, we should detect empty value and delete that key before disaster happen
-		for index := 0; index < len(whiteList); index++ {
-			var partialWhere string
-			value, ok := filter[whiteList[index]]
-			if ok { //none 0 value
-				fmt.Println(whiteList[index], " key found: ", value)
-				//detect if need AND
-				if len(whereClause) > 7 { //predefined whereClause with string " where ", size = 7, if  size > 7, that means we need put AND in the beginning
-					inValue := convertColumnsComma(value)
-					fmt.Println("print in values ", inValue)
-					partialWhere = " AND " + whiteList[index] + " IN ( " + inValue + " ) "
-					fmt.Println("print dummy clause ", partialWhere)
-				} else { // otherwise do not put AND
-					inValue := convertColumnsComma(value)
-					fmt.Println("print in values ", inValue)
-					partialWhere = whiteList[index] + " IN ( " + inValue + " ) "
-					fmt.Println("print dummy clause ", partialWhere)
-				}
-			} else {
-				fmt.Println(whiteList[index], " key not found")
-				//delete map that has empty value, they looks like hpID:[], they will eventually cause an empty IN() in the where clause
-				for key, value := range filter {
-					if len(value) == 0 {
-						delete(filter, key)
-					}
-				}
-				fmt.Println("print the map at then end of button function")
-				fmt.Println(filter)
-				//dummyToolBarString_Where = fmt.Sprint(filter)
-			}
-			//append inner string to outer string
-			whereClause += partialWhere
-		}
-		//catch if no checkbox were selected, then remove the default WHERE, since there is no filter
-		if whereClause == " WHERE " {
-			whereClause = ""
-		}
-
-		fmt.Println("printing the WHERE clause")
-		fmt.Println(whereClause)
-
-		// enter GROUP BY claus
-		// if there is 1 item is checked, have GROUP BY xxx
-		// else if, >1 items are checked, call func convertColumnsComma, get comma seperated field name, then have GROUP BY xxx,xxx, .....
-		// else there is 0 item is checked, remove the "GROUP BY"
-
-		//  if 1 or more items are checked, update the select columns same as the GROUP BY, Plus the sum of emissionQuant, maybe override func getQueryResult with direct sql statement
-
-		groupbyClause := " GROUP BY "
-		var columnSelection []string
-		var groupbySelection []string
-
-		if len(groupBy["Aggregation"]) == 0 { //if nothing in the group by map
-			//when select 0 checkbox, do not need group clause AND the select column should same as whiteList
-			groupbyClause = ""
-			columnSelection = whiteList
-		} else if len(groupBy["Aggregation"]) >= 1 { //if there is anything in the group by map
-			//update GROUP BY
-			//loop through the group by map, and copy selected box into a temp slice
-			for _, value := range groupBy["Aggregation"] {
-				groupbySelection = append(groupbySelection, value)
-				fmt.Println("copy group by map value into slice", value)
-				fmt.Println("printing updated group by slice", groupbySelection)
-			}
-
-			//update SELECT clause PLUS sum of emissionQuant or acivity or rates
-			columnSelection = groupbySelection
-			//TODO: switch here, depends on different table, sum activity? emissionQuant?
-			//TODO: disable rate aggregation for now, averaging/summing rate can be misleading
-			// because it is not considered many factors such as population distribution, and all kinds of adjustments.
-			if tableSelection == "movesoutput" {
-				columnSelection = append(columnSelection, "sum(emissionQuant) ")
-			} else if tableSelection == "startspervehicle" {
-				columnSelection = append(columnSelection, "ROUND(avg(startsPerVehicle),2) AS average_startsPerVehicle ")
-			} else { //this should include "rateperdistance", "rateperhour", "rateperprofile", "rateperstart", and "ratepervehicle", because they all have temperature and relHumidity columns
-				columnSelection = append(columnSelection, "ROUND( avg(temperature),2) AS average_temperature ")
-				columnSelection = append(columnSelection, "ROUND( avg(relHumidity) , 2)AS average_relHumidity ")
-				//then add the last column rateperxxx to the end
-				switch tableSelection {
-				case "rateperdistance":
-					columnSelection = append(columnSelection, "ROUND( avg(rateperdistance) , 2)AS average_rateperdistance ")
-				case "rateperhour":
-					columnSelection = append(columnSelection, "ROUND( avg(rateperhour) , 2)AS average_rateperhour ")
-				case "rateperprofile":
-					columnSelection = append(columnSelection, "ROUND( avg(rateperprofile) , 2)AS average_rateperprofile ")
-				case "rateperstart":
-					columnSelection = append(columnSelection, "ROUND( avg(rateperstart) , 2)AS average_rateperstart ")
-				case "ratepervehicle":
-					columnSelection = append(columnSelection, "ROUND( avg(ratepervehicle) , 2)AS average_ratepervehicle ")
-				}
-			}
-
-			//pass the selected box name to GROUP BY clause, convert list of name into comma seperated format
-			groupbyClause += convertColumnsComma(groupbySelection)
-		} else {
-			panic("detect length of groupBy map size <0, WHY")
-		}
-
-		//update the matrix with the new where clause and group by we just made
-		var err error
-		queryResult, err = getQueryResult(db, dbSelection, tableSelection, columnSelection, whereClause, groupbyClause)
-		fmt.Println("printing error query result WHERE clause")
-		fmt.Println(err)
-		updateToolbarMessage(ToolbarLabel, whereClause, groupbyClause, db, dbSelection)
-
-		//dialog box pop out warning for no result query
-		if len(queryResult) < 2 {
-			runPopUp(window2, "Filter combination returns no data, please try different filter")
-		}
+		//whereClause := " WHERE "
+		//fmt.Println("pressed UPDATE button")
+		////loop through all the keys in mo map and generate a where clause
+		//fmt.Println("loop throuth the whiteList keys and print")
+		//// there is no easy loop solution for select and then unselect operation on the run time, because it will generate a key with empty value such as hpid {}
+		//// these empty values will cause empty IN() statement in the where clause that make future problems.
+		//// hence, we should detect empty value and delete that key before disaster happen
+		//for index := 0; index < len(whiteList); index++ {
+		//	var partialWhere string
+		//	value, ok := filter[whiteList[index]]
+		//	if ok { //none 0 value
+		//		fmt.Println(whiteList[index], " key found: ", value)
+		//		//detect if need AND
+		//		if len(whereClause) > 7 { //predefined whereClause with string " where ", size = 7, if  size > 7, that means we need put AND in the beginning
+		//			inValue := convertColumnsComma(value)
+		//			fmt.Println("print in values ", inValue)
+		//			partialWhere = " AND " + whiteList[index] + " IN ( " + inValue + " ) "
+		//			fmt.Println("print dummy clause ", partialWhere)
+		//		} else { // otherwise do not put AND
+		//			inValue := convertColumnsComma(value)
+		//			fmt.Println("print in values ", inValue)
+		//			partialWhere = whiteList[index] + " IN ( " + inValue + " ) "
+		//			fmt.Println("print dummy clause ", partialWhere)
+		//		}
+		//	} else {
+		//		fmt.Println(whiteList[index], " key not found")
+		//		//delete map that has empty value, they looks like hpID:[], they will eventually cause an empty IN() in the where clause
+		//		for key, value := range filter {
+		//			if len(value) == 0 {
+		//				delete(filter, key)
+		//			}
+		//		}
+		//		fmt.Println("print the map at then end of button function")
+		//		fmt.Println(filter)
+		//		//dummyToolBarString_Where = fmt.Sprint(filter)
+		//	}
+		//	//append inner string to outer string
+		//	whereClause += partialWhere
+		//}
+		////catch if no checkbox were selected, then remove the default WHERE, since there is no filter
+		//if whereClause == " WHERE " {
+		//	whereClause = ""
+		//}
+		//
+		//fmt.Println("printing the WHERE clause")
+		//fmt.Println(whereClause)
+		//
+		//// enter GROUP BY claus
+		//// if there is 1 item is checked, have GROUP BY xxx
+		//// else if, >1 items are checked, call func convertColumnsComma, get comma seperated field name, then have GROUP BY xxx,xxx, .....
+		//// else there is 0 item is checked, remove the "GROUP BY"
+		//
+		////  if 1 or more items are checked, update the select columns same as the GROUP BY, Plus the sum of emissionQuant, maybe override func getQueryResult with direct sql statement
+		//
+		//groupbyClause := " GROUP BY "
+		//var columnSelection []string
+		//var groupbySelection []string
+		//
+		//if len(groupBy["Aggregation"]) == 0 { //if nothing in the group by map
+		//	//when select 0 checkbox, do not need group clause AND the select column should same as whiteList
+		//	groupbyClause = ""
+		//	columnSelection = whiteList
+		//} else if len(groupBy["Aggregation"]) >= 1 { //if there is anything in the group by map
+		//	//update GROUP BY
+		//	//loop through the group by map, and copy selected box into a temp slice
+		//	for _, value := range groupBy["Aggregation"] {
+		//		groupbySelection = append(groupbySelection, value)
+		//		fmt.Println("copy group by map value into slice", value)
+		//		fmt.Println("printing updated group by slice", groupbySelection)
+		//	}
+		//
+		//	//update SELECT clause PLUS sum of emissionQuant or acivity or rates
+		//	columnSelection = groupbySelection
+		//	//TODO: switch here, depends on different table, sum activity? emissionQuant?
+		//	//TODO: disable rate aggregation for now, averaging/summing rate can be misleading
+		//	// because it is not considered many factors such as population distribution, and all kinds of adjustments.
+		//	if tableSelection == "movesoutput" {
+		//		columnSelection = append(columnSelection, "sum(emissionQuant) ")
+		//	} else if tableSelection == "startspervehicle" {
+		//		columnSelection = append(columnSelection, "ROUND(avg(startsPerVehicle),2) AS average_startsPerVehicle ")
+		//	} else { //this should include "rateperdistance", "rateperhour", "rateperprofile", "rateperstart", and "ratepervehicle", because they all have temperature and relHumidity columns
+		//		columnSelection = append(columnSelection, "ROUND( avg(temperature),2) AS average_temperature ")
+		//		columnSelection = append(columnSelection, "ROUND( avg(relHumidity) , 2)AS average_relHumidity ")
+		//		//then add the last column rateperxxx to the end
+		//		switch tableSelection {
+		//		case "rateperdistance":
+		//			columnSelection = append(columnSelection, "ROUND( avg(rateperdistance) , 2)AS average_rateperdistance ")
+		//		case "rateperhour":
+		//			columnSelection = append(columnSelection, "ROUND( avg(rateperhour) , 2)AS average_rateperhour ")
+		//		case "rateperprofile":
+		//			columnSelection = append(columnSelection, "ROUND( avg(rateperprofile) , 2)AS average_rateperprofile ")
+		//		case "rateperstart":
+		//			columnSelection = append(columnSelection, "ROUND( avg(rateperstart) , 2)AS average_rateperstart ")
+		//		case "ratepervehicle":
+		//			columnSelection = append(columnSelection, "ROUND( avg(ratepervehicle) , 2)AS average_ratepervehicle ")
+		//		}
+		//	}
+		//
+		//	//pass the selected box name to GROUP BY clause, convert list of name into comma seperated format
+		//	groupbyClause += convertColumnsComma(groupbySelection)
+		//} else {
+		//	panic("detect length of groupBy map size <0, WHY")
+		//}
+		//
+		////update the matrix with the new where clause and group by we just made
+		//var err error
+		//queryResult, err = getQueryResult(db, dbSelection, tableSelection, columnSelection, whereClause, groupbyClause)
+		//fmt.Println("printing error query result WHERE clause")
+		//fmt.Println(err)
+		//updateToolbarMessage(ToolbarLabel, whereClause, groupbyClause, db, dbSelection)
+		//
+		////dialog box pop out warning for no result query
+		//if len(queryResult) < 2 {
+		//	runPopUp(window2, "Filter combination returns no data, please try different filter")
+		//}
 
 	})
 
@@ -595,7 +595,125 @@ func selectAggregationField(a fyne.App, queryResult [][]string) {
 }
 
 // TODO: move update button on top tool bar, not all the way in the bottom of scrollbar
-func updateButton() {
+func updateButtonToolbar(db *sql.DB, window2 fyne.Window, tableSelection string, dbSelection string, whiteList []string, filter map[string][]string,
+	groupBy map[string][]string, queryResult *[][]string, ToolbarLabel *widget.Label) {
+	fmt.Println("print from update button function")
+
+	whereClause := " WHERE "
+	fmt.Println("pressed UPDATE button")
+	//loop through all the keys in mo map and generate a where clause
+	fmt.Println("loop throuth the whiteList keys and print")
+	// there is no easy loop solution for select and then unselect operation on the run time, because it will generate a key with empty value such as hpid {}
+	// these empty values will cause empty IN() statement in the where clause that make future problems.
+	// hence, we should detect empty value in map and delete that key before disaster happen
+	for index := 0; index < len(whiteList); index++ {
+		var partialWhere string
+		value, ok := filter[whiteList[index]]
+		if ok { //none 0 value
+			fmt.Println(whiteList[index], " key found: ", value)
+			//detect if need AND
+			if len(whereClause) > 7 { //predefined whereClause with string " where ", size = 7, if  size > 7, that means we need put AND in the beginning
+				inValue := convertColumnsComma(value)
+				fmt.Println("print in values ", inValue)
+				partialWhere = " AND " + whiteList[index] + " IN ( " + inValue + " ) "
+				fmt.Println("print dummy clause ", partialWhere)
+			} else { // otherwise do not put AND
+				inValue := convertColumnsComma(value)
+				fmt.Println("print in values ", inValue)
+				partialWhere = whiteList[index] + " IN ( " + inValue + " ) "
+				fmt.Println("print dummy clause ", partialWhere)
+			}
+		} else {
+			fmt.Println(whiteList[index], " key not found")
+			//delete map that has empty value, they looks like hpID:[], they will eventually cause an empty IN() in the where clause
+			for key, value := range filter {
+				if len(value) == 0 {
+					delete(filter, key)
+				}
+			}
+			fmt.Println("print the map at then end of button function")
+			fmt.Println(filter)
+			//dummyToolBarString_Where = fmt.Sprint(filter)
+		}
+		//append inner string to outer string
+		whereClause += partialWhere
+	}
+	//catch if no checkbox were selected, then remove the default WHERE, since there is no filter
+	if whereClause == " WHERE " {
+		whereClause = ""
+	}
+
+	fmt.Println("printing the WHERE clause")
+	fmt.Println(whereClause)
+
+	// enter GROUP BY claus
+	// if there is 1 item is checked, have GROUP BY xxx
+	// else if, >1 items are checked, call func convertColumnsComma, get comma seperated field name, then have GROUP BY xxx,xxx, .....
+	// else there is 0 item is checked, remove the "GROUP BY"
+
+	//  if 1 or more items are checked, update the select columns same as the GROUP BY, Plus the sum of emissionQuant, maybe override func getQueryResult with direct sql statement
+
+	groupbyClause := " GROUP BY "
+	var columnSelection []string
+	var groupbySelection []string
+
+	if len(groupBy["Aggregation"]) == 0 { //if nothing in the group by map
+		//when select 0 checkbox, do not need group clause AND the select column should same as whiteList
+		groupbyClause = ""
+		columnSelection = whiteList
+	} else if len(groupBy["Aggregation"]) >= 1 { //if there is anything in the group by map
+		//update GROUP BY
+		//loop through the group by map, and copy selected box into a temp slice
+		for _, value := range groupBy["Aggregation"] {
+			groupbySelection = append(groupbySelection, value)
+			fmt.Println("copy group by map value into slice", value)
+			fmt.Println("printing updated group by slice", groupbySelection)
+		}
+
+		//update SELECT clause PLUS sum of emissionQuant or acivity or rates
+		columnSelection = groupbySelection
+		//TODO: switch here, depends on different table, sum activity? emissionQuant?
+		//TODO: disable rate aggregation for now, averaging/summing rate can be misleading
+		// because it is not considered many factors such as population distribution, and all kinds of adjustments.
+		if tableSelection == "movesoutput" {
+			columnSelection = append(columnSelection, "sum(emissionQuant) ")
+		} else if tableSelection == "startspervehicle" {
+			columnSelection = append(columnSelection, "ROUND(avg(startsPerVehicle),2) AS average_startsPerVehicle ")
+		} else { //this should include "rateperdistance", "rateperhour", "rateperprofile", "rateperstart", and "ratepervehicle", because they all have temperature and relHumidity columns
+			columnSelection = append(columnSelection, "ROUND( avg(temperature),2) AS average_temperature ")
+			columnSelection = append(columnSelection, "ROUND( avg(relHumidity) , 2)AS average_relHumidity ")
+			//then add the last column rateperxxx to the end
+			switch tableSelection {
+			case "rateperdistance":
+				columnSelection = append(columnSelection, "ROUND( avg(rateperdistance) , 2)AS average_rateperdistance ")
+			case "rateperhour":
+				columnSelection = append(columnSelection, "ROUND( avg(rateperhour) , 2)AS average_rateperhour ")
+			case "rateperprofile":
+				columnSelection = append(columnSelection, "ROUND( avg(rateperprofile) , 2)AS average_rateperprofile ")
+			case "rateperstart":
+				columnSelection = append(columnSelection, "ROUND( avg(rateperstart) , 2)AS average_rateperstart ")
+			case "ratepervehicle":
+				columnSelection = append(columnSelection, "ROUND( avg(ratepervehicle) , 2)AS average_ratepervehicle ")
+			}
+		}
+
+		//pass the selected box name to GROUP BY clause, convert list of name into comma seperated format
+		groupbyClause += convertColumnsComma(groupbySelection)
+	} else {
+		panic("detect length of groupBy map size <0, WHY")
+	}
+
+	//update the matrix with the new where clause and group by we just made
+	var err error
+	*queryResult, err = getQueryResult(db, dbSelection, tableSelection, columnSelection, whereClause, groupbyClause)
+	fmt.Println("printing error query result WHERE clause")
+	fmt.Println(err)
+	updateToolbarMessage(ToolbarLabel, whereClause, groupbyClause, db, dbSelection)
+
+	//dialog box pop out warning for no result query
+	if len(*queryResult) < 2 {
+		runPopUp(window2, "Filter combination returns no data, please try different filter")
+	}
 
 }
 
