@@ -1,17 +1,17 @@
 package main
 
 import (
-	"fyne.io/fyne/v2/layout"
-	_ "github.com/pkg/browser"
-)
-import (
 	"database/sql"
 	"encoding/csv"
 	"fmt"
 	"fyne.io/fyne/theme"
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
+	"git.sr.ht/~uid/flextable"
+	_ "git.sr.ht/~uid/flextable"
+	_ "github.com/pkg/browser"
 	"os"
 	"os/exec"
 	"runtime"
@@ -19,10 +19,11 @@ import (
 )
 
 var (
-	distanceUnits string
-	massUnits     string
-	energyUnits   string
-	tableList     []string
+	distanceUnits      string
+	massUnits          string
+	energyUnits        string
+	tableList          []string
+	flextableTableData *flextable.TableData
 )
 
 func openMariaFolder(db *sql.DB) {
@@ -55,7 +56,6 @@ func makeWindowTwo(a fyne.App, queryResult [][]string, db *sql.DB, dbSelection s
 	window2.SetContent(widget.NewLabel("window #2 label"))
 	window2.Resize(fyne.NewSize(1000, 800))
 
-	//TODO: switch here to split 7 table selections
 	//map to hold filters selection in checkbox group for where clause
 	filter := make(map[string][]string)
 	//map to hold group by check boxes selection for group by clause
@@ -75,46 +75,60 @@ func makeWindowTwo(a fyne.App, queryResult [][]string, db *sql.DB, dbSelection s
 		widget.NewToolbarAction(theme.ViewRefreshIcon(), func() { //update button
 			fmt.Println("I pressed update button")
 			updateButtonToolbar(db, window2, tableSelection, dbSelection, whiteList, filter, groupBy, &queryResult, ToolbarLabel)
+			flextableTableData = GetTableData(queryResult)
 		}),
 		widget.NewToolbarSeparator(),
-		widget.NewToolbarAction(theme.DocumentCreateIcon(), func() { //plot button TODO
+		widget.NewToolbarAction(theme.DocumentCreateIcon(), func() { //plot button
 			fmt.Println("I pressed plot button")
 			selectAggregationField(a, queryResult)
-
-			//runPlot(distanceUnits, massUnits, energyUnits, queryResult) //TODO: need to select two field or use first two column?
-
+			flextableTableData = GetTableData(queryResult)
 		}),
 		widget.NewToolbarSeparator(),
 		widget.NewToolbarAction(theme.DownloadIcon(), func() { //download CSV
 			fmt.Println("I pressed download csv button")
 			csvExport(queryResult)
-
 		}),
 		widget.NewToolbarSeparator(),
 		widget.NewToolbarAction(theme.VisibilityIcon(), func() { //decode button
-			//TODO implement decode function
 			fmt.Println("I pressed decode button")
 			decodeButtonToolbar(queryResult)
+			flextableTableData = GetTableData(queryResult)
 		}),
 		widget.NewToolbarSpacer(),
-		ToolbarLabel,
+		//ToolbarLabel,
 	)
 
-	tableData := widget.NewTable(
-		func() (int, int) {
-			return len(queryResult), len(queryResult[0]) // row size, columns size
-		},
-		func() fyne.CanvasObject {
-			return widget.NewLabel("wide content")
-		},
-		func(i widget.TableCellID, o fyne.CanvasObject) {
-			if len(queryResult) >= 2 {
-				o.(*widget.Label).SetText(queryResult[i.Row][i.Col])
-			} else {
-				o.(*widget.Label).SetText("no data")
-			}
-		})
-	tableData.Refresh()
+	//tableData := widget.NewTable(
+	//	func() (int, int) {
+	//		return len(queryResult), len(queryResult[0]) // row size, columns size
+	//	},
+	//	func() fyne.CanvasObject {
+	//		return widget.NewLabel("wide content")
+	//	},
+	//	func(i widget.TableCellID, o fyne.CanvasObject) {
+	//		if len(queryResult) >= 2 { //if there is any data other than header
+	//			o.(*widget.Label).SetText(queryResult[i.Row][i.Col])
+	//		} else { //otherwise fill cells with "no data"
+	//			o.(*widget.Label).SetText("no data")
+	//		}
+	//	})
+
+	flextableTableData = GetTableData(queryResult)
+	fmt.Println("print after outside GetTableData")
+
+	tableData := flextable.NewTable(flextableTableData, func(c *flextable.TableCell) {
+		fmt.Printf("I have been tapped. Cell value %s, Row: %d, Column name: %s\n",
+			c.Text(), c.Id.Row, c.ColumnName())
+		c.Refresh()
+		fmt.Println("print after refresh TableCell c")
+		flextableTableData = GetTableData(queryResult)
+		fmt.Println("print after inside GetTableData")
+	})
+	//tableData.SetData(flextableTableData)
+	//tableData.Refresh()
+	//fmt.Println("print after refresh")
+
+	//tableData.SetColumnWidth(, 500)
 	switch tableSelection {
 	case "movesoutput":
 		//fyne containers, create buttons for filters with checkbox selection saved in the map filter
@@ -876,4 +890,16 @@ func removeDuplicate[T string | int](sliceList []T) []T {
 		}
 	}
 	return list
+}
+
+func GetTableData(matrix [][]string) *flextable.TableData {
+	data := flextable.NewTableData("MyTable")
+	for col := 0; col < len(matrix[0]); col++ {
+		header := matrix[0][col]
+		for row := 0; row < len(matrix); row++ {
+			data.AddStringCell(header,
+				matrix[row][col])
+		}
+	}
+	return data
 }
