@@ -79,7 +79,7 @@ func main() {
 			tableDropdownResult.Refresh()
 		})
 
-	dropdownGrid := container.New(layout.NewGridLayout(2), dbDropdown, tableDropdown)
+	dropdownGrid := container.New(layout.NewAdaptiveGridLayout(2), dbDropdown, tableDropdown)
 	submitButton := widget.NewButton("Submit", func() {
 		//whiteList []string only contains column names, whiteListIndex [] bool contains all columns from movesoutput
 		whiteList, whiteListIndex := getWhiteList(db, dbSelection, tableSelection)

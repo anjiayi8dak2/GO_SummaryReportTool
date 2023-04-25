@@ -14,6 +14,7 @@ func getDataDir(db *sql.DB) string {
 	var dataDir string
 	db.QueryRow("select @@datadir as dataDir;").Scan(&dataDir)
 	fmt.Println("MariaDB data folder is in :", dataDir)
+	//TODO: maybe make this a pop up?
 	return dataDir
 }
 
@@ -38,7 +39,6 @@ func getDBList(db *sql.DB) []string {
 	if err := rows.Err(); err != nil {
 		log.Fatal(err)
 	}
-	//fmt.Println("DB list is here :", listSlice)
 	return listSlice
 }
 

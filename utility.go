@@ -90,6 +90,12 @@ func makeWindowTwo(a fyne.App, queryResult [][]string, db *sql.DB, dbSelection s
 			csvExport(queryResult)
 
 		}),
+		widget.NewToolbarSeparator(),
+		widget.NewToolbarAction(theme.VisibilityIcon(), func() { //decode button
+			//TODO implement decode function
+			fmt.Println("I pressed decode button")
+			decodeButtonToolbar(queryResult)
+		}),
 		widget.NewToolbarSpacer(),
 		ToolbarLabel,
 	)
@@ -108,7 +114,7 @@ func makeWindowTwo(a fyne.App, queryResult [][]string, db *sql.DB, dbSelection s
 				o.(*widget.Label).SetText("no data")
 			}
 		})
-
+	tableData.Refresh()
 	switch tableSelection {
 	case "movesoutput":
 		//fyne containers, create buttons for filters with checkbox selection saved in the map filter
@@ -382,6 +388,122 @@ func makeWindowTwo(a fyne.App, queryResult [][]string, db *sql.DB, dbSelection s
 	//window2.SetContent(outerContainer)
 	window2.SetContent(container.NewBorder(toolbar, nil, nil, nil, outerContainer))
 	window2.Show()
+}
+
+func decodeButtonToolbar(Matrix [][]string) {
+	//outer loop for each column
+	for col := 0; col < len(Matrix[0]); col++ {
+		//inner loop for each row
+		switch Matrix[0][col] {
+		case "dayID": // if the header of column is dayID, then we use the dayID map for decode.
+			for row := 1; row < len(Matrix); row++ { //skip the first element that must be header
+				val, ok := decoder_dayOfAnyWeek[Matrix[row][col]]
+				// If the key exists
+				if ok {
+					Matrix[row][col] = val //assign the English words back to original matrix
+				}
+			}
+		case "stateID": //same logic for the rest of the decoders
+			for row := 1; row < len(Matrix); row++ {
+				val, ok := decoder_state[Matrix[row][col]]
+				if ok {
+					Matrix[row][col] = val
+				}
+			}
+		case "countyID":
+			for row := 1; row < len(Matrix); row++ {
+				val, ok := decoder_county[Matrix[row][col]]
+				if ok {
+					Matrix[row][col] = val
+				}
+			}
+		case "pollutantID":
+			for row := 1; row < len(Matrix); row++ {
+				val, ok := decoder_pollutant[Matrix[row][col]]
+				if ok {
+					Matrix[row][col] = val
+				}
+			}
+		case "processID":
+			for row := 1; row < len(Matrix); row++ {
+				val, ok := decoder_emissionProcess[Matrix[row][col]]
+				if ok {
+					Matrix[row][col] = val
+				}
+			}
+		case "sourceTypeID":
+			for row := 1; row < len(Matrix); row++ {
+				val, ok := decoder_sourceUseType[Matrix[row][col]]
+				if ok {
+					Matrix[row][col] = val
+				}
+			}
+		case "regClassID":
+			for row := 1; row < len(Matrix); row++ {
+				val, ok := decoder_regulatoryClass[Matrix[row][col]]
+				if ok {
+					Matrix[row][col] = val
+				}
+			}
+		case "fuelTypeID":
+			for row := 1; row < len(Matrix); row++ {
+				val, ok := decoder_fuelType[Matrix[row][col]]
+				if ok {
+					Matrix[row][col] = val
+				}
+			}
+		case "fuelSubTypeID":
+			for row := 1; row < len(Matrix); row++ {
+				val, ok := decoder_fuelSubType[Matrix[row][col]]
+				if ok {
+					Matrix[row][col] = val
+				}
+			}
+		case "roadTypeID":
+			for row := 1; row < len(Matrix); row++ {
+				val, ok := decoder_roadtype[Matrix[row][col]]
+				if ok {
+					Matrix[row][col] = val
+				}
+			}
+		case "engTechID":
+			for row := 1; row < len(Matrix); row++ {
+				val, ok := decoder_engineTech[Matrix[row][col]]
+				if ok {
+					Matrix[row][col] = val
+				}
+			}
+		case "sectorID":
+			for row := 1; row < len(Matrix); row++ {
+				val, ok := decoder_sector[Matrix[row][col]]
+				if ok {
+					Matrix[row][col] = val
+				}
+			}
+		case "hpID":
+			for row := 1; row < len(Matrix); row++ {
+				val, ok := decoder_nrHpRangeBin[Matrix[row][col]]
+				if ok {
+					Matrix[row][col] = val
+				}
+			}
+		case "activityTypeID":
+			for row := 1; row < len(Matrix); row++ {
+				val, ok := decoder_activityType[Matrix[row][col]]
+				if ok {
+					Matrix[row][col] = val
+				}
+			}
+		default:
+			//DO NOTHING for non-ID fields
+			fmt.Println("decode NOTHING for non-ID fields, column name: ", Matrix[0][col])
+		}
+	}
+
+	//loop through each column
+	//will know which decoder to use by reading the header
+	//outer loop
+
 }
 
 // open new window when hit the plot button, user should select 1 or 2 field for plotting

@@ -197,6 +197,26 @@ var (
 		"5": "Ethanol (E-85)",
 		"9": "Electricity",
 	}
+
+	//fuelSubType
+	decoder_fuelSubType = map[string]string{
+		"10": "Conventional Gasoline",
+		"11": "Reformulated Gasoline (RFG)",
+		"12": "Gasohol (E10)",
+		"13": "Gasohol (E8)",
+		"14": "Gasohol (E5)",
+		"15": "Gasohol (E15)",
+		"20": "Conventional Diesel Fuel",
+		"21": "Biodiesel Blend",
+		"22": "Fischer-Tropsch Diesel (FTD100)",
+		"30": "Compressed Natural Gas (CNG)",
+		"40": "Liquefied Petroleum Gas (LPG)",
+		"50": "Ethanol",
+		"51": "Ethanol (E85)",
+		"52": "Ethanol (E70)",
+		"90": "Electricity",
+	}
+
 	//nrEquipmentType
 	decoder_nrEquipmentType = map[string]string{
 		"1":  "Snowmobiles",
