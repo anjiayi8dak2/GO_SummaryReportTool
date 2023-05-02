@@ -617,7 +617,6 @@ func selectAggregationField(a fyne.App, queryResult [][]string) {
 			fieldSelectionResult2.Refresh()
 		})
 
-	//TODO: put ok button
 	submitButton := widget.NewButton("Submit", func() {
 		fmt.Println("Submit button pressed")
 		fmt.Println("Printing field selection #1  " + fieldSelection1 + " field #2 " + fieldSelection2 + " value column " + resultColumn + " pollutant selection " + pollutantSelection)
@@ -671,8 +670,8 @@ func updateButtonToolbar(db *sql.DB, window2 fyne.Window, tableSelection string,
 		} else {
 			fmt.Println(whiteList[index], " key not found")
 			//delete map that has empty value, they looks like hpID:[], they will eventually cause an empty IN() in the where clause
-			for key, value := range filter {
-				if len(value) == 0 {
+			for key, filterValue := range filter {
+				if len(filterValue) == 0 {
 					delete(filter, key)
 				}
 			}
@@ -722,6 +721,8 @@ func updateButtonToolbar(db *sql.DB, window2 fyne.Window, tableSelection string,
 		// because it is not considered many factors such as population distribution, and all kinds of adjustments.
 		if tableSelection == "movesoutput" {
 			columnSelection = append(columnSelection, "sum(emissionQuant) ")
+		} else if tableSelection == "movesactivityoutput" {
+			columnSelection = append(columnSelection, "sum(activityQuant) ")
 		} else if tableSelection == "startspervehicle" {
 			columnSelection = append(columnSelection, "ROUND(avg(startsPerVehicle),2) AS average_startsPerVehicle ")
 		} else { //this should include "rateperdistance", "rateperhour", "rateperprofile", "rateperstart", and "ratepervehicle", because they all have temperature and relHumidity columns
@@ -851,7 +852,7 @@ func csvExport(data [][]string) error {
 	defer writer.Flush()
 
 	for _, value := range data {
-		if err := writer.Write(value); err != nil {
+		if err = writer.Write(value); err != nil {
 			return err // let's return errors if necessary, rather than having a one-size-fits-all error handler
 		}
 	}
@@ -860,9 +861,9 @@ func csvExport(data [][]string) error {
 
 func updateToolbarMessage(l *widget.Label, where string, group string, db *sql.DB, dbSelection string) {
 	var message string
-	distanceUnits := getMOVESrun(db, dbSelection, "distanceUnits")
-	massUnits := getMOVESrun(db, dbSelection, "massUnits")
-	energyUnits := getMOVESrun(db, dbSelection, "energyUnits")
+	distanceUnits = getMOVESrun(db, dbSelection, "distanceUnits")
+	massUnits = getMOVESrun(db, dbSelection, "massUnits")
+	energyUnits = getMOVESrun(db, dbSelection, "energyUnits")
 
 	message = "Filters: " + where + "Aggregated by : " + group + " Energy Unit: " + energyUnits + " Distance Unit: " + distanceUnits + " Mass Unit: " + massUnits
 	l.SetText(message)

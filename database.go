@@ -8,6 +8,7 @@ import (
 	"log"
 	"reflect"
 	_ "strconv"
+	"strings"
 )
 
 func getDataDir(db *sql.DB) string {
@@ -78,9 +79,8 @@ func getDBVersion(db *sql.DB) {
 
 func getQueryResult(db *sql.DB, dbSelection string, tableSelection string, whiteList []string, whereClause string, groupClause string) ([][]string, error) {
 	columns := convertColumnsComma(whiteList)
-	//unit := getUnit(db, dbSelection, tableSelection)
-	//columns += " AS " + unit
-	sqlStatement := "SELECT " + columns + " FROM " + dbSelection + "." + tableSelection + " " + whereClause + " " + groupClause + " LIMIT 1000 ; "
+	noFaultWhereClause := strings.ReplaceAll(whereClause, "IN (  )", "")
+	sqlStatement := "SELECT " + columns + " FROM " + dbSelection + "." + tableSelection + " " + noFaultWhereClause + " " + groupClause + " LIMIT 1000 ; "
 
 	fmt.Println("printing sql statement: " + sqlStatement)
 	// A 2D array string to hold the table
