@@ -1,6 +1,30 @@
 package main
 
 // TODO: add activity output
+type Movesactivityoutput struct {
+	MOVESRunID     int
+	iterationID    int
+	yearID         int
+	monthID        int
+	dayID          int
+	hourID         int
+	stateID        int
+	countyID       int
+	zoneID         int
+	linkID         int
+	sourceTypeID   int
+	regClassID     int
+	fuelTypeID     int
+	fuelSubTypeID  int
+	modelYearID    int
+	roadTypeID     int
+	SCC            int
+	engTechID      int
+	sectorID       int
+	hpID           int
+	activityTypeID int
+	activity       float64
+}
 
 // Movesoutput all the field in movesoutput table
 type Movesoutput struct {

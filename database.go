@@ -139,6 +139,8 @@ func getUnit(db *sql.DB, dbSelection string, tableSelection string) string {
 	fmt.Println("Distance unit is  :", distanceUnit)
 
 	switch tableSelection {
+	case "movesactivityoutput":
+		columnName = "activityQuant"
 	case "movesoutput":
 		columnName = "emissionQuant_" + massUnit
 	case "rateperdistance":
@@ -166,6 +168,32 @@ func getOneRow(db *sql.DB, dbSelection string, tableSelection string) (interface
 	// there should be a smart way to do it, but I could not find any. stupid but works :(
 	// editing SELECT clause sql statement depends on which table got selected
 	switch tableSelection {
+	case "movesactivityoutput":
+		ifNullSQL = `SELECT
+					ifnull(MOVESRunID, -1) AS MOVESRunID,
+					ifnull(iterationID, -1) AS iterationID,
+					ifnull(yearID, -1) AS yearID,
+					ifnull(monthID, -1) AS monthID,
+					ifnull(dayID, -1) AS dayID,
+					ifnull(hourID, -1) AS hourID,
+					ifnull(stateID, -1) AS stateID,
+					ifnull(countyID, -1) AS countyID,
+					ifnull(zoneID, -1) AS zoneID,
+					ifnull(linkID, -1) AS linkID,
+					ifnull(sourceTypeID, -1) AS sourceTypeID,
+					ifnull(regClassID, -1) AS regClassID,
+					ifnull(fuelTypeID, -1) AS fuelTypeID,
+					ifnull(fuelSubTypeID, -1) AS fuelSubTypeID,
+					ifnull(modelYearID, -1) AS modelYearID,
+					ifnull(roadTypeID, -1) AS roadTypeID,
+					IF(SCC IS NULL or SCC = '', -1, SCC) as SCC,
+					ifnull(engTechID, -1) AS engTechID,
+					ifnull(sectorID, -1) AS sectorID,
+					ifnull(hpID, -1) AS hpID,
+                    ifnull(activityTypeID, -1) AS activityTypeID,
+					activity 
+					FROM `
+
 	case "movesoutput":
 		ifNullSQL = `SELECT
 					ifnull(MOVESRunID, -1) AS MOVESRunID,
@@ -335,6 +363,25 @@ func getOneRow(db *sql.DB, dbSelection string, tableSelection string) (interface
 	// TODO: depends on the table selection string value, create different instance of the struct,
 	// then scan the query result into struct specific field for next steps
 	switch tableSelection {
+	case "movesactivityoutput":
+		var output Movesactivityoutput
+		// Loop through each column, using Scan to assign column data to struct fields.
+		for rows.Next() {
+			rows.Scan(&output.MOVESRunID, &output.iterationID, &output.yearID,
+				&output.monthID, &output.dayID, &output.hourID, &output.stateID,
+				&output.countyID, &output.zoneID, &output.linkID,
+				&output.sourceTypeID, &output.regClassID, &output.fuelTypeID,
+				&output.fuelSubTypeID, &output.modelYearID, &output.roadTypeID, &output.SCC,
+				&output.engTechID, &output.sectorID, &output.hpID, &output.activityTypeID, &output.activity)
+			if err != nil {
+				panic(err) // Error related to the scan
+			}
+			if err = rows.Err(); err != nil {
+				panic(err) // Error related to the iteration of rows
+			}
+		}
+		return output, nil
+
 	case "movesoutput":
 		var output Movesoutput
 		// Loop through each column, using Scan to assign column data to struct fields.
@@ -465,6 +512,10 @@ func getWhiteList(con *sql.DB, dbSelection string, tableSelection string) ([]str
 	var fieldNames []string
 
 	switch tableSelection {
+	case "movesactivityoutput":
+		fieldNames = []string{"MOVESRunID", "iterationID", "yearID", "monthID", "dayID", "hourID", "stateID", "countyID",
+			"zoneID", "linkID", "sourceTypeID", "regClassID", "fuelTypeID", "fuelSubTypeID",
+			"modelYearID", "roadTypeID", "SCC", "engTechID", "sectorID", "hpID", "activityTypeID", "activity"}
 	case "movesoutput":
 		fieldNames = []string{"MOVESRunID", "iterationID", "yearID", "monthID", "dayID", "hourID", "stateID", "countyID",
 			"zoneID", "linkID", "pollutantID", "processID", "sourceTypeID", "regClassID", "fuelTypeID", "fuelSubTypeID",
@@ -503,10 +554,10 @@ func getWhiteList(con *sql.DB, dbSelection string, tableSelection string) ([]str
 
 	// loop through all the columns from OneRow, if a column has valid number(not equal -1), append it into whitelist [] string
 	for i := 0; i < values.NumField(); i++ {
-		// TODO: make exception for pollutantID, pollutantID shall never be ignored
-		if types.Field(i).Name == "pollutantID" {
+		// TODO: make exception for pollutantID and activityTypeID, they shall never be ignored
+		if types.Field(i).Name == "pollutantID" || types.Field(i).Name == "activityTypeID" {
 			whiteList = append(whiteList, types.Field(i).Name)
-			fmt.Println("pollutantID found \n", types.Field(i).Name, "add pollutantID into whitelist")
+			fmt.Println("critical ID (pollutantID or activityTypeID) found \n", types.Field(i).Name, "add critical ID (pollutantID or activityTypeID) into whitelist")
 		} else if values.Field(i).Type() == reflect.TypeOf(1) { //type int
 			if values.Field(i).Int() != -1 {
 				fmt.Println("found column with valid integer value, add it to whitelist \n", types.Field(i).Name, values.Field(i))
@@ -528,10 +579,10 @@ func getWhiteList(con *sql.DB, dbSelection string, tableSelection string) ([]str
 	//TODO: Why not have one for loop to update both whiteList and whiteListIndex above?
 
 	for i := 0; i < values.NumField(); i++ {
-		// TODO: make exception for pollutantID, pollutantID shall never be ignored
-		if types.Field(i).Name == "pollutantID" {
+		// TODO: make exception for pollutantID and activityTypeID, they shall never be ignored
+		if types.Field(i).Name == "pollutantID" || types.Field(i).Name == "activityTypeID" {
 			whiteListIndex = append(whiteListIndex, true)
-			fmt.Println("pollutantID \n", types.Field(i).Name, "add pollutantID into whitelist index")
+			fmt.Println("critical ID (pollutantID or activityID) \n", types.Field(i).Name, "add critical ID (pollutantID or activityID) into whitelist index")
 		} else if values.Field(i).Type() == reflect.TypeOf(1) {
 			if values.Field(i).Int() != -1 {
 				whiteListIndex = append(whiteListIndex, true)
@@ -549,7 +600,7 @@ func getWhiteList(con *sql.DB, dbSelection string, tableSelection string) ([]str
 	}
 
 	var numericColumnsInTheEnd int
-	if tableSelection == "movesoutput" || tableSelection == "startspervehicle" {
+	if tableSelection == "movesoutput" || tableSelection == "startspervehicle" || tableSelection == "movesactivityoutput" {
 		numericColumnsInTheEnd = 1
 	} else {
 		numericColumnsInTheEnd = 3

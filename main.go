@@ -68,7 +68,7 @@ func main() {
 
 	//Create dropdown for table selection
 	tableDropdownResult := widget.NewLabel("Select a Table")
-	tableList := []string{"movesoutput", "rateperdistance", "rateperhour", "rateperprofile", "rateperstart", "ratepervehicle", "startspervehicle"}
+	tableList := []string{"movesactivityoutput", "movesoutput", "rateperdistance", "rateperhour", "rateperprofile", "rateperstart", "ratepervehicle", "startspervehicle"}
 	//Use dbList to update dropdown box option
 	tableDropdown := widget.NewSelect(
 		tableList,

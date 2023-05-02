@@ -88,13 +88,11 @@ func makeWindowTwo(a fyne.App, queryResult [][]string, db *sql.DB, dbSelection s
 			fmt.Println("I pressed update button")
 			updateButtonToolbar(db, window2, tableSelection, dbSelection, whiteList, filter, groupBy, &queryResult, ToolbarLabel)
 			tableAutoSize(queryResult, tableData)
-			//flextableTableData = GetTableData(queryResult)
 		}),
 		widget.NewToolbarSeparator(),
 		widget.NewToolbarAction(theme.DocumentCreateIcon(), func() { //plot button
 			fmt.Println("I pressed plot button")
 			selectAggregationField(a, queryResult)
-			//flextableTableData = GetTableData(queryResult)
 		}),
 		widget.NewToolbarSeparator(),
 		widget.NewToolbarAction(theme.DownloadIcon(), func() { //download CSV
@@ -105,15 +103,98 @@ func makeWindowTwo(a fyne.App, queryResult [][]string, db *sql.DB, dbSelection s
 		widget.NewToolbarAction(theme.VisibilityIcon(), func() { //decode button
 			fmt.Println("I pressed decode button")
 			tableAutoSize(queryResult, tableData)
-
 			decodeButtonToolbar(queryResult)
-			//flextableTableData = GetTableData(queryResult)
 		}),
 		widget.NewToolbarSpacer(),
 		ToolbarLabel,
 	)
 
+	createFilterButtons(db, dbSelection, tableSelection, filter, innerContainer)
+
+	//aggregation container
+	aggregationContainer := container.NewVBox()
+	if tableSelection == "movesoutput" || tableSelection == "startspervehicle" { //these two table have 1 numeric column in the end that shows result
+		aggregationContainer = createNewAggregationGroup(whiteList, groupBy, 1)
+	} else {
+		aggregationContainer = createNewAggregationGroup(whiteList, groupBy, 3)
+	}
+
+	// TODO: temporary disable aggregation for rate
+	if tableSelection != "movesoutput" {
+		aggregationContainer.Hide()
+	}
+	innerContainer.Add(aggregationContainer)
+
+	//dynamic filter buttons, Use the record of whiteListIndex [] bool, show and hide base on 1 or 0.
+	//we initialized all 25 columns when the window #2 started
+	for index, boo := range whiteListIndex {
+		if boo {
+			innerContainer.Objects[index].Visible()
+		} else {
+			innerContainer.Objects[index].Hide()
+		}
+	}
+
+	// the filter button section scroll bar
+	scrollContainer := container.NewVScroll(innerContainer)
+	outerContainer := container.NewHSplit(
+		scrollContainer,
+		tableData,
+	)
+	//screen width horizontal distribution of filter panel VS data table panel
+	outerContainer.Offset = 0.08
+	//window2.SetContent(outerContainer)
+	window2.SetContent(container.NewBorder(toolbar, nil, nil, nil, outerContainer))
+	window2.Show()
+}
+
+func createFilterButtons(db *sql.DB, dbSelection string, tableSelection string, filter map[string][]string, innerContainer *fyne.Container) {
 	switch tableSelection {
+	case "movesactivityoutput":
+		MOVESRunIDContainer := createNewCheckBoxGroup(db, "MOVESRunID", dbSelection, tableSelection, filter)
+		iterationIDContainer := createNewCheckBoxGroup(db, "iterationID", dbSelection, tableSelection, filter)
+		yearIDContainer := createNewCheckBoxGroup(db, "yearID", dbSelection, tableSelection, filter)
+		monthIDContainer := createNewCheckBoxGroup(db, "monthID", dbSelection, tableSelection, filter)
+		dayIDContainer := createNewCheckBoxGroup(db, "dayID", dbSelection, tableSelection, filter)
+		hourIDContainer := createNewCheckBoxGroup(db, "hourID", dbSelection, tableSelection, filter)
+		stateIDContainer := createNewCheckBoxGroup(db, "stateID", dbSelection, tableSelection, filter)
+		countyIDContainer := createNewCheckBoxGroup(db, "countyID", dbSelection, tableSelection, filter)
+		zoneIDContainer := createNewCheckBoxGroup(db, "zoneID", dbSelection, tableSelection, filter)
+		linkIDContainer := createNewCheckBoxGroup(db, "linkID", dbSelection, tableSelection, filter)
+		sourceTypeIDContainer := createNewCheckBoxGroup(db, "sourceTypeID", dbSelection, tableSelection, filter)
+		regClassIDContainer := createNewCheckBoxGroup(db, "regClassID", dbSelection, tableSelection, filter)
+		fuelTypeIDContainer := createNewCheckBoxGroup(db, "fuelTypeID", dbSelection, tableSelection, filter)
+		fuelSubTypeIDContainer := createNewCheckBoxGroup(db, "fuelSubTypeID", dbSelection, tableSelection, filter)
+		modelYearContainer := createNewCheckBoxGroup(db, "modelYearID", dbSelection, tableSelection, filter)
+		roadTypeIDContainer := createNewCheckBoxGroup(db, "roadTypeID", dbSelection, tableSelection, filter)
+		SCCContainer := createNewCheckBoxGroup(db, "SCC", dbSelection, tableSelection, filter)
+		engTechIDContainer := createNewCheckBoxGroup(db, "engTechID", dbSelection, tableSelection, filter)
+		sectorIDContainer := createNewCheckBoxGroup(db, "sectorID", dbSelection, tableSelection, filter)
+		hpIDContainer := createNewCheckBoxGroup(db, "hpID", dbSelection, tableSelection, filter)
+		activityTypeID := createNewCheckBoxGroup(db, "activityTypeID", dbSelection, tableSelection, filter)
+
+		innerContainer.Add(MOVESRunIDContainer)
+		innerContainer.Add(iterationIDContainer)
+		innerContainer.Add(yearIDContainer)
+		innerContainer.Add(monthIDContainer)
+		innerContainer.Add(dayIDContainer)
+		innerContainer.Add(hourIDContainer)
+		innerContainer.Add(stateIDContainer)
+		innerContainer.Add(countyIDContainer)
+		innerContainer.Add(zoneIDContainer)
+		innerContainer.Add(linkIDContainer)
+		innerContainer.Add(sourceTypeIDContainer)
+		innerContainer.Add(regClassIDContainer)
+		innerContainer.Add(fuelTypeIDContainer)
+		innerContainer.Add(fuelSubTypeIDContainer)
+		innerContainer.Add(modelYearContainer)
+		innerContainer.Add(roadTypeIDContainer)
+		innerContainer.Add(SCCContainer)
+		innerContainer.Add(engTechIDContainer)
+		innerContainer.Add(sectorIDContainer)
+		innerContainer.Add(hpIDContainer)
+		innerContainer.Add(activityTypeID)
+
 	case "movesoutput":
 		//fyne containers, create buttons for filters with checkbox selection saved in the map filter
 		MOVESRunIDContainer := createNewCheckBoxGroup(db, "MOVESRunID", dbSelection, tableSelection, filter)
@@ -350,42 +431,6 @@ func makeWindowTwo(a fyne.App, queryResult [][]string, db *sql.DB, dbSelection s
 	default:
 		//unknown table selection
 	}
-
-	//aggregation container
-	aggregationContainer := container.NewVBox()
-	if tableSelection == "movesoutput" || tableSelection == "startspervehicle" { //these two table have 1 numeric column in the end that shows result
-		aggregationContainer = createNewAggregationGroup(whiteList, groupBy, 1)
-	} else {
-		aggregationContainer = createNewAggregationGroup(whiteList, groupBy, 3)
-	}
-
-	// TODO: temporary disable aggregation for rate
-	if tableSelection != "movesoutput" {
-		aggregationContainer.Hide()
-	}
-	innerContainer.Add(aggregationContainer)
-
-	//dynamic filter buttons, Use the record of whiteListIndex [] bool, show and hide base on 1 or 0.
-	//we initialized all 25 columns when the window #2 started
-	for index, boo := range whiteListIndex {
-		if boo {
-			innerContainer.Objects[index].Visible()
-		} else {
-			innerContainer.Objects[index].Hide()
-		}
-	}
-
-	// the filter button section scroll bar
-	scrollContainer := container.NewVScroll(innerContainer)
-	outerContainer := container.NewHSplit(
-		scrollContainer,
-		tableData,
-	)
-	//screen width horizontal distribution of filter panel VS data table panel
-	outerContainer.Offset = 0.08
-	//window2.SetContent(outerContainer)
-	window2.SetContent(container.NewBorder(toolbar, nil, nil, nil, outerContainer))
-	window2.Show()
 }
 
 func decodeButtonToolbar(Matrix [][]string) {
@@ -894,11 +939,10 @@ func getColWidths(data [][]string) []float32 {
 	return res
 }
 
+// pass table data matrix and table object, update the column width base on the longest cell
 func tableAutoSize(queryResult [][]string, tableData *widget.Table) {
-
 	go func() {
-		//auto size
-		time.Sleep(2 * time.Second)
+		time.Sleep(2 * time.Second) //DELETE ME
 		wi := getColWidths(queryResult)
 		for i, v := range wi {
 			if v > 200 {
