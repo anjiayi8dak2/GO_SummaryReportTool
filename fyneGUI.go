@@ -35,13 +35,10 @@ func openMariaFolder(db *sql.DB) {
 
 }
 
-// take a slice of string names, return one piece string with commas like roadTypeID, sourceTypeID, emissionQuant
+// take a slice of string names, return one piece string with comma seperated format for example, dummy = {"roadTypeID", "sourceTypeID", "emissionQuant"} ==> "roadTypeID, sourceTypeID, emissionQuant"
 func convertColumnsComma(columns []string) string {
-
 	// prepend single quote, perform joins, append single quote
 	ColumnsComma := strings.Join(columns, `,`)
-
-	fmt.Println("printing comma seperated columns::: ", ColumnsComma)
 	return ColumnsComma
 }
 

@@ -31,18 +31,19 @@ func getDBList(db *sql.DB) []string {
 
 	var listSlice []string
 	for rows.Next() {
-		err := rows.Scan(&row)
+		err = rows.Scan(&row)
 		if err != nil {
 			log.Fatal(err)
 		}
 		listSlice = append(listSlice, row)
 	}
-	if err := rows.Err(); err != nil {
+	if err = rows.Err(); err != nil {
 		log.Fatal(err)
 	}
 	return listSlice
 }
 
+// TODO improve performance
 func getDistinct(db *sql.DB, dbSelection string, tableSelection string, targetColumn string) []string {
 	sqlStatement := "SELECT DISTINCT " + targetColumn + " AS distinctValues FROM " + dbSelection + "." + tableSelection + " ORDER BY distinctValues ASC ; "
 	fmt.Println("Running sql statement  :", sqlStatement)
@@ -79,13 +80,15 @@ func getDBVersion(db *sql.DB) {
 
 func getQueryResult(db *sql.DB, dbSelection string, tableSelection string, whiteList []string, whereClause string, groupClause string) ([][]string, error) {
 	columns := convertColumnsComma(whiteList)
+	//check if there is an empty IN statement made by check/uncheck checkbox filters rapidly, and delete it if needed
 	noFaultWhereClause := strings.ReplaceAll(whereClause, "IN (  )", "")
+	//TODO user define Limit?
 	sqlStatement := "SELECT " + columns + " FROM " + dbSelection + "." + tableSelection + " " + noFaultWhereClause + " " + groupClause + " LIMIT 1000 ; "
 
 	fmt.Println("printing sql statement: " + sqlStatement)
-	// A 2D array string to hold the table
+	// A 2D array string represent the data table
 	var outFlat [][]string
-	// add the column names in first row
+	// add the column names in first row from the remaining columns headers after dynamically filtered
 	outFlat = append(outFlat, whiteList)
 
 	// exe sql statement
@@ -162,7 +165,8 @@ func getUnit(db *sql.DB, dbSelection string, tableSelection string) string {
 	return columnName
 }
 
-// go-sql driver does not read null value, therefore we use -1 as an indicator for the null value
+// go-sql driver does not read null value that returned from query, therefore we use ifnull() and assign -1 as an indicator for the null value
+// so far the best solution that does not rely on the random third party repo
 func getOneRow(db *sql.DB, dbSelection string, tableSelection string) (interface{}, error) {
 	var ifNullSQL string
 	// there should be a smart way to do it, but I could not find any. stupid but works :(
@@ -360,8 +364,10 @@ func getOneRow(db *sql.DB, dbSelection string, tableSelection string) (interface
 	}
 	defer rows.Close()
 
-	// TODO: depends on the table selection string value, create different instance of the struct,
+	// depends on the table selection string value, create different instance of the struct,
 	// then scan the query result into struct specific field for next steps
+	// the Scan function from go-sql driver has no way to select all columns into target struct in one command like "SELECT * ..." into struct_name
+	// I could not find a better way than hard coded column names, this is fine as long as we don't change schemas of movesoutput
 	switch tableSelection {
 	case "movesactivityoutput":
 		var output Movesactivityoutput
@@ -384,7 +390,6 @@ func getOneRow(db *sql.DB, dbSelection string, tableSelection string) (interface
 
 	case "movesoutput":
 		var output Movesoutput
-		// Loop through each column, using Scan to assign column data to struct fields.
 		for rows.Next() {
 			rows.Scan(&output.MOVESRunID, &output.iterationID, &output.yearID,
 				&output.monthID, &output.dayID, &output.hourID, &output.stateID,
@@ -402,7 +407,6 @@ func getOneRow(db *sql.DB, dbSelection string, tableSelection string) (interface
 		return output, nil
 	case "rateperdistance":
 		var output Rateperdistance
-		// Loop through each column, using Scan to assign column data to struct fields.
 		for rows.Next() {
 			rows.Scan(&output.MOVESScenarioID, &output.MOVESRunID, &output.yearID, &output.monthID,
 				&output.dayID, &output.hourID, &output.linkID, &output.pollutantID, &output.processID,
@@ -418,7 +422,6 @@ func getOneRow(db *sql.DB, dbSelection string, tableSelection string) (interface
 		return output, nil
 	case "rateperhour":
 		var output Rateperhour
-		// Loop through each column, using Scan to assign column data to struct fields.
 		for rows.Next() {
 			rows.Scan(&output.MOVESScenarioID, &output.MOVESRunID, &output.yearID, &output.monthID,
 				&output.dayID, &output.hourID, &output.linkID, &output.pollutantID,
@@ -435,7 +438,6 @@ func getOneRow(db *sql.DB, dbSelection string, tableSelection string) (interface
 		return output, nil
 	case "rateperprofile":
 		var output Rateperprofile
-		// Loop through each column, using Scan to assign column data to struct fields.
 		for rows.Next() {
 			rows.Scan(&output.MOVESScenarioID, &output.MOVESRunID, &output.temperatureProfileID,
 				&output.yearID, &output.dayID, &output.hourID, &output.pollutantID,
@@ -452,7 +454,6 @@ func getOneRow(db *sql.DB, dbSelection string, tableSelection string) (interface
 		return output, nil
 	case "rateperstart":
 		var output Rateperstart
-		// Loop through each column, using Scan to assign column data to struct fields.
 		for rows.Next() {
 			rows.Scan(&output.MOVESScenarioID, &output.MOVESRunID, &output.yearID, &output.monthID, &output.dayID,
 				&output.hourID, &output.zoneID, &output.sourceTypeID, &output.regClassID, &output.SCC,
@@ -468,7 +469,6 @@ func getOneRow(db *sql.DB, dbSelection string, tableSelection string) (interface
 		return output, nil
 	case "ratepervehicle":
 		var output Ratepervehicle
-		// Loop through each column, using Scan to assign column data to struct fields.
 		for rows.Next() {
 			rows.Scan(&output.MOVESRunID, &output.yearID, &output.monthID, &output.dayID, &output.hourID, &output.zoneID,
 				&output.pollutantID, &output.processID, &output.sourceTypeID, &output.regClassID, &output.SCC, &output.fuelTypeID,
@@ -483,7 +483,6 @@ func getOneRow(db *sql.DB, dbSelection string, tableSelection string) (interface
 		return output, nil
 	case "startspervehicle":
 		var output Startspervehicle
-		// Loop through each column, using Scan to assign column data to struct fields.
 		for rows.Next() {
 			rows.Scan(&output.MOVESScenarioID, &output.MOVESRunID, &output.yearID, &output.monthID, &output.dayID,
 				&output.hourID, &output.zoneID, &output.sourceTypeID, &output.regClassID, &output.SCC,
@@ -498,7 +497,7 @@ func getOneRow(db *sql.DB, dbSelection string, tableSelection string) (interface
 		return output, nil
 	default:
 		//unknow selection
-		panic("unknow selection found in the table selection drop down box")
+		panic("unknown selection found in the table selection drop down box")
 		break
 	}
 
@@ -507,45 +506,49 @@ func getOneRow(db *sql.DB, dbSelection string, tableSelection string) (interface
 
 }
 
+// return []string contains whitelist columns names that have meaningful values, size depends on how many column are survived
+// return []bool that indicate valid/invalid values for each column, []bool size = total column that a table has in struct
+// for example: a 4 column table has 4 attributes {"yearID", "pollutantID", "roadTypeID", "emissionQuant"}
+// then the filter found yearID and roadTypeID are null
+// returned whitelist will be {"pollutantID","emissionQuant"}
+// returned []bool will be {0,1,0,1}
 func getWhiteList(con *sql.DB, dbSelection string, tableSelection string) ([]string, []bool) {
-	//TODO: need switch to split 7 possible table selection
-	var fieldNames []string
-
-	switch tableSelection {
-	case "movesactivityoutput":
-		fieldNames = []string{"MOVESRunID", "iterationID", "yearID", "monthID", "dayID", "hourID", "stateID", "countyID",
-			"zoneID", "linkID", "sourceTypeID", "regClassID", "fuelTypeID", "fuelSubTypeID",
-			"modelYearID", "roadTypeID", "SCC", "engTechID", "sectorID", "hpID", "activityTypeID", "activity"}
-	case "movesoutput":
-		fieldNames = []string{"MOVESRunID", "iterationID", "yearID", "monthID", "dayID", "hourID", "stateID", "countyID",
-			"zoneID", "linkID", "pollutantID", "processID", "sourceTypeID", "regClassID", "fuelTypeID", "fuelSubTypeID",
-			"modelYearID", "roadTypeID", "SCC", "engTechID", "sectorID", "hpID", "emissionQuant"}
-	case "rateperdistance":
-		fieldNames = []string{"MOVESScenarioID", "MOVESRunID", "yearID", "monthID", "dayID", "hourID", "linkID", "pollutantID",
-			"processID", "sourceTypeID", "regClassID", "SCC", "fuelTypeID", "modelYearID", "roadTypeID", "avgSpeedBinID",
-			"temperature", "relHumidity", "ratePerDistance"}
-	case "rateperhour":
-		fieldNames = []string{"MOVESScenarioID", "MOVESRunID", "yearID", "monthID", "dayID", "hourID", "linkID", "pollutantID",
-			"processID", "sourceTypeID", "regClassID", "SCC", "fuelTypeID", "modelYearID", "roadTypeID", "temperature", "relHumidity", "ratePerHour"}
-	case "rateperprofile":
-		fieldNames = []string{"MOVESScenarioID", "MOVESRunID", "temperatureProfileID", "yearID", "dayID", "hourID", "pollutantID",
-			"processID", "sourceTypeID", "regClassID", "SCC", "fuelTypeID", "modelYearID", "temperature", "relHumidity", "ratePerVehicle"}
-	case "rateperstart":
-		fieldNames = []string{"MOVESScenarioID", "MOVESRunID", "yearID", "monthID", "dayID", "hourID", "zoneID", "sourceTypeID",
-			"regClassID", "SCC", "fuelTypeID", "modelYearID", "pollutantID", "processID", "temperature", "relHumidity", "ratePerStart"}
-	case "ratepervehicle":
-		fieldNames = []string{"MOVESScenarioID", "MOVESRunID", "yearID", "monthID", "dayID", "hourID", "zoneID", "pollutantID",
-			"processID", "sourceTypeID", "regClassID", "SCC", "fuelTypeID", "modelYearID", "temperature", "relHumidity", "ratePerVehicle"}
-	case "startspervehicle":
-		fieldNames = []string{"MOVESScenarioID", "MOVESRunID", "yearID", "monthID", "dayID", "hourID", "zoneID",
-			"sourceTypeID", "regClassID", "SCC", "fuelTypeID", "modelYearID", "startsPerVehicle"}
-	default:
-		panic("unknown table selection ")
-
-	}
+	//var fieldNames []string
+	//
+	//switch tableSelection {
+	//case "movesactivityoutput":
+	//	fieldNames = []string{"MOVESRunID", "iterationID", "yearID", "monthID", "dayID", "hourID", "stateID", "countyID",
+	//		"zoneID", "linkID", "sourceTypeID", "regClassID", "fuelTypeID", "fuelSubTypeID",
+	//		"modelYearID", "roadTypeID", "SCC", "engTechID", "sectorID", "hpID", "activityTypeID", "activity"}
+	//case "movesoutput":
+	//	fieldNames = []string{"MOVESRunID", "iterationID", "yearID", "monthID", "dayID", "hourID", "stateID", "countyID",
+	//		"zoneID", "linkID", "pollutantID", "processID", "sourceTypeID", "regClassID", "fuelTypeID", "fuelSubTypeID",
+	//		"modelYearID", "roadTypeID", "SCC", "engTechID", "sectorID", "hpID", "emissionQuant"}
+	//case "rateperdistance":
+	//	fieldNames = []string{"MOVESScenarioID", "MOVESRunID", "yearID", "monthID", "dayID", "hourID", "linkID", "pollutantID",
+	//		"processID", "sourceTypeID", "regClassID", "SCC", "fuelTypeID", "modelYearID", "roadTypeID", "avgSpeedBinID",
+	//		"temperature", "relHumidity", "ratePerDistance"}
+	//case "rateperhour":
+	//	fieldNames = []string{"MOVESScenarioID", "MOVESRunID", "yearID", "monthID", "dayID", "hourID", "linkID", "pollutantID",
+	//		"processID", "sourceTypeID", "regClassID", "SCC", "fuelTypeID", "modelYearID", "roadTypeID", "temperature", "relHumidity", "ratePerHour"}
+	//case "rateperprofile":
+	//	fieldNames = []string{"MOVESScenarioID", "MOVESRunID", "temperatureProfileID", "yearID", "dayID", "hourID", "pollutantID",
+	//		"processID", "sourceTypeID", "regClassID", "SCC", "fuelTypeID", "modelYearID", "temperature", "relHumidity", "ratePerVehicle"}
+	//case "rateperstart":
+	//	fieldNames = []string{"MOVESScenarioID", "MOVESRunID", "yearID", "monthID", "dayID", "hourID", "zoneID", "sourceTypeID",
+	//		"regClassID", "SCC", "fuelTypeID", "modelYearID", "pollutantID", "processID", "temperature", "relHumidity", "ratePerStart"}
+	//case "ratepervehicle":
+	//	fieldNames = []string{"MOVESScenarioID", "MOVESRunID", "yearID", "monthID", "dayID", "hourID", "zoneID", "pollutantID",
+	//		"processID", "sourceTypeID", "regClassID", "SCC", "fuelTypeID", "modelYearID", "temperature", "relHumidity", "ratePerVehicle"}
+	//case "startspervehicle":
+	//	fieldNames = []string{"MOVESScenarioID", "MOVESRunID", "yearID", "monthID", "dayID", "hourID", "zoneID",
+	//		"sourceTypeID", "regClassID", "SCC", "fuelTypeID", "modelYearID", "startsPerVehicle"}
+	//default:
+	//	panic("unknown table selection ")
+	//
+	//}
 
 	oneRowResult, _ := getOneRow(con, dbSelection, tableSelection)
-
 	values := reflect.ValueOf(oneRowResult)
 	types := values.Type()
 
@@ -554,19 +557,15 @@ func getWhiteList(con *sql.DB, dbSelection string, tableSelection string) ([]str
 
 	// loop through all the columns from OneRow, if a column has valid number(not equal -1), append it into whitelist [] string
 	for i := 0; i < values.NumField(); i++ {
-		// TODO: make exception for pollutantID and activityTypeID, they shall never be ignored
-		if types.Field(i).Name == "pollutantID" || types.Field(i).Name == "activityTypeID" {
-			whiteList = append(whiteList, types.Field(i).Name)
-			fmt.Println("critical ID (pollutantID or activityTypeID) found \n", types.Field(i).Name, "add critical ID (pollutantID or activityTypeID) into whitelist")
-		} else if values.Field(i).Type() == reflect.TypeOf(1) { //type int
-			if values.Field(i).Int() != -1 {
+		if values.Field(i).Type() == reflect.TypeOf(1) { //type int
+			if values.Field(i).Int() != -1 { // non -1 integer
 				fmt.Println("found column with valid integer value, add it to whitelist \n", types.Field(i).Name, values.Field(i))
 				whiteList = append(whiteList, types.Field(i).Name)
 			}
 		} else if values.Field(i).Type() == reflect.TypeOf(3.14) { // type float
 			fmt.Println("found column with valid float value, add it to whitelist  \n", types.Field(i).Name, values.Field(i))
 			whiteList = append(whiteList, types.Field(i).Name)
-			// string to string, the MOVESScenarioID unfortunately can be a string :(
+			// string to string, the MOVESScenarioID unfortunately can be a string :(, Go type restriction will panic on compare different types
 		} else if values.Field(i).Type() == reflect.TypeOf("word") { //type string
 			fmt.Println("found column with valid string value, add it to whitelist \n", types.Field(i).Name, values.Field(i))
 			whiteList = append(whiteList, types.Field(i).Name)
@@ -574,16 +573,11 @@ func getWhiteList(con *sql.DB, dbSelection string, tableSelection string) ([]str
 	}
 
 	//loop through values and update its boolean value when detect -1
-	//whiteListIndex [] bool size = corresponding MOVES table, the order of the column is also same
-	//whiteListIndex flags can is being used to determinate which column to show/hide containers in the future
-	//TODO: Why not have one for loop to update both whiteList and whiteListIndex above?
-
+	//whiteListIndex [] bool size = corresponding target table struct, the order of the column is also same
+	//whiteListIndex flags is being used to determinate which column/filter_check_box to show/hide containers in the future
+	//TODO merge this for loop into the above one
 	for i := 0; i < values.NumField(); i++ {
-		// TODO: make exception for pollutantID and activityTypeID, they shall never be ignored
-		if types.Field(i).Name == "pollutantID" || types.Field(i).Name == "activityTypeID" {
-			whiteListIndex = append(whiteListIndex, true)
-			fmt.Println("critical ID (pollutantID or activityID) \n", types.Field(i).Name, "add critical ID (pollutantID or activityID) into whitelist index")
-		} else if values.Field(i).Type() == reflect.TypeOf(1) {
+		if values.Field(i).Type() == reflect.TypeOf(1) {
 			if values.Field(i).Int() != -1 {
 				whiteListIndex = append(whiteListIndex, true)
 			} else if values.Field(i).Int() == -1 {
@@ -599,32 +593,34 @@ func getWhiteList(con *sql.DB, dbSelection string, tableSelection string) ([]str
 
 	}
 
-	var numericColumnsInTheEnd int
-	if tableSelection == "movesoutput" || tableSelection == "startspervehicle" || tableSelection == "movesactivityoutput" {
-		numericColumnsInTheEnd = 1
-	} else {
-		numericColumnsInTheEnd = 3
-	}
-	//loop through whiteListIndex, for these columns survived for the null value check, check the count of distinct value = 1,
-	//for example if the MOVESRUNID only has 1, ignore it, there is no point to show them as both column or filter
-	//TODO: is it possible to use count distinct instead of distinct? are these distinct value saved somewhere to reuse?
-	// SELECT COUNT(DISTINCT(modelyearid)) FROM 123rate.rateperdistance;
-	for i := 0; i < len(whiteListIndex)-numericColumnsInTheEnd; i++ { //loop to the position before numeric column such as emissionQuant/activity
-		if whiteListIndex[i] && fieldNames[i] != "pollutantID" { //if the column value is not null, skip pollutantID
-			//get distinct query, and see the count or len(returned slice)
-			distinctResult := getDistinct(con, dbSelection, tableSelection, fieldNames[i])
-			if len(distinctResult) <= 1 { // if the returned slice only has <= 1 distinct value, mark the index to false
-				whiteListIndex[i] = false
-				fmt.Print(" found column that only has 1 distinct value ", fieldNames[i])
-				fmt.Print(" printing updated whiteList v% v%", fieldNames[i], whiteListIndex[i])
-				whiteList = RemoveElementFromSlice(whiteList, fieldNames[i]) // call func that remove #the column that only have 1 distinct value as well
-			}
-		}
-	}
+	//// numeric columns count that a table has, for example movesoutput has "emissionQuant", but rateperhour has "temperature", "relHumidity","ratePerHour"
+	//var numericColumnsInTheEnd int
+	//if tableSelection == "movesoutput" || tableSelection == "startspervehicle" || tableSelection == "movesactivityoutput" {
+	//	numericColumnsInTheEnd = 1
+	//} else {
+	//	numericColumnsInTheEnd = 3
+	//}
+	//
+	////find distinct values for the survived column, then also ignore these columns that only has 1 distinct value
+	////loop through whiteListIndex, for these columns survived for the null value check, check the count of distinct value = 1,
+	////for example if the MOVESRUNID only has 1, ignore it, there is no point to show them as both column or filter
+	//for i := 0; i < len(whiteListIndex)-numericColumnsInTheEnd; i++ { //loop to the position before numeric column such as emissionQuant/activity
+	//	if whiteListIndex[i] && fieldNames[i] != "pollutantID" { //if the column value is not null, skip pollutantID
+	//		//get distinct query, and see the count or len(returned slice)
+	//		distinctResult := getDistinct(con, dbSelection, tableSelection, fieldNames[i])
+	//		if len(distinctResult) <= 1 { // if the returned slice only has <= 1 distinct value, mark the index to false
+	//			whiteListIndex[i] = false
+	//			fmt.Print(" found column that only has 1 distinct value ", fieldNames[i])
+	//			fmt.Print(" printing updated whiteList v% v%", fieldNames[i], whiteListIndex[i])
+	//			whiteList = RemoveElementFromSlice(whiteList, fieldNames[i]) // call func that remove #the column that only have 1 distinct value as well
+	//		}
+	//	}
+	//}
 
 	return whiteList, whiteListIndex
 }
 
+// TODO not to hard code, if default credential connection failed let user to enter username and password
 func initDb() *sql.DB {
 	// Create the database handle, confirm driver is present
 	db, err := sql.Open("mysql", "moves:moves@/")
