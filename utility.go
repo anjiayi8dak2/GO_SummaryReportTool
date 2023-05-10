@@ -6,12 +6,14 @@ import (
 	"os"
 )
 
+// copy map (destination, source)
 func mapCopy[M1, M2 ~map[K]V, K comparable, V any](dst M1, src M2) {
 	for k, v := range src {
 		dst[k] = v
 	}
 }
 
+// remove duplicated string in a slice, and return updated one
 func removeDuplicateStr(strSlice []string) []string {
 	allKeys := make(map[string]bool)
 	list := []string{}
@@ -24,6 +26,7 @@ func removeDuplicateStr(strSlice []string) []string {
 	return list
 }
 
+// remove duplicated integer in a slice, and return updated one
 func removeDuplicateInt(intSlice []int) []int {
 	allKeys := make(map[int]bool)
 	list := []int{}
@@ -36,7 +39,7 @@ func removeDuplicateInt(intSlice []int) []int {
 	return list
 }
 
-// Generic solution
+// remove duplicated generic type in a slice, and return updated one
 func removeDuplicate[T string | int](sliceList []T) []T {
 	allKeys := make(map[T]bool)
 	list := []T{}
@@ -49,8 +52,8 @@ func removeDuplicate[T string | int](sliceList []T) []T {
 	return list
 }
 
+// count how many characters that the longest element in the []string has, then x 10 pixel and return the resolution
 func getColWidths(data [][]string) []float32 {
-	fmt.Println("inside getColWidth")
 	res := make([]float32, 0)
 	for _, row := range data {
 		for i, col := range row {
@@ -66,6 +69,9 @@ func getColWidths(data [][]string) []float32 {
 	}
 	return res
 }
+
+// take [][]string and download csv file in the same folder that main.go is located
+// TODO make download navigation, something that open window file explorer and download with saved path
 func csvExport(data [][]string) error {
 	file, err := os.Create("result.csv")
 	if err != nil {
@@ -83,7 +89,9 @@ func csvExport(data [][]string) error {
 	}
 	return nil
 }
-func RemoveElementFromSlice[T comparable](l []T, item T) []T {
+
+// RemoveElementFromSlice take []string, and bad_string, scan the whole slice then delete the first bad_string
+func RemoveElementFromSlice(l []string, item string) []string {
 	for i, other := range l {
 		if other == item {
 			return append(l[:i], l[i+1:]...)
@@ -92,6 +100,8 @@ func RemoveElementFromSlice[T comparable](l []T, item T) []T {
 	return l
 }
 
+//input [][]string, output decoded [][]string IDs in English
+//decoder can be found in decoder.go, it predefined the key[value] combinations
 func decodeButtonToolbar(Matrix [][]string) {
 	//outer loop for each column
 	for col := 0; col < len(Matrix[0]); col++ {
@@ -201,9 +211,4 @@ func decodeButtonToolbar(Matrix [][]string) {
 			fmt.Println("decode NOTHING for non-ID fields, column name: ", Matrix[0][col])
 		}
 	}
-
-	//loop through each column
-	//will know which decoder to use by reading the header
-	//outer loop
-
 }

@@ -21,6 +21,7 @@ var (
 	energyUnits   string
 )
 
+// TODO: takes forever to open file explorer with wrong folder, it always open download folder WHY?
 func openMariaFolder(db *sql.DB) {
 	dataDir := getDataDir(db)
 	dataDir = "\"" + dataDir + "\""
@@ -42,6 +43,7 @@ func convertColumnsComma(columns []string) string {
 	return ColumnsComma
 }
 
+// data browsing main window, include the data table and filters
 func makeWindowTwo(a fyne.App, queryResult [][]string, db *sql.DB, dbSelection string, tableSelection string, whiteListIndex []bool, whiteList []string) {
 	fmt.Println("opening window #2")
 	window2 := a.NewWindow("window #2")
@@ -736,9 +738,9 @@ func tableAutoSize(queryResult [][]string, tableData *widget.Table) {
 		time.Sleep(2 * time.Second) //DELETE ME
 		wi := getColWidths(queryResult)
 		for i, v := range wi {
-			if v > 200 {
-				v = 200
-			}
+			//if v > 200 {
+			//	v = 200
+			//}
 			tableData.SetColumnWidth(i, v)
 		}
 		tableData.Refresh()
