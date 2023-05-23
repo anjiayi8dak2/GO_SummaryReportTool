@@ -59,6 +59,10 @@ func barStack() *charts.Bar {
 	bar := charts.NewBar()
 	// set some global options like Title/Legend/ToolTip or anything else
 	bar.SetGlobalOptions(
+		charts.WithInitializationOpts(opts.Initialization{
+			Width:  "1000px",
+			Height: "500px",
+		}),
 		charts.WithXAxisOpts(opts.XAxis{
 			Name: XAxisName,
 		}),
@@ -66,14 +70,23 @@ func barStack() *charts.Bar {
 			Name: YAxisName,
 		}),
 		charts.WithTitleOpts(opts.Title{
-			Title: titleName,
+			Title:    titleName,
+			Subtitle: "I am looooooooooooooong sub title,", Right: "40%",
 		}),
 
 		charts.WithTooltipOpts(opts.Tooltip{Show: true}),
-		charts.WithLegendOpts(opts.Legend{Show: true, Bottom: "0", Right: "120"}),
+		//charts.WithDataZoomOpts(),
+		charts.WithLegendOpts(opts.Legend{
+			Show:   true,
+			Orient: "vertical",
+			X:      "1100px",
+			Y:      "550",
+			//Bottom: "center",
+			//Right:  "right",
+		}),
 		charts.WithToolboxOpts(opts.Toolbox{
-			Show:  true,
-			Right: "20%",
+			Show: true,
+			//Right: "20%",
 			Feature: &opts.ToolBoxFeature{
 				SaveAsImage: &opts.ToolBoxFeatureSaveAsImage{
 					Show:  true,
@@ -98,7 +111,8 @@ func barStack() *charts.Bar {
 			//small vertical bars
 			AddSeries(distinctField2[i], generateBarItems(distinctField2[i])). //pass small stack bar count, field1 and field2 for key combination
 			SetSeriesOptions(charts.WithBarChartOpts(opts.BarChart{
-				Stack: "dummy",
+				Stack:          "stack",
+				BarCategoryGap: "50%",
 			}))
 	}
 	return bar

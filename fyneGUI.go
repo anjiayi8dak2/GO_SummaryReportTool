@@ -116,7 +116,7 @@ func makeWindowTwo(a fyne.App, queryResult [][]string, db *sql.DB, dbSelection s
 		aggregationContainer = createNewAggregationGroup(whiteList, groupBy, 3)
 	}
 
-	// TODO: temporary disable aggregation for rate
+	//TODO: temporary disable aggregation for rate
 	if tableSelection == "movesoutput" || tableSelection == "movesactivityoutput" {
 		aggregationContainer.Visible()
 	} else {
@@ -676,7 +676,9 @@ func createNewAggregationGroup(whitelist []string, groupBy map[string][]string, 
 	return xContainer
 }
 
-func createNewCheckBoxGroup(db *sql.DB, columnsName string, dbSelection string, tableSelection string, mo map[string][]string) *fyne.Container {
+// TODO write comment here, improve performance?
+// base on the column name passed, generate a group of checkbox, what checkbox and how many checkbox will depend on how many distinct value that column has
+func createNewCheckBoxGroup(db *sql.DB, columnsName string, dbSelection string, tableSelection string, filter map[string][]string) *fyne.Container {
 	//To these filters suppose to have group of checkbox
 	//CheckGroup
 	//= pollutantContainer
@@ -690,9 +692,9 @@ func createNewCheckBoxGroup(db *sql.DB, columnsName string, dbSelection string, 
 	xCheckGroup := widget.NewCheckGroup(distinctX, func(value []string) {
 		fmt.Println("selected", value)
 		//update map  from checked boxes statues
-		mo[columnsName] = value
+		filter[columnsName] = value
 		fmt.Println("print entire filter map for  ", columnsName, " inside func createNewCheckBoxGroup")
-		fmt.Println(mo)
+		fmt.Println(filter)
 		//TODO: put check empty value key here??
 	})
 
@@ -735,12 +737,9 @@ func getMOVESrun(db *sql.DB, dbSelection string, columnName string) string {
 // pass table data matrix and table object, update the column width base on the longest cell
 func tableAutoSize(queryResult [][]string, tableData *widget.Table) {
 	go func() {
-		time.Sleep(2 * time.Second) //DELETE ME
+		time.Sleep(1 * time.Second) //DELETE ME
 		wi := getColWidths(queryResult)
 		for i, v := range wi {
-			//if v > 200 {
-			//	v = 200
-			//}
 			tableData.SetColumnWidth(i, v)
 		}
 		tableData.Refresh()
