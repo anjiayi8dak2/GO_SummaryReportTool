@@ -3,8 +3,19 @@ package main
 import (
 	"encoding/csv"
 	"fmt"
+	"github.com/kardianos/osext"
 	"os"
 )
+
+// get the absolute path from current executable
+func getAbsolutePath() string {
+	folderPath, pathPrr := osext.ExecutableFolder()
+	if pathPrr != nil {
+		fmt.Println("getAbsolutePath error", pathPrr)
+	}
+	fmt.Println("getAbsolutePath print dir ", folderPath)
+	return folderPath
+}
 
 // copy map (destination, source)
 func mapCopy[M1, M2 ~map[K]V, K comparable, V any](dst M1, src M2) {
@@ -100,8 +111,8 @@ func RemoveElementFromSlice(l []string, item string) []string {
 	return l
 }
 
-//input [][]string, output decoded [][]string IDs in English
-//decoder can be found in decoder.go, it predefined the key[value] combinations
+// input [][]string, output decoded [][]string IDs in English
+// decoder can be found in decoder.go, it predefined the key[value] combinations
 func decodeButtonToolbar(Matrix [][]string) {
 	//outer loop for each column
 	for col := 0; col < len(Matrix[0]); col++ {

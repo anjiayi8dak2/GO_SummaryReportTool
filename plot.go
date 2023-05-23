@@ -8,8 +8,11 @@ import (
 	"github.com/go-echarts/go-echarts/v2/opts"
 	_ "github.com/pkg/browser"
 	_ "log"
-	"net/http"
+	"os"
 	_ "os"
+	"os/exec"
+	_ "os/exec"
+	"runtime"
 	"strconv"
 	"strings"
 )
@@ -101,13 +104,6 @@ func barStack() *charts.Bar {
 	return bar
 }
 
-func httpserver(w http.ResponseWriter, _ *http.Request) {
-	// create a new stack bar instance
-	stackBar := barStack()
-	fmt.Println("after call bar")
-	stackBar.Render(w)
-	fmt.Println("after call render")
-}
 func runPlot(distanceUnits string, massUnits string, energyUnits string, pollutant string, X1 string, X2 string, Y string, queryResult [][]string) {
 
 	//pollutant name should be here, it should pass from the caller
@@ -157,6 +153,38 @@ func runPlot(distanceUnits string, massUnits string, energyUnits string, polluta
 
 	mapCopy(contingencyGlobalTable, longToWideMap)
 
-	http.HandleFunc("/", httpserver)
-	http.ListenAndServe(":8081", nil)
+	//save the plot into html file
+	folderPath := getAbsolutePath()
+	f, _ := os.Create(folderPath + "\\" + "plot.html")
+	fmt.Println("printing path+file name", folderPath+"\\"+"plot.html")
+	stackBar := barStack()
+	stackBar.Render(f)
+	f.Close()
+
+	//open that html just saved
+	_, ExistErr := os.Stat(folderPath + "\\" + "plot.html")
+	if ExistErr != nil {
+		if os.IsNotExist(ExistErr) {
+			fmt.Println(folderPath + "\\" + "plot.html does not exist")
+		} else {
+			fmt.Println(ExistErr)
+		}
+	} else {
+		var cmd string
+		switch runtime.GOOS { //command for different OS?
+		case "linux":
+			cmd = "xdg-open"
+		case "darwin":
+			cmd = "open"
+		case "windows":
+			cmd = "cmd"
+		default:
+			fmt.Println("unsupported operating system")
+		}
+
+		cmdErr := exec.Command(cmd, "/C", "start", folderPath+"\\"+"plot.html").Run()
+		if cmdErr != nil {
+			fmt.Println("cmd error", cmdErr)
+		}
+	}
 }
