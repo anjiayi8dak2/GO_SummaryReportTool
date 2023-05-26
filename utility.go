@@ -17,6 +17,12 @@ func getAbsolutePath() string {
 	return folderPath
 }
 
+func clearMap(m map[wideTableShapeStruct]float64) {
+	for key := range m {
+		delete(m, key)
+	}
+}
+
 // copy map (destination, source)
 func mapCopy[M1, M2 ~map[K]V, K comparable, V any](dst M1, src M2) {
 	for k, v := range src {

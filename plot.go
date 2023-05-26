@@ -5,6 +5,7 @@ import (
 	"fmt"
 	_ "fmt"
 	"github.com/go-echarts/go-echarts/v2/charts"
+	_ "github.com/go-echarts/go-echarts/v2/components"
 	"github.com/go-echarts/go-echarts/v2/opts"
 	_ "github.com/pkg/browser"
 	_ "log"
@@ -22,14 +23,15 @@ var (
 	//Most part of the variables should pass from fyne window
 	//distanceUnits, massUnits, energyUnits string
 	//pollutant name should be here, it should pass from the caller
-	titleName = "Defualt Title"
+	titleName    = "dummyTitleName"
+	subTitleName = "dummySubTitleName"
 	// This count is useful to generate plot, user can select 1 or 2 field for aggregation
 	// if count =1, make regular bar, if count =2, then make stack bar
 	xAxisCount = 2
 	// YAxisName Y name could also be activity, it must locate at (first row, last element)
-	YAxisName = "EmissionQuant"
+	YAxisName = "dummyYAxisName"
 	// XAxisName X name is selected by user, they must locate at first row, except last element
-	XAxisName = "dummyRegClass"
+	XAxisName = "dummyXAxisName"
 
 	// field in slice
 	field1 []string
@@ -60,33 +62,43 @@ func barStack() *charts.Bar {
 	// set some global options like Title/Legend/ToolTip or anything else
 	bar.SetGlobalOptions(
 		charts.WithInitializationOpts(opts.Initialization{
-			Width:  "1000px",
-			Height: "500px",
+			PageTitle: "default PageTitle",
+			Width:     "1000px",
+			Height:    "500px",
 		}),
 		charts.WithXAxisOpts(opts.XAxis{
+			Type: "category",
 			Name: XAxisName,
 			AxisLabel: &opts.AxisLabel{
-				Show:   true,
-				Rotate: 45,
-				//Interval: "1",
+				Show:         true,
+				Rotate:       45,
+				Interval:     "0",
+				ShowMaxLabel: true,
+				ShowMinLabel: true,
+				// You may set it to be 0 to display all labels compulsively.
+				// If it is set to be 1, it means that labels are shown once after one label.
+				// And if it is set to be 2, it means labels are shown once after two labels, and so on
 			},
 			Show: true,
 		}),
 
 		charts.WithYAxisOpts(opts.YAxis{
+			Type: "value",
 			Name: YAxisName,
 		}),
 		charts.WithTitleOpts(opts.Title{
 			Title:    titleName,
-			Subtitle: "I am sub title,", Right: "40%",
+			Subtitle: subTitleName,
+			Top:      "5%",
+			Left:     "5%",
 		}),
 
 		charts.WithTooltipOpts(opts.Tooltip{Show: true}),
-		charts.WithLegendOpts(opts.Legend{Show: true, Right: "80%"}),
+		charts.WithLegendOpts(opts.Legend{Show: true, Right: "right", Bottom: "center", Orient: "vertical"}),
 
 		charts.WithToolboxOpts(opts.Toolbox{
-			Show: true,
-			//Right: "20%",
+			Show:  true,
+			Right: "20%",
 			Feature: &opts.ToolBoxFeature{
 				SaveAsImage: &opts.ToolBoxFeatureSaveAsImage{
 					Show:  true,
@@ -96,17 +108,21 @@ func barStack() *charts.Bar {
 				DataView: &opts.ToolBoxFeatureDataView{
 					Show:  true,
 					Title: "DataView",
-					Lang:  []string{"data view", "turn off", "refresh"},
+					Lang:  []string{"Data View", "Turn Off", "Refresh"},
 				},
 			}},
 		),
-		charts.WithDataZoomOpts(opts.DataZoom{
-			Type:  "slider",
-			Start: 0,
-			End:   100,
-		}),
+		//charts.WithDataZoomOpts(opts.DataZoom{
+		//	Type:  "slider",
+		//	Start: 0,
+		//	End:   100,
+		//}),
 		charts.WithGridOpts(opts.Grid{
 			Bottom: "200px",
+			Left:   "100px",
+			Right:  "300px",
+			Top:    "100px",
+			//ContainLabel: false,
 		}),
 	)
 
@@ -119,23 +135,23 @@ func barStack() *charts.Bar {
 			//small vertical bars
 			AddSeries(distinctField2[i], generateBarItems(distinctField2[i])). //pass small stack bar count, field1 and field2 for key combination
 			SetSeriesOptions(charts.WithBarChartOpts(opts.BarChart{
-				Stack:          "stack",
-				BarCategoryGap: "50%",
+				Stack: "stack",
+				//BarCategoryGap: "50%",
 			}))
 	}
 	return bar
 }
 
-func runPlot(distanceUnits string, massUnits string, energyUnits string, pollutant string, X1 string, X2 string, Y string, queryResult [][]string) {
+func runPlot(distanceUnits string, massUnits string, energyUnits string, X1 string, X2 string, Y string, queryResult [][]string) {
 
 	//pollutant name should be here, it should pass from the caller
-	titleName = "Plot for " + pollutant + " VS " + X1 + " with " + X2
+	titleName = "Plot for " + X1 + " VS " + X2
 	// This count is useful to generate plot, user can select 1 or 2 field for aggregation
 	// if count =1, make regular bar, if count =2, then make stack bar
 	xAxisCount = 2
 	//Y name could also be activity, it must locate at (first row, last element)
-	YAxisName = Y + " in " + massUnits + "/" + distanceUnits + "/" + energyUnits
-
+	YAxisName = Y
+	subTitleName = " in " + massUnits + "/" + distanceUnits + "/" + energyUnits
 	// X name is selected by user, they must locate at first row, except last element
 	XAxisName = X1
 
@@ -172,8 +188,10 @@ func runPlot(distanceUnits string, massUnits string, energyUnits string, polluta
 		//and field2 []string
 		field2 = append(field2, queryResult[row][field2_position])
 	}
-
+	//clear and copy new
+	clearMap(contingencyGlobalTable)
 	mapCopy(contingencyGlobalTable, longToWideMap)
+	fmt.Println("========print map contingencyGlobalTable========= ", contingencyGlobalTable)
 
 	//save the plot into html file
 	folderPath := getAbsolutePath()

@@ -503,7 +503,7 @@ func selectAggregationField(a fyne.App, queryResult [][]string) {
 	submitButton := widget.NewButton("Submit", func() {
 		fmt.Println("Submit button pressed")
 		fmt.Println("Printing field selection #1  " + fieldSelection1 + " field #2 " + fieldSelection2 + " value column " + resultColumn + " pollutant selection " + pollutantSelection)
-		runPlot(distanceUnits, massUnits, energyUnits, pollutantSelection, fieldSelection1, fieldSelection2, resultColumn, queryResult)
+		runPlot(distanceUnits, massUnits, energyUnits, fieldSelection1, fieldSelection2, resultColumn, queryResult)
 	})
 
 	cancelButton := widget.NewButton("Cancel", func() {
