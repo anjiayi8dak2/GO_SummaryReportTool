@@ -63,38 +63,41 @@ func barStack() *charts.Bar {
 	bar.SetGlobalOptions(
 		charts.WithInitializationOpts(opts.Initialization{
 			PageTitle: "default PageTitle",
-			Width:     "1000px",
-			Height:    "500px",
+			Width:     "1200px", //canvas size
+			Height:    "700px",
 		}),
 		charts.WithXAxisOpts(opts.XAxis{
-			Type: "category",
+			Type: "category", //X is always a category for example fuelType
 			Name: XAxisName,
 			AxisLabel: &opts.AxisLabel{
 				Show:         true,
-				Rotate:       45,
-				Interval:     "0",
-				ShowMaxLabel: true,
-				ShowMinLabel: true,
-				// You may set it to be 0 to display all labels compulsively.
-				// If it is set to be 1, it means that labels are shown once after one label.
-				// And if it is set to be 2, it means labels are shown once after two labels, and so on
+				Rotate:       45,   //rotate title name by 45 degree, because there are many long bar title
+				Interval:     "0",  //0 to display all labels compulsively.
+				ShowMaxLabel: true, //show first bar name, this setting was default as false
+				ShowMinLabel: true, //show last bar name, this setting was default as false
 			},
 			Show: true,
 		}),
 
 		charts.WithYAxisOpts(opts.YAxis{
-			Type: "value",
+			Type: "value", // Y is always a value type for example activity or emissionQuant
 			Name: YAxisName,
 		}),
 		charts.WithTitleOpts(opts.Title{
-			Title:    titleName,
-			Subtitle: subTitleName,
-			Top:      "5%",
-			Left:     "5%",
+			Title:         titleName,
+			Subtitle:      subTitleName,
+			SubtitleStyle: &opts.TextStyle{Color: "black", FontSize: 16},
+			Top:           "5%",
+			Left:          "5%",
 		}),
 
 		charts.WithTooltipOpts(opts.Tooltip{Show: true}),
-		charts.WithLegendOpts(opts.Legend{Show: true, Right: "right", Bottom: "center", Orient: "vertical"}),
+		charts.WithLegendOpts(opts.Legend{
+			Show:   true,
+			Right:  "right",
+			Bottom: "center",
+			Orient: "vertical",
+			Type:   "scroll"}),
 
 		charts.WithToolboxOpts(opts.Toolbox{
 			Show:  true,
@@ -112,16 +115,17 @@ func barStack() *charts.Bar {
 				},
 			}},
 		),
-		//charts.WithDataZoomOpts(opts.DataZoom{
-		//	Type:  "slider",
-		//	Start: 0,
-		//	End:   100,
-		//}),
+		//TODO make this on top
+		charts.WithDataZoomOpts(opts.DataZoom{
+			Type:  "slider",
+			Start: 0,
+			End:   100,
+		}),
 		charts.WithGridOpts(opts.Grid{
-			Bottom: "200px",
-			Left:   "100px",
-			Right:  "300px",
-			Top:    "100px",
+			Bottom: "300px",
+			Left:   "50px",
+			Right:  "350px",
+			Top:    "150px",
 			//ContainLabel: false,
 		}),
 	)
@@ -151,7 +155,7 @@ func runPlot(distanceUnits string, massUnits string, energyUnits string, X1 stri
 	xAxisCount = 2
 	//Y name could also be activity, it must locate at (first row, last element)
 	YAxisName = Y
-	subTitleName = " in " + massUnits + "/" + distanceUnits + "/" + energyUnits
+	subTitleName = "Unit in " + massUnits + "/" + distanceUnits + "/" + energyUnits
 	// X name is selected by user, they must locate at first row, except last element
 	XAxisName = X1
 
