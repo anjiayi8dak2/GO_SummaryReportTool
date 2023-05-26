@@ -65,25 +65,25 @@ func barStack() *charts.Bar {
 		}),
 		charts.WithXAxisOpts(opts.XAxis{
 			Name: XAxisName,
+			AxisLabel: &opts.AxisLabel{
+				Show:   true,
+				Rotate: 45,
+				//Interval: "1",
+			},
+			Show: true,
 		}),
+
 		charts.WithYAxisOpts(opts.YAxis{
 			Name: YAxisName,
 		}),
 		charts.WithTitleOpts(opts.Title{
 			Title:    titleName,
-			Subtitle: "I am looooooooooooooong sub title,", Right: "40%",
+			Subtitle: "I am sub title,", Right: "40%",
 		}),
 
 		charts.WithTooltipOpts(opts.Tooltip{Show: true}),
-		//charts.WithDataZoomOpts(),
-		charts.WithLegendOpts(opts.Legend{
-			Show:   true,
-			Orient: "vertical",
-			X:      "1100px",
-			Y:      "550",
-			//Bottom: "center",
-			//Right:  "right",
-		}),
+		charts.WithLegendOpts(opts.Legend{Show: true, Right: "80%"}),
+
 		charts.WithToolboxOpts(opts.Toolbox{
 			Show: true,
 			//Right: "20%",
@@ -100,6 +100,14 @@ func barStack() *charts.Bar {
 				},
 			}},
 		),
+		charts.WithDataZoomOpts(opts.DataZoom{
+			Type:  "slider",
+			Start: 0,
+			End:   100,
+		}),
+		charts.WithGridOpts(opts.Grid{
+			Bottom: "200px",
+		}),
 	)
 
 	distinctField1 = removeDuplicateStr(field1)
