@@ -634,7 +634,7 @@ func updateButtonToolbar(db *sql.DB, window2 fyne.Window, filter map[string][]st
 
 	//update the matrix with the new where clause and group by we just made
 	var err error
-	*queryResult, err = getQueryResult(db, whereClause, groupbyClause)
+	*queryResult, err = getQueryResult(db, columnSelection, whereClause, groupbyClause)
 	fmt.Println("printing error query result WHERE clause")
 	fmt.Println(err)
 	updateToolbarMessage(ToolbarLabel, whereClause, groupbyClause, db, dbSelection)

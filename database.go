@@ -81,8 +81,8 @@ func getDBVersion(db *sql.DB) {
 	fmt.Println("Connected to:", version)
 }
 
-func getQueryResult(db *sql.DB, whereClause string, groupClause string) ([][]string, error) {
-	columns := convertColumnsComma(whiteList)
+func getQueryResult(db *sql.DB, columnSelection []string, whereClause string, groupClause string) ([][]string, error) {
+	columns := convertColumnsComma(columnSelection)
 	//check if there is an empty IN statement made by check/uncheck checkbox filters rapidly, and delete it if needed
 	noFaultWhereClause := strings.ReplaceAll(whereClause, "IN (  )", "")
 	//TODO user define Limit?
@@ -92,25 +92,28 @@ func getQueryResult(db *sql.DB, whereClause string, groupClause string) ([][]str
 	// A 2D array string represent the data table
 	var outFlat [][]string
 	// add the column names in first row from the remaining columns headers after dynamically filtered
-	outFlat = append(outFlat, whiteList)
-
+	outFlat = append(outFlat, columnSelection)
+	fmt.Println("printing query result header from : ")
+	fmt.Println(outFlat)
 	// exe sql statement
 	rows, err := db.Query(sqlStatement)
 	if err != nil {
 		panic(err)
 	}
+	fmt.Println("printing query rows after execution : ")
+	fmt.Println(rows)
 
-	count := len(whiteList)
+	count := len(columnSelection)
 	values := make([]interface{}, count)
 	valuePtrs := make([]interface{}, count)
 	for rows.Next() {
 		// string array to hold 1 row of query result
 		var innerFlat []string
-		for i := range whiteList {
+		for i := range columnSelection {
 			valuePtrs[i] = &values[i]
 		}
 		rows.Scan(valuePtrs...)
-		for i, _ := range whiteList {
+		for i, _ := range columnSelection {
 			val := values[i]
 			b, ok := val.([]byte)
 			var v interface{}

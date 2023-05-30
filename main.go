@@ -79,7 +79,7 @@ func main() {
 	submitButton := widget.NewButton("Submit", func() {
 		//whiteList []string only contains column names, whiteListIndex [] bool contains all columns from movesoutput
 		whiteList, whiteListIndex = getWhiteList(db)
-		queryResult, _ := getQueryResult(db, "", "")
+		queryResult, _ := getQueryResult(db, whiteList, "", "")
 		makeWindowTwo(a, queryResult, db)
 	})
 	outerContainer := container.NewVSplit(dropdownGrid, submitButton)
