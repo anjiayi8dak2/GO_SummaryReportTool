@@ -16,9 +16,13 @@ import (
 )
 
 var (
-	distanceUnits string
-	massUnits     string
-	energyUnits   string
+	distanceUnits  string
+	massUnits      string
+	energyUnits    string
+	dbSelection    string
+	tableSelection string
+	whiteListIndex []bool
+	whiteList      []string
 )
 
 // TODO: takes forever to open file explorer with wrong folder, it always open download folder WHY?
@@ -44,7 +48,7 @@ func convertColumnsComma(columns []string) string {
 }
 
 // data browsing main window, include the data table and filters
-func makeWindowTwo(a fyne.App, queryResult [][]string, db *sql.DB, dbSelection string, tableSelection string, whiteListIndex []bool, whiteList []string) {
+func makeWindowTwo(a fyne.App, queryResult [][]string, db *sql.DB) {
 	fmt.Println("opening window #2")
 	window2 := a.NewWindow("window #2")
 	window2.SetContent(widget.NewLabel("window #2 label"))
@@ -83,7 +87,7 @@ func makeWindowTwo(a fyne.App, queryResult [][]string, db *sql.DB, dbSelection s
 	toolbar := widget.NewToolbar(
 		widget.NewToolbarAction(theme.ViewRefreshIcon(), func() { //update button
 			fmt.Println("I pressed update button")
-			updateButtonToolbar(db, window2, tableSelection, dbSelection, whiteList, filter, groupBy, &queryResult, ToolbarLabel)
+			updateButtonToolbar(db, window2, filter, groupBy, &queryResult, ToolbarLabel)
 			tableAutoSize(queryResult, tableData)
 		}),
 		widget.NewToolbarSeparator(),
@@ -106,7 +110,7 @@ func makeWindowTwo(a fyne.App, queryResult [][]string, db *sql.DB, dbSelection s
 		ToolbarLabel,
 	)
 
-	createFilterButtons(db, dbSelection, tableSelection, filter, innerContainer)
+	createFilterButtons(db, filter, innerContainer)
 
 	//aggregation container
 	aggregationContainer := container.NewVBox()
@@ -116,7 +120,7 @@ func makeWindowTwo(a fyne.App, queryResult [][]string, db *sql.DB, dbSelection s
 		aggregationContainer = createNewAggregationGroup(whiteList, groupBy, 3)
 	}
 
-	//TODO: temporary disable aggregation for rate
+	// TODO: temporary disable aggregation for rate
 	if tableSelection == "movesoutput" || tableSelection == "movesactivityoutput" {
 		aggregationContainer.Visible()
 	} else {
@@ -125,7 +129,7 @@ func makeWindowTwo(a fyne.App, queryResult [][]string, db *sql.DB, dbSelection s
 	innerContainer.Add(aggregationContainer)
 
 	//dynamic filter buttons, Use the record of whiteListIndex [] bool, show and hide base on 1 or 0.
-	//we initialized all 25 columns when the window #2 started
+	//we initialized all columns when the window #2 started
 	for index, ok := range whiteListIndex {
 		if ok {
 			innerContainer.Objects[index].Visible()
@@ -134,7 +138,7 @@ func makeWindowTwo(a fyne.App, queryResult [][]string, db *sql.DB, dbSelection s
 		}
 	}
 
-	// the filter button section scroll bar
+	// the filter button section scroll bar on the left, this is different one than the data table scroll bar
 	scrollContainer := container.NewVScroll(innerContainer)
 	outerContainer := container.NewHSplit(
 		scrollContainer,
@@ -147,30 +151,30 @@ func makeWindowTwo(a fyne.App, queryResult [][]string, db *sql.DB, dbSelection s
 	window2.Show()
 }
 
-func createFilterButtons(db *sql.DB, dbSelection string, tableSelection string, filter map[string][]string, innerContainer *fyne.Container) {
+func createFilterButtons(db *sql.DB, filter map[string][]string, innerContainer *fyne.Container) {
 	switch tableSelection {
 	case "movesactivityoutput":
-		MOVESRunIDContainer := createNewCheckBoxGroup(db, "MOVESRunID", dbSelection, tableSelection, filter)
-		iterationIDContainer := createNewCheckBoxGroup(db, "iterationID", dbSelection, tableSelection, filter)
-		yearIDContainer := createNewCheckBoxGroup(db, "yearID", dbSelection, tableSelection, filter)
-		monthIDContainer := createNewCheckBoxGroup(db, "monthID", dbSelection, tableSelection, filter)
-		dayIDContainer := createNewCheckBoxGroup(db, "dayID", dbSelection, tableSelection, filter)
-		hourIDContainer := createNewCheckBoxGroup(db, "hourID", dbSelection, tableSelection, filter)
-		stateIDContainer := createNewCheckBoxGroup(db, "stateID", dbSelection, tableSelection, filter)
-		countyIDContainer := createNewCheckBoxGroup(db, "countyID", dbSelection, tableSelection, filter)
-		zoneIDContainer := createNewCheckBoxGroup(db, "zoneID", dbSelection, tableSelection, filter)
-		linkIDContainer := createNewCheckBoxGroup(db, "linkID", dbSelection, tableSelection, filter)
-		sourceTypeIDContainer := createNewCheckBoxGroup(db, "sourceTypeID", dbSelection, tableSelection, filter)
-		regClassIDContainer := createNewCheckBoxGroup(db, "regClassID", dbSelection, tableSelection, filter)
-		fuelTypeIDContainer := createNewCheckBoxGroup(db, "fuelTypeID", dbSelection, tableSelection, filter)
-		fuelSubTypeIDContainer := createNewCheckBoxGroup(db, "fuelSubTypeID", dbSelection, tableSelection, filter)
-		modelYearContainer := createNewCheckBoxGroup(db, "modelYearID", dbSelection, tableSelection, filter)
-		roadTypeIDContainer := createNewCheckBoxGroup(db, "roadTypeID", dbSelection, tableSelection, filter)
-		SCCContainer := createNewCheckBoxGroup(db, "SCC", dbSelection, tableSelection, filter)
-		engTechIDContainer := createNewCheckBoxGroup(db, "engTechID", dbSelection, tableSelection, filter)
-		sectorIDContainer := createNewCheckBoxGroup(db, "sectorID", dbSelection, tableSelection, filter)
-		hpIDContainer := createNewCheckBoxGroup(db, "hpID", dbSelection, tableSelection, filter)
-		activityTypeID := createNewCheckBoxGroup(db, "activityTypeID", dbSelection, tableSelection, filter)
+		MOVESRunIDContainer := createNewCheckBoxGroup(db, "MOVESRunID", filter)
+		iterationIDContainer := createNewCheckBoxGroup(db, "iterationID", filter)
+		yearIDContainer := createNewCheckBoxGroup(db, "yearID", filter)
+		monthIDContainer := createNewCheckBoxGroup(db, "monthID", filter)
+		dayIDContainer := createNewCheckBoxGroup(db, "dayID", filter)
+		hourIDContainer := createNewCheckBoxGroup(db, "hourID", filter)
+		stateIDContainer := createNewCheckBoxGroup(db, "stateID", filter)
+		countyIDContainer := createNewCheckBoxGroup(db, "countyID", filter)
+		zoneIDContainer := createNewCheckBoxGroup(db, "zoneID", filter)
+		linkIDContainer := createNewCheckBoxGroup(db, "linkID", filter)
+		sourceTypeIDContainer := createNewCheckBoxGroup(db, "sourceTypeID", filter)
+		regClassIDContainer := createNewCheckBoxGroup(db, "regClassID", filter)
+		fuelTypeIDContainer := createNewCheckBoxGroup(db, "fuelTypeID", filter)
+		fuelSubTypeIDContainer := createNewCheckBoxGroup(db, "fuelSubTypeID", filter)
+		modelYearContainer := createNewCheckBoxGroup(db, "modelYearID", filter)
+		roadTypeIDContainer := createNewCheckBoxGroup(db, "roadTypeID", filter)
+		SCCContainer := createNewCheckBoxGroup(db, "SCC", filter)
+		engTechIDContainer := createNewCheckBoxGroup(db, "engTechID", filter)
+		sectorIDContainer := createNewCheckBoxGroup(db, "sectorID", filter)
+		hpIDContainer := createNewCheckBoxGroup(db, "hpID", filter)
+		activityTypeID := createNewCheckBoxGroup(db, "activityTypeID", filter)
 
 		innerContainer.Add(MOVESRunIDContainer)
 		innerContainer.Add(iterationIDContainer)
@@ -196,28 +200,28 @@ func createFilterButtons(db *sql.DB, dbSelection string, tableSelection string, 
 
 	case "movesoutput":
 		//fyne containers, create buttons for filters with checkbox selection saved in the map filter
-		MOVESRunIDContainer := createNewCheckBoxGroup(db, "MOVESRunID", dbSelection, tableSelection, filter)
-		iterationIDContainer := createNewCheckBoxGroup(db, "iterationID", dbSelection, tableSelection, filter)
-		yearIDContainer := createNewCheckBoxGroup(db, "yearID", dbSelection, tableSelection, filter)
-		monthIDContainer := createNewCheckBoxGroup(db, "monthID", dbSelection, tableSelection, filter)
-		dayIDContainer := createNewCheckBoxGroup(db, "dayID", dbSelection, tableSelection, filter)
-		hourIDContainer := createNewCheckBoxGroup(db, "hourID", dbSelection, tableSelection, filter)
-		stateIDContainer := createNewCheckBoxGroup(db, "stateID", dbSelection, tableSelection, filter)
-		countyIDContainer := createNewCheckBoxGroup(db, "countyID", dbSelection, tableSelection, filter)
-		zoneIDContainer := createNewCheckBoxGroup(db, "zoneID", dbSelection, tableSelection, filter)
-		linkIDContainer := createNewCheckBoxGroup(db, "linkID", dbSelection, tableSelection, filter)
-		pollutantContainer := createNewCheckBoxGroup(db, "pollutantID", dbSelection, tableSelection, filter)
-		processIDContainer := createNewCheckBoxGroup(db, "processID", dbSelection, tableSelection, filter)
-		sourceTypeIDContainer := createNewCheckBoxGroup(db, "sourceTypeID", dbSelection, tableSelection, filter)
-		regClassIDContainer := createNewCheckBoxGroup(db, "regClassID", dbSelection, tableSelection, filter)
-		fuelTypeIDContainer := createNewCheckBoxGroup(db, "fuelTypeID", dbSelection, tableSelection, filter)
-		fuelSubTypeIDContainer := createNewCheckBoxGroup(db, "fuelSubTypeID", dbSelection, tableSelection, filter)
-		modelYearContainer := createNewCheckBoxGroup(db, "modelYearID", dbSelection, tableSelection, filter)
-		roadTypeIDContainer := createNewCheckBoxGroup(db, "roadTypeID", dbSelection, tableSelection, filter)
-		SCCContainer := createNewCheckBoxGroup(db, "SCC", dbSelection, tableSelection, filter)
-		engTechIDContainer := createNewCheckBoxGroup(db, "engTechID", dbSelection, tableSelection, filter)
-		sectorIDContainer := createNewCheckBoxGroup(db, "sectorID", dbSelection, tableSelection, filter)
-		hpIDContainer := createNewCheckBoxGroup(db, "hpID", dbSelection, tableSelection, filter)
+		MOVESRunIDContainer := createNewCheckBoxGroup(db, "MOVESRunID", filter)
+		iterationIDContainer := createNewCheckBoxGroup(db, "iterationID", filter)
+		yearIDContainer := createNewCheckBoxGroup(db, "yearID", filter)
+		monthIDContainer := createNewCheckBoxGroup(db, "monthID", filter)
+		dayIDContainer := createNewCheckBoxGroup(db, "dayID", filter)
+		hourIDContainer := createNewCheckBoxGroup(db, "hourID", filter)
+		stateIDContainer := createNewCheckBoxGroup(db, "stateID", filter)
+		countyIDContainer := createNewCheckBoxGroup(db, "countyID", filter)
+		zoneIDContainer := createNewCheckBoxGroup(db, "zoneID", filter)
+		linkIDContainer := createNewCheckBoxGroup(db, "linkID", filter)
+		pollutantContainer := createNewCheckBoxGroup(db, "pollutantID", filter)
+		processIDContainer := createNewCheckBoxGroup(db, "processID", filter)
+		sourceTypeIDContainer := createNewCheckBoxGroup(db, "sourceTypeID", filter)
+		regClassIDContainer := createNewCheckBoxGroup(db, "regClassID", filter)
+		fuelTypeIDContainer := createNewCheckBoxGroup(db, "fuelTypeID", filter)
+		fuelSubTypeIDContainer := createNewCheckBoxGroup(db, "fuelSubTypeID", filter)
+		modelYearContainer := createNewCheckBoxGroup(db, "modelYearID", filter)
+		roadTypeIDContainer := createNewCheckBoxGroup(db, "roadTypeID", filter)
+		SCCContainer := createNewCheckBoxGroup(db, "SCC", filter)
+		engTechIDContainer := createNewCheckBoxGroup(db, "engTechID", filter)
+		sectorIDContainer := createNewCheckBoxGroup(db, "sectorID", filter)
+		hpIDContainer := createNewCheckBoxGroup(db, "hpID", filter)
 
 		innerContainer.Add(MOVESRunIDContainer)
 		innerContainer.Add(iterationIDContainer)
@@ -242,22 +246,22 @@ func createFilterButtons(db *sql.DB, dbSelection string, tableSelection string, 
 		innerContainer.Add(sectorIDContainer)
 		innerContainer.Add(hpIDContainer)
 	case "rateperdistance":
-		MOVESScenarioIDContainer := createNewCheckBoxGroup(db, "MOVESScenarioID", dbSelection, tableSelection, filter)
-		MOVESRunIDContainer := createNewCheckBoxGroup(db, "MOVESRunID", dbSelection, tableSelection, filter)
-		yearIDContainer := createNewCheckBoxGroup(db, "yearID", dbSelection, tableSelection, filter)
-		monthIDContainer := createNewCheckBoxGroup(db, "monthID", dbSelection, tableSelection, filter)
-		dayIDContainer := createNewCheckBoxGroup(db, "dayID", dbSelection, tableSelection, filter)
-		hourIDContainer := createNewCheckBoxGroup(db, "hourID", dbSelection, tableSelection, filter)
-		linkIDContainer := createNewCheckBoxGroup(db, "linkID", dbSelection, tableSelection, filter)
-		pollutantIDContainer := createNewCheckBoxGroup(db, "pollutantID", dbSelection, tableSelection, filter)
-		processIDContainer := createNewCheckBoxGroup(db, "processID", dbSelection, tableSelection, filter)
-		sourceTypeIDContainer := createNewCheckBoxGroup(db, "sourceTypeID", dbSelection, tableSelection, filter)
-		regClassIDContainer := createNewCheckBoxGroup(db, "regClassID", dbSelection, tableSelection, filter)
-		SCCContainer := createNewCheckBoxGroup(db, "SCC", dbSelection, tableSelection, filter)
-		fuelTypeIDContainer := createNewCheckBoxGroup(db, "fuelTypeID", dbSelection, tableSelection, filter)
-		modelYearIDContainer := createNewCheckBoxGroup(db, "modelYearID", dbSelection, tableSelection, filter)
-		roadTypeIDContainer := createNewCheckBoxGroup(db, "roadTypeID", dbSelection, tableSelection, filter)
-		avgSpeedBinIDContainer := createNewCheckBoxGroup(db, "avgSpeedBinID", dbSelection, tableSelection, filter)
+		MOVESScenarioIDContainer := createNewCheckBoxGroup(db, "MOVESScenarioID", filter)
+		MOVESRunIDContainer := createNewCheckBoxGroup(db, "MOVESRunID", filter)
+		yearIDContainer := createNewCheckBoxGroup(db, "yearID", filter)
+		monthIDContainer := createNewCheckBoxGroup(db, "monthID", filter)
+		dayIDContainer := createNewCheckBoxGroup(db, "dayID", filter)
+		hourIDContainer := createNewCheckBoxGroup(db, "hourID", filter)
+		linkIDContainer := createNewCheckBoxGroup(db, "linkID", filter)
+		pollutantIDContainer := createNewCheckBoxGroup(db, "pollutantID", filter)
+		processIDContainer := createNewCheckBoxGroup(db, "processID", filter)
+		sourceTypeIDContainer := createNewCheckBoxGroup(db, "sourceTypeID", filter)
+		regClassIDContainer := createNewCheckBoxGroup(db, "regClassID", filter)
+		SCCContainer := createNewCheckBoxGroup(db, "SCC", filter)
+		fuelTypeIDContainer := createNewCheckBoxGroup(db, "fuelTypeID", filter)
+		modelYearIDContainer := createNewCheckBoxGroup(db, "modelYearID", filter)
+		roadTypeIDContainer := createNewCheckBoxGroup(db, "roadTypeID", filter)
+		avgSpeedBinIDContainer := createNewCheckBoxGroup(db, "avgSpeedBinID", filter)
 
 		innerContainer.Add(MOVESScenarioIDContainer)
 		innerContainer.Add(MOVESRunIDContainer)
@@ -277,21 +281,21 @@ func createFilterButtons(db *sql.DB, dbSelection string, tableSelection string, 
 		innerContainer.Add(avgSpeedBinIDContainer)
 
 	case "rateperhour":
-		MOVESScenarioIDContainer := createNewCheckBoxGroup(db, "MOVESScenarioID", dbSelection, tableSelection, filter)
-		MOVESRunIDContainer := createNewCheckBoxGroup(db, "MOVESRunID", dbSelection, tableSelection, filter)
-		yearIDContainer := createNewCheckBoxGroup(db, "yearID", dbSelection, tableSelection, filter)
-		monthIDContainer := createNewCheckBoxGroup(db, "monthID", dbSelection, tableSelection, filter)
-		dayIDContainer := createNewCheckBoxGroup(db, "dayID", dbSelection, tableSelection, filter)
-		hourIDContainer := createNewCheckBoxGroup(db, "hourID", dbSelection, tableSelection, filter)
-		linkIDContainer := createNewCheckBoxGroup(db, "linkID", dbSelection, tableSelection, filter)
-		pollutantIDContainer := createNewCheckBoxGroup(db, "pollutantID", dbSelection, tableSelection, filter)
-		processIDContainer := createNewCheckBoxGroup(db, "processID", dbSelection, tableSelection, filter)
-		sourceTypeIDContainer := createNewCheckBoxGroup(db, "sourceTypeID", dbSelection, tableSelection, filter)
-		regClassIDContainer := createNewCheckBoxGroup(db, "regClassID", dbSelection, tableSelection, filter)
-		SCCContainer := createNewCheckBoxGroup(db, "SCC", dbSelection, tableSelection, filter)
-		fuelTypeIDContainer := createNewCheckBoxGroup(db, "fuelTypeID", dbSelection, tableSelection, filter)
-		modelYearIDContainer := createNewCheckBoxGroup(db, "modelYearID", dbSelection, tableSelection, filter)
-		roadTypeIDContainer := createNewCheckBoxGroup(db, "roadTypeID", dbSelection, tableSelection, filter)
+		MOVESScenarioIDContainer := createNewCheckBoxGroup(db, "MOVESScenarioID", filter)
+		MOVESRunIDContainer := createNewCheckBoxGroup(db, "MOVESRunID", filter)
+		yearIDContainer := createNewCheckBoxGroup(db, "yearID", filter)
+		monthIDContainer := createNewCheckBoxGroup(db, "monthID", filter)
+		dayIDContainer := createNewCheckBoxGroup(db, "dayID", filter)
+		hourIDContainer := createNewCheckBoxGroup(db, "hourID", filter)
+		linkIDContainer := createNewCheckBoxGroup(db, "linkID", filter)
+		pollutantIDContainer := createNewCheckBoxGroup(db, "pollutantID", filter)
+		processIDContainer := createNewCheckBoxGroup(db, "processID", filter)
+		sourceTypeIDContainer := createNewCheckBoxGroup(db, "sourceTypeID", filter)
+		regClassIDContainer := createNewCheckBoxGroup(db, "regClassID", filter)
+		SCCContainer := createNewCheckBoxGroup(db, "SCC", filter)
+		fuelTypeIDContainer := createNewCheckBoxGroup(db, "fuelTypeID", filter)
+		modelYearIDContainer := createNewCheckBoxGroup(db, "modelYearID", filter)
+		roadTypeIDContainer := createNewCheckBoxGroup(db, "roadTypeID", filter)
 
 		innerContainer.Add(MOVESScenarioIDContainer)
 		innerContainer.Add(MOVESRunIDContainer)
@@ -310,19 +314,19 @@ func createFilterButtons(db *sql.DB, dbSelection string, tableSelection string, 
 		innerContainer.Add(roadTypeIDContainer)
 
 	case "rateperprofile":
-		MOVESScenarioIDContainer := createNewCheckBoxGroup(db, "MOVESScenarioID", dbSelection, tableSelection, filter)
-		MOVESRunIDContainer := createNewCheckBoxGroup(db, "MOVESRunID", dbSelection, tableSelection, filter)
-		temperatureProfileIDContainer := createNewCheckBoxGroup(db, "temperatureProfileID", dbSelection, tableSelection, filter)
-		yearIDContainer := createNewCheckBoxGroup(db, "yearID", dbSelection, tableSelection, filter)
-		dayIDContainer := createNewCheckBoxGroup(db, "dayID", dbSelection, tableSelection, filter)
-		hourIDContainer := createNewCheckBoxGroup(db, "hourID", dbSelection, tableSelection, filter)
-		pollutantIDContainer := createNewCheckBoxGroup(db, "pollutantID", dbSelection, tableSelection, filter)
-		processIDContainer := createNewCheckBoxGroup(db, "processID", dbSelection, tableSelection, filter)
-		sourceTypeIDContainer := createNewCheckBoxGroup(db, "sourceTypeID", dbSelection, tableSelection, filter)
-		regClassIDContainer := createNewCheckBoxGroup(db, "regClassID", dbSelection, tableSelection, filter)
-		SCCContainer := createNewCheckBoxGroup(db, "SCC", dbSelection, tableSelection, filter)
-		fuelTypeIDContainer := createNewCheckBoxGroup(db, "fuelTypeID", dbSelection, tableSelection, filter)
-		modelYearIDContainer := createNewCheckBoxGroup(db, "modelYearID", dbSelection, tableSelection, filter)
+		MOVESScenarioIDContainer := createNewCheckBoxGroup(db, "MOVESScenarioID", filter)
+		MOVESRunIDContainer := createNewCheckBoxGroup(db, "MOVESRunID", filter)
+		temperatureProfileIDContainer := createNewCheckBoxGroup(db, "temperatureProfileID", filter)
+		yearIDContainer := createNewCheckBoxGroup(db, "yearID", filter)
+		dayIDContainer := createNewCheckBoxGroup(db, "dayID", filter)
+		hourIDContainer := createNewCheckBoxGroup(db, "hourID", filter)
+		pollutantIDContainer := createNewCheckBoxGroup(db, "pollutantID", filter)
+		processIDContainer := createNewCheckBoxGroup(db, "processID", filter)
+		sourceTypeIDContainer := createNewCheckBoxGroup(db, "sourceTypeID", filter)
+		regClassIDContainer := createNewCheckBoxGroup(db, "regClassID", filter)
+		SCCContainer := createNewCheckBoxGroup(db, "SCC", filter)
+		fuelTypeIDContainer := createNewCheckBoxGroup(db, "fuelTypeID", filter)
+		modelYearIDContainer := createNewCheckBoxGroup(db, "modelYearID", filter)
 
 		innerContainer.Add(MOVESScenarioIDContainer)
 		innerContainer.Add(MOVESRunIDContainer)
@@ -339,20 +343,20 @@ func createFilterButtons(db *sql.DB, dbSelection string, tableSelection string, 
 		innerContainer.Add(modelYearIDContainer)
 
 	case "rateperstart":
-		MOVESScenarioIDContainer := createNewCheckBoxGroup(db, "MOVESScenarioID", dbSelection, tableSelection, filter)
-		MOVESRunIDContainer := createNewCheckBoxGroup(db, "MOVESRunID", dbSelection, tableSelection, filter)
-		yearIDContainer := createNewCheckBoxGroup(db, "yearID", dbSelection, tableSelection, filter)
-		monthIDContainer := createNewCheckBoxGroup(db, "monthID", dbSelection, tableSelection, filter)
-		dayIDContainer := createNewCheckBoxGroup(db, "dayID", dbSelection, tableSelection, filter)
-		hourIDContainer := createNewCheckBoxGroup(db, "hourID", dbSelection, tableSelection, filter)
-		zoneIDContainer := createNewCheckBoxGroup(db, "zoneID", dbSelection, tableSelection, filter)
-		sourceTypeIDContainer := createNewCheckBoxGroup(db, "sourceTypeID", dbSelection, tableSelection, filter)
-		regClassIDContainer := createNewCheckBoxGroup(db, "regClassID", dbSelection, tableSelection, filter)
-		SCCContainer := createNewCheckBoxGroup(db, "SCC", dbSelection, tableSelection, filter)
-		fuelTypeIDContainer := createNewCheckBoxGroup(db, "fuelTypeID", dbSelection, tableSelection, filter)
-		modelYearIDContainer := createNewCheckBoxGroup(db, "modelYearID", dbSelection, tableSelection, filter)
-		pollutantIDContainer := createNewCheckBoxGroup(db, "pollutantID", dbSelection, tableSelection, filter)
-		processIDContainer := createNewCheckBoxGroup(db, "processID", dbSelection, tableSelection, filter)
+		MOVESScenarioIDContainer := createNewCheckBoxGroup(db, "MOVESScenarioID", filter)
+		MOVESRunIDContainer := createNewCheckBoxGroup(db, "MOVESRunID", filter)
+		yearIDContainer := createNewCheckBoxGroup(db, "yearID", filter)
+		monthIDContainer := createNewCheckBoxGroup(db, "monthID", filter)
+		dayIDContainer := createNewCheckBoxGroup(db, "dayID", filter)
+		hourIDContainer := createNewCheckBoxGroup(db, "hourID", filter)
+		zoneIDContainer := createNewCheckBoxGroup(db, "zoneID", filter)
+		sourceTypeIDContainer := createNewCheckBoxGroup(db, "sourceTypeID", filter)
+		regClassIDContainer := createNewCheckBoxGroup(db, "regClassID", filter)
+		SCCContainer := createNewCheckBoxGroup(db, "SCC", filter)
+		fuelTypeIDContainer := createNewCheckBoxGroup(db, "fuelTypeID", filter)
+		modelYearIDContainer := createNewCheckBoxGroup(db, "modelYearID", filter)
+		pollutantIDContainer := createNewCheckBoxGroup(db, "pollutantID", filter)
+		processIDContainer := createNewCheckBoxGroup(db, "processID", filter)
 
 		innerContainer.Add(MOVESScenarioIDContainer)
 		innerContainer.Add(MOVESRunIDContainer)
@@ -371,20 +375,20 @@ func createFilterButtons(db *sql.DB, dbSelection string, tableSelection string, 
 
 	case "ratepervehicle":
 		//, , , , , , , , , , , , , , temperature, relHumidity, ratePerVehicle
-		MOVESScenarioIDContainer := createNewCheckBoxGroup(db, "MOVESScenarioID", dbSelection, tableSelection, filter)
-		MOVESRunIDContainer := createNewCheckBoxGroup(db, "MOVESRunID", dbSelection, tableSelection, filter)
-		yearIDContainer := createNewCheckBoxGroup(db, "yearID", dbSelection, tableSelection, filter)
-		monthIDContainer := createNewCheckBoxGroup(db, "monthID", dbSelection, tableSelection, filter)
-		dayIDContainer := createNewCheckBoxGroup(db, "dayID", dbSelection, tableSelection, filter)
-		hourIDContainer := createNewCheckBoxGroup(db, "hourID", dbSelection, tableSelection, filter)
-		zoneIDContainer := createNewCheckBoxGroup(db, "zoneID", dbSelection, tableSelection, filter)
-		pollutantIDContainer := createNewCheckBoxGroup(db, "pollutantID", dbSelection, tableSelection, filter)
-		processIDContainer := createNewCheckBoxGroup(db, "processID", dbSelection, tableSelection, filter)
-		sourceTypeIDContainer := createNewCheckBoxGroup(db, "sourceTypeID", dbSelection, tableSelection, filter)
-		regClassIDContainer := createNewCheckBoxGroup(db, "regClassID", dbSelection, tableSelection, filter)
-		SCCContainer := createNewCheckBoxGroup(db, "SCC", dbSelection, tableSelection, filter)
-		fuelTypeIDContainer := createNewCheckBoxGroup(db, "fuelTypeID", dbSelection, tableSelection, filter)
-		modelYearIDContainer := createNewCheckBoxGroup(db, "modelYearID", dbSelection, tableSelection, filter)
+		MOVESScenarioIDContainer := createNewCheckBoxGroup(db, "MOVESScenarioID", filter)
+		MOVESRunIDContainer := createNewCheckBoxGroup(db, "MOVESRunID", filter)
+		yearIDContainer := createNewCheckBoxGroup(db, "yearID", filter)
+		monthIDContainer := createNewCheckBoxGroup(db, "monthID", filter)
+		dayIDContainer := createNewCheckBoxGroup(db, "dayID", filter)
+		hourIDContainer := createNewCheckBoxGroup(db, "hourID", filter)
+		zoneIDContainer := createNewCheckBoxGroup(db, "zoneID", filter)
+		pollutantIDContainer := createNewCheckBoxGroup(db, "pollutantID", filter)
+		processIDContainer := createNewCheckBoxGroup(db, "processID", filter)
+		sourceTypeIDContainer := createNewCheckBoxGroup(db, "sourceTypeID", filter)
+		regClassIDContainer := createNewCheckBoxGroup(db, "regClassID", filter)
+		SCCContainer := createNewCheckBoxGroup(db, "SCC", filter)
+		fuelTypeIDContainer := createNewCheckBoxGroup(db, "fuelTypeID", filter)
+		modelYearIDContainer := createNewCheckBoxGroup(db, "modelYearID", filter)
 
 		innerContainer.Add(MOVESScenarioIDContainer)
 		innerContainer.Add(MOVESRunIDContainer)
@@ -402,18 +406,18 @@ func createFilterButtons(db *sql.DB, dbSelection string, tableSelection string, 
 		innerContainer.Add(modelYearIDContainer)
 
 	case "startspervehicle":
-		MOVESScenarioIDContainer := createNewCheckBoxGroup(db, "MOVESScenarioID", dbSelection, tableSelection, filter)
-		MOVESRunIDContainer := createNewCheckBoxGroup(db, "MOVESRunID", dbSelection, tableSelection, filter)
-		yearIDContainer := createNewCheckBoxGroup(db, "yearID", dbSelection, tableSelection, filter)
-		monthIDContainer := createNewCheckBoxGroup(db, "monthID", dbSelection, tableSelection, filter)
-		dayIDContainer := createNewCheckBoxGroup(db, "dayID", dbSelection, tableSelection, filter)
-		hourIDContainer := createNewCheckBoxGroup(db, "hourID", dbSelection, tableSelection, filter)
-		zoneIDContainer := createNewCheckBoxGroup(db, "zoneID", dbSelection, tableSelection, filter)
-		sourceTypeIDContainer := createNewCheckBoxGroup(db, "sourceTypeID", dbSelection, tableSelection, filter)
-		regClassIDContainer := createNewCheckBoxGroup(db, "regClassID", dbSelection, tableSelection, filter)
-		SCCContainer := createNewCheckBoxGroup(db, "SCC", dbSelection, tableSelection, filter)
-		fuelTypeIDContainer := createNewCheckBoxGroup(db, "fuelTypeID", dbSelection, tableSelection, filter)
-		modelYearIDContainer := createNewCheckBoxGroup(db, "modelYearID", dbSelection, tableSelection, filter)
+		MOVESScenarioIDContainer := createNewCheckBoxGroup(db, "MOVESScenarioID", filter)
+		MOVESRunIDContainer := createNewCheckBoxGroup(db, "MOVESRunID", filter)
+		yearIDContainer := createNewCheckBoxGroup(db, "yearID", filter)
+		monthIDContainer := createNewCheckBoxGroup(db, "monthID", filter)
+		dayIDContainer := createNewCheckBoxGroup(db, "dayID", filter)
+		hourIDContainer := createNewCheckBoxGroup(db, "hourID", filter)
+		zoneIDContainer := createNewCheckBoxGroup(db, "zoneID", filter)
+		sourceTypeIDContainer := createNewCheckBoxGroup(db, "sourceTypeID", filter)
+		regClassIDContainer := createNewCheckBoxGroup(db, "regClassID", filter)
+		SCCContainer := createNewCheckBoxGroup(db, "SCC", filter)
+		fuelTypeIDContainer := createNewCheckBoxGroup(db, "fuelTypeID", filter)
+		modelYearIDContainer := createNewCheckBoxGroup(db, "modelYearID", filter)
 
 		innerContainer.Add(MOVESScenarioIDContainer)
 		innerContainer.Add(MOVESRunIDContainer)
@@ -459,7 +463,7 @@ func selectAggregationField(a fyne.App, queryResult [][]string) {
 		headerList2 = headersList
 	}
 
-	//TODO:  Select pollutant
+	//TODO:  delete this the drop down box for pollutant, and make more clear instruction here for X1 X2 selection
 
 	tableList := []string{"pollutant1", "pollutant2", "pollutant3", "pollutant4"}
 	//Create dropdown for pollutant
@@ -521,8 +525,7 @@ func selectAggregationField(a fyne.App, queryResult [][]string) {
 
 }
 
-// TODO: move update button on top tool bar, not all the way in the bottom of scrollbar
-func updateButtonToolbar(db *sql.DB, window2 fyne.Window, tableSelection string, dbSelection string, whiteList []string, filter map[string][]string,
+func updateButtonToolbar(db *sql.DB, window2 fyne.Window, filter map[string][]string,
 	groupBy map[string][]string, queryResult *[][]string, ToolbarLabel *widget.Label) {
 	fmt.Println("print from update button function")
 
@@ -631,7 +634,7 @@ func updateButtonToolbar(db *sql.DB, window2 fyne.Window, tableSelection string,
 
 	//update the matrix with the new where clause and group by we just made
 	var err error
-	*queryResult, err = getQueryResult(db, dbSelection, tableSelection, columnSelection, whereClause, groupbyClause)
+	*queryResult, err = getQueryResult(db, whereClause, groupbyClause)
 	fmt.Println("printing error query result WHERE clause")
 	fmt.Println(err)
 	updateToolbarMessage(ToolbarLabel, whereClause, groupbyClause, db, dbSelection)
@@ -676,9 +679,9 @@ func createNewAggregationGroup(whitelist []string, groupBy map[string][]string, 
 	return xContainer
 }
 
-// TODO write comment here, improve performance?
+// TODO performance?
 // base on the column name passed, generate a group of checkbox, what checkbox and how many checkbox will depend on how many distinct value that column has
-func createNewCheckBoxGroup(db *sql.DB, columnsName string, dbSelection string, tableSelection string, filter map[string][]string) *fyne.Container {
+func createNewCheckBoxGroup(db *sql.DB, columnsName string, filter map[string][]string) *fyne.Container {
 	//To these filters suppose to have group of checkbox
 	//CheckGroup
 	//= pollutantContainer
@@ -688,7 +691,7 @@ func createNewCheckBoxGroup(db *sql.DB, columnsName string, dbSelection string, 
 	xButton := widget.NewButton(columnsName, func() {
 	})
 
-	distinctX := getDistinct(db, dbSelection, tableSelection, columnsName)
+	distinctX := getDistinct(db, columnsName)
 	xCheckGroup := widget.NewCheckGroup(distinctX, func(value []string) {
 		fmt.Println("selected", value)
 		//update map  from checked boxes statues

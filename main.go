@@ -26,10 +26,6 @@ func main() {
 	window1 := a.NewWindow("Summary Report Tool")
 	window1.Resize(fyne.NewSize(400, 400))
 
-	//Global var
-	var dbSelection string
-	var tableSelection string
-
 	//Top menu bar
 	menuitemMaria := fyne.NewMenuItem("Open Maria Data Folder", func() {
 		openMariaFolder(db)
@@ -82,9 +78,9 @@ func main() {
 	dropdownGrid := container.New(layout.NewAdaptiveGridLayout(2), dbDropdown, tableDropdown)
 	submitButton := widget.NewButton("Submit", func() {
 		//whiteList []string only contains column names, whiteListIndex [] bool contains all columns from movesoutput
-		whiteList, whiteListIndex := getWhiteList(db, dbSelection, tableSelection)
-		queryResult, _ := getQueryResult(db, dbSelection, tableSelection, whiteList, "", "")
-		makeWindowTwo(a, queryResult, db, dbSelection, tableSelection, whiteListIndex, whiteList)
+		whiteList, whiteListIndex = getWhiteList(db)
+		queryResult, _ := getQueryResult(db, "", "")
+		makeWindowTwo(a, queryResult, db)
 	})
 	outerContainer := container.NewVSplit(dropdownGrid, submitButton)
 	outerContainer.Offset = 0.8

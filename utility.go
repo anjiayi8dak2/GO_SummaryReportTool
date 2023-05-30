@@ -90,7 +90,7 @@ func getColWidths(data [][]string) []float32 {
 // take [][]string and download csv file in the same folder that main.go is located
 // TODO make download navigation, something that open window file explorer and download with saved path
 func csvExport(data [][]string) error {
-	file, err := os.Create("result.csv")
+	file, err := os.Create("SummaryReportTool_Result.csv")
 	if err != nil {
 		return err
 	}

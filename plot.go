@@ -115,7 +115,6 @@ func barStack() *charts.Bar {
 				},
 			}},
 		),
-		//TODO make this on top
 		charts.WithDataZoomOpts(opts.DataZoom{
 			Type:  "slider",
 			Start: 0,
@@ -123,7 +122,7 @@ func barStack() *charts.Bar {
 		}),
 		charts.WithGridOpts(opts.Grid{
 			Bottom: "300px",
-			Left:   "50px",
+			Left:   "100px",
 			Right:  "350px",
 			Top:    "150px",
 			//ContainLabel: false,

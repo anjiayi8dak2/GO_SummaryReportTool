@@ -44,7 +44,10 @@ func getDBList(db *sql.DB) []string {
 }
 
 // TODO improve performance
-func getDistinct(db *sql.DB, dbSelection string, tableSelection string, targetColumn string) []string {
+// pass tableName, ColumnName
+// return distinct values of that column in []string
+// since we already know the whiteList[] of the table, we can skip the columns if it is false, (false means during the getWhiteList func, the column got invalid value such as null or empty string "")
+func getDistinct(db *sql.DB, targetColumn string) []string {
 	sqlStatement := "SELECT DISTINCT " + targetColumn + " AS distinctValues FROM " + dbSelection + "." + tableSelection + " ORDER BY distinctValues ASC ; "
 	fmt.Println("Running sql statement  :", sqlStatement)
 	rows, err := db.Query(sqlStatement)
@@ -78,7 +81,7 @@ func getDBVersion(db *sql.DB) {
 	fmt.Println("Connected to:", version)
 }
 
-func getQueryResult(db *sql.DB, dbSelection string, tableSelection string, whiteList []string, whereClause string, groupClause string) ([][]string, error) {
+func getQueryResult(db *sql.DB, whereClause string, groupClause string) ([][]string, error) {
 	columns := convertColumnsComma(whiteList)
 	//check if there is an empty IN statement made by check/uncheck checkbox filters rapidly, and delete it if needed
 	noFaultWhereClause := strings.ReplaceAll(whereClause, "IN (  )", "")
@@ -127,7 +130,7 @@ func getQueryResult(db *sql.DB, dbSelection string, tableSelection string, white
 	return outFlat, err
 }
 
-func getUnit(db *sql.DB, dbSelection string, tableSelection string) string {
+func getUnit(db *sql.DB) string {
 	var massUnit string
 	var distanceUnit string
 	var columnName string
@@ -165,9 +168,10 @@ func getUnit(db *sql.DB, dbSelection string, tableSelection string) string {
 	return columnName
 }
 
+// in MOVES output tables, there are null values and empty string value ""
 // go-sql driver does not read null value that returned from query, therefore we use ifnull() and assign -1 as an indicator for the null value
-// so far the best solution that does not rely on the random third party repo
-func getOneRow(db *sql.DB, dbSelection string, tableSelection string) (interface{}, error) {
+// so far the best solution that does not rely on the independent third party repo
+func getOneRow(db *sql.DB) (interface{}, error) {
 	var ifNullSQL string
 	// there should be a smart way to do it, but I could not find any. stupid but works :(
 	// editing SELECT clause sql statement depends on which table got selected
@@ -364,10 +368,10 @@ func getOneRow(db *sql.DB, dbSelection string, tableSelection string) (interface
 	}
 	defer rows.Close()
 
-	// depends on the table selection string value, create different instance of the struct,
+	// depends on the table selection string value, create different instance of the struct, (structs can be found in dataType.go)
 	// then scan the query result into struct specific field for next steps
 	// the Scan function from go-sql driver has no way to select all columns into target struct in one command like "SELECT * ..." into struct_name
-	// I could not find a better way than hard coded column names, this is fine as long as we don't change schemas of movesoutput
+	// I could not find a better way than hard coded column names, will be nice to have a one function call solution in the future.
 	switch tableSelection {
 	case "movesactivityoutput":
 		var output Movesactivityoutput
@@ -501,61 +505,29 @@ func getOneRow(db *sql.DB, dbSelection string, tableSelection string) (interface
 		break
 	}
 
-	//should not run to here
+	//should not run up to here
 	return nil, nil
 
 }
 
+// TODO: performance?
 // return []string contains whitelist columns names that have meaningful values, size depends on how many column are survived
 // return []bool that indicate valid/invalid values for each column, []bool size = total column that a table has in struct
 // for example: a 4 column table has 4 attributes {"yearID", "pollutantID", "roadTypeID", "emissionQuant"}
 // then the filter found yearID and roadTypeID are null
 // returned whitelist will be {"pollutantID","emissionQuant"}
 // returned []bool will be {0,1,0,1}
-func getWhiteList(con *sql.DB, dbSelection string, tableSelection string) ([]string, []bool) {
-	//var fieldNames []string
-	//
-	//switch tableSelection {
-	//case "movesactivityoutput":
-	//	fieldNames = []string{"MOVESRunID", "iterationID", "yearID", "monthID", "dayID", "hourID", "stateID", "countyID",
-	//		"zoneID", "linkID", "sourceTypeID", "regClassID", "fuelTypeID", "fuelSubTypeID",
-	//		"modelYearID", "roadTypeID", "SCC", "engTechID", "sectorID", "hpID", "activityTypeID", "activity"}
-	//case "movesoutput":
-	//	fieldNames = []string{"MOVESRunID", "iterationID", "yearID", "monthID", "dayID", "hourID", "stateID", "countyID",
-	//		"zoneID", "linkID", "pollutantID", "processID", "sourceTypeID", "regClassID", "fuelTypeID", "fuelSubTypeID",
-	//		"modelYearID", "roadTypeID", "SCC", "engTechID", "sectorID", "hpID", "emissionQuant"}
-	//case "rateperdistance":
-	//	fieldNames = []string{"MOVESScenarioID", "MOVESRunID", "yearID", "monthID", "dayID", "hourID", "linkID", "pollutantID",
-	//		"processID", "sourceTypeID", "regClassID", "SCC", "fuelTypeID", "modelYearID", "roadTypeID", "avgSpeedBinID",
-	//		"temperature", "relHumidity", "ratePerDistance"}
-	//case "rateperhour":
-	//	fieldNames = []string{"MOVESScenarioID", "MOVESRunID", "yearID", "monthID", "dayID", "hourID", "linkID", "pollutantID",
-	//		"processID", "sourceTypeID", "regClassID", "SCC", "fuelTypeID", "modelYearID", "roadTypeID", "temperature", "relHumidity", "ratePerHour"}
-	//case "rateperprofile":
-	//	fieldNames = []string{"MOVESScenarioID", "MOVESRunID", "temperatureProfileID", "yearID", "dayID", "hourID", "pollutantID",
-	//		"processID", "sourceTypeID", "regClassID", "SCC", "fuelTypeID", "modelYearID", "temperature", "relHumidity", "ratePerVehicle"}
-	//case "rateperstart":
-	//	fieldNames = []string{"MOVESScenarioID", "MOVESRunID", "yearID", "monthID", "dayID", "hourID", "zoneID", "sourceTypeID",
-	//		"regClassID", "SCC", "fuelTypeID", "modelYearID", "pollutantID", "processID", "temperature", "relHumidity", "ratePerStart"}
-	//case "ratepervehicle":
-	//	fieldNames = []string{"MOVESScenarioID", "MOVESRunID", "yearID", "monthID", "dayID", "hourID", "zoneID", "pollutantID",
-	//		"processID", "sourceTypeID", "regClassID", "SCC", "fuelTypeID", "modelYearID", "temperature", "relHumidity", "ratePerVehicle"}
-	//case "startspervehicle":
-	//	fieldNames = []string{"MOVESScenarioID", "MOVESRunID", "yearID", "monthID", "dayID", "hourID", "zoneID",
-	//		"sourceTypeID", "regClassID", "SCC", "fuelTypeID", "modelYearID", "startsPerVehicle"}
-	//default:
-	//	panic("unknown table selection ")
-	//
-	//}
+func getWhiteList(con *sql.DB) ([]string, []bool) {
+	//reset both whiteList
+	whiteList = nil
+	whiteListIndex = nil
 
-	oneRowResult, _ := getOneRow(con, dbSelection, tableSelection)
+	oneRowResult, _ := getOneRow(con)
 	values := reflect.ValueOf(oneRowResult)
 	types := values.Type()
 
-	var whiteList []string
-	var whiteListIndex []bool
-
-	// loop through all the columns from OneRow, if a column has valid number(not equal -1), append it into whitelist [] string
+	// loop through all the columns from OneRow result, if a column has valid number(not equal -1), append it into whitelist [] string
+	// note: in GO, there is no easy way to compare different types, the if statement will crash on different types when using operator "="
 	for i := 0; i < values.NumField(); i++ {
 		if values.Field(i).Type() == reflect.TypeOf(1) { //type int
 			if values.Field(i).Int() != -1 { // non -1 integer
@@ -575,7 +547,6 @@ func getWhiteList(con *sql.DB, dbSelection string, tableSelection string) ([]str
 	//loop through values and update its boolean value when detect -1
 	//whiteListIndex [] bool size = corresponding target table struct, the order of the column is also same
 	//whiteListIndex flags is being used to determinate which column/filter_check_box to show/hide containers in the future
-	//TODO merge this for loop into the above one
 	for i := 0; i < values.NumField(); i++ {
 		if values.Field(i).Type() == reflect.TypeOf(1) {
 			if values.Field(i).Int() != -1 {
@@ -592,30 +563,6 @@ func getWhiteList(con *sql.DB, dbSelection string, tableSelection string) ([]str
 		}
 
 	}
-
-	//// numeric columns count that a table has, for example movesoutput has "emissionQuant", but rateperhour has "temperature", "relHumidity","ratePerHour"
-	//var numericColumnsInTheEnd int
-	//if tableSelection == "movesoutput" || tableSelection == "startspervehicle" || tableSelection == "movesactivityoutput" {
-	//	numericColumnsInTheEnd = 1
-	//} else {
-	//	numericColumnsInTheEnd = 3
-	//}
-	//
-	////find distinct values for the survived column, then also ignore these columns that only has 1 distinct value
-	////loop through whiteListIndex, for these columns survived for the null value check, check the count of distinct value = 1,
-	////for example if the MOVESRUNID only has 1, ignore it, there is no point to show them as both column or filter
-	//for i := 0; i < len(whiteListIndex)-numericColumnsInTheEnd; i++ { //loop to the position before numeric column such as emissionQuant/activity
-	//	if whiteListIndex[i] && fieldNames[i] != "pollutantID" { //if the column value is not null, skip pollutantID
-	//		//get distinct query, and see the count or len(returned slice)
-	//		distinctResult := getDistinct(con, dbSelection, tableSelection, fieldNames[i])
-	//		if len(distinctResult) <= 1 { // if the returned slice only has <= 1 distinct value, mark the index to false
-	//			whiteListIndex[i] = false
-	//			fmt.Print(" found column that only has 1 distinct value ", fieldNames[i])
-	//			fmt.Print(" printing updated whiteList v% v%", fieldNames[i], whiteListIndex[i])
-	//			whiteList = RemoveElementFromSlice(whiteList, fieldNames[i]) // call func that remove #the column that only have 1 distinct value as well
-	//		}
-	//	}
-	//}
 
 	return whiteList, whiteListIndex
 }
