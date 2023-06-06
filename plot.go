@@ -179,6 +179,11 @@ func runPlot(distanceUnits string, massUnits string, energyUnits string, X1 stri
 	}
 	fmt.Println("print field1 field2 and value columns position ", field1_position, field2_position, valueColumn_position)
 
+	//Reset
+	field1 = nil
+	field2 = nil
+	clearMap(longToWideMap)
+
 	//loop through the query result and assign key and value into map
 	//skip first row, that is header
 	for row := 1; row < len(queryResult); row++ {
@@ -186,6 +191,8 @@ func runPlot(distanceUnits string, massUnits string, energyUnits string, X1 stri
 		stringToFloat, _ := strconv.ParseFloat(strings.TrimSpace(queryResult[row][valueColumn_position]), 64)
 		fmt.Println("print string convert to float", stringToFloat)
 		longToWideMap[wideTableShapeStruct{queryResult[row][field1_position], queryResult[row][field2_position]}] = stringToFloat
+		fmt.Println("print long to wide map", longToWideMap)
+
 		//update field1 []string
 		field1 = append(field1, queryResult[row][field1_position])
 		//and field2 []string

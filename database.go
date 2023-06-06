@@ -128,7 +128,7 @@ func getQueryResult(db *sql.DB, columnSelection []string, whereClause string, gr
 		outFlat = append(outFlat, innerFlat)
 	}
 	//TODO: adding data, add the mass/distance unit for the (first column, last row)
-	// also, depending what table is selected, the unit can be different. for example, grams or grams per mil
+	// also, depending on what table is selected, the unit can be different. for example, grams or grams per mil
 	// outFlat[0][len(whiteList)-1] = getUnit(db, dbSelection, tableSelection)
 	return outFlat, err
 }

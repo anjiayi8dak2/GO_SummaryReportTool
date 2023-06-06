@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"fyne.io/fyne/theme"
 	"fyne.io/fyne/v2"
+	_ "fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
@@ -16,13 +17,16 @@ import (
 )
 
 var (
-	distanceUnits  string
-	massUnits      string
-	energyUnits    string
-	dbSelection    string
-	tableSelection string
-	whiteListIndex []bool
-	whiteList      []string
+	distanceUnits      string
+	massUnits          string
+	energyUnits        string
+	dbSelection        string
+	tableSelection     string
+	whiteListIndex     []bool
+	whiteList          []string
+	fieldSelection1    string
+	fieldSelection2    string
+	pollutantSelection string //TODO: delete me
 )
 
 // TODO: takes forever to open file explorer with wrong folder, it always open download folder WHY?
@@ -439,7 +443,6 @@ func createFilterButtons(db *sql.DB, filter map[string][]string, innerContainer 
 // open new window when hit the plot button, user should select 1 or 2 field for plotting
 // then this function will pass all the parameter to the plotting library
 func selectAggregationField(a fyne.App, queryResult [][]string) {
-	var fieldSelection1, fieldSelection2, pollutantSelection string
 
 	selectAggregationFieldWindow := a.NewWindow("Select 1 or 2 field that for X axis")
 	selectAggregationFieldWindow.Resize(fyne.NewSize(400, 400))
@@ -469,6 +472,7 @@ func selectAggregationField(a fyne.App, queryResult [][]string) {
 	//Create dropdown for pollutant
 	pollutantSelectionResult := widget.NewLabel("Select A Pollutant")
 	//pollutant dropdown box option
+	// TODO: delete me
 	pollutantSelectionDropdown := widget.NewSelect(
 		tableList,
 		func(selection string) {
@@ -505,6 +509,7 @@ func selectAggregationField(a fyne.App, queryResult [][]string) {
 		})
 
 	submitButton := widget.NewButton("Submit", func() {
+		//TODO re plot will mess up the plot by show both headers from 2 plot input, find out where the submit button is and make sure delete whatever was saved there
 		fmt.Println("Submit button pressed")
 		fmt.Println("Printing field selection #1  " + fieldSelection1 + " field #2 " + fieldSelection2 + " value column " + resultColumn + " pollutant selection " + pollutantSelection)
 		runPlot(distanceUnits, massUnits, energyUnits, fieldSelection1, fieldSelection2, resultColumn, queryResult)
@@ -634,10 +639,13 @@ func updateButtonToolbar(db *sql.DB, window2 fyne.Window, filter map[string][]st
 
 	//update the matrix with the new where clause and group by we just made
 	var err error
+	//*queryResult = make([][]string, 0)
 	*queryResult, err = getQueryResult(db, columnSelection, whereClause, groupbyClause)
 	fmt.Println("printing error query result WHERE clause")
 	fmt.Println(err)
 	updateToolbarMessage(ToolbarLabel, whereClause, groupbyClause, db, dbSelection)
+	fmt.Println("printing query result re plot")
+	fmt.Println(queryResult)
 
 	//dialog box pop out warning for no result query
 	if len(*queryResult) < 2 {
@@ -689,9 +697,14 @@ func createNewCheckBoxGroup(db *sql.DB, columnsName string, filter map[string][]
 	//For example
 	//pollutantidButton + pollutantContainer
 	xButton := widget.NewButton(columnsName, func() {
+		//TODO: expand & collapse on click
 	})
 
+	// TODO: if the column name is already known are null value in the whiteList, skip it, only call distinct for these columns
 	distinctX := getDistinct(db, columnsName)
+	// TODO: the value here = the checkbox name, how to show full name but when select value by ID? for example I want checkbox show as fuelType gas but value stay as 1
+	//The fuelType =1 is the way to query the filter
+
 	xCheckGroup := widget.NewCheckGroup(distinctX, func(value []string) {
 		fmt.Println("selected", value)
 		//update map  from checked boxes statues
