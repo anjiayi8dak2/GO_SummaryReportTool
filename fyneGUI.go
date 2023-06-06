@@ -10,37 +10,35 @@ import (
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
 	_ "github.com/pkg/browser"
-	"os/exec"
-	"runtime"
+	"github.com/skratchdot/open-golang/open" // Open the folder in the file explorer, also handle different OS
 	"strings"
 	"time"
 )
 
 var (
-	distanceUnits      string
-	massUnits          string
-	energyUnits        string
-	dbSelection        string
-	tableSelection     string
-	whiteListIndex     []bool
-	whiteList          []string
-	fieldSelection1    string
-	fieldSelection2    string
-	pollutantSelection string //TODO: delete me
+	distanceUnits   string
+	massUnits       string
+	energyUnits     string
+	dbSelection     string
+	tableSelection  string
+	whiteListIndex  []bool
+	whiteList       []string
+	fieldSelection1 string
+	fieldSelection2 string
 )
 
 // TODO: takes forever to open file explorer with wrong folder, it always open download folder WHY?
 func openMariaFolder(db *sql.DB) {
-	dataDir := getDataDir(db)
-	dataDir = "\"" + dataDir + "\""
-	fmt.Println(dataDir)
-	cmd := "open"
-	if runtime.GOOS == "windows" {
-		cmd = "explorer"
+	//dataDir := getDataDir(db)
+	//dataDir = "\"" + dataDir + "\""
+	//fmt.Println("print data dir", dataDir)
+
+	// Open the folder in the file explorer
+	err := open.Start("C:\\ProgramData\\MariaDB\\MariaDB 10.4\\data\\")
+	fmt.Println("print err", err)
+	if err != nil {
+		fmt.Println("print err", err)
 	}
-	fmt.Println(cmd)
-	exec.Command(cmd, dataDir).Start()
-	fmt.Println("finishing utility/openMariaFolder func")
 
 }
 
@@ -462,22 +460,6 @@ func selectAggregationField(a fyne.App, queryResult [][]string) {
 		headerList2 = headersList
 	}
 
-	//TODO:  delete this the drop down box for pollutant, and make more clear instruction here for X1 X2 selection
-
-	tableList := []string{"pollutant1", "pollutant2", "pollutant3", "pollutant4"}
-	//Create dropdown for pollutant
-	pollutantSelectionResult := widget.NewLabel("Select A Pollutant")
-	//pollutant dropdown box option
-	// TODO: delete me
-	pollutantSelectionDropdown := widget.NewSelect(
-		tableList,
-		func(selection string) {
-			fmt.Printf("I selected %selection as pollutant..", selection)
-			pollutantSelectionResult.Text = selection
-			pollutantSelection = selection
-			pollutantSelectionResult.Refresh()
-		})
-
 	//Create dropdown for field selection #1
 	fieldSelectionResult1 := widget.NewLabel("Select field 1")
 	//Use headersList to update dropdown box option
@@ -507,7 +489,7 @@ func selectAggregationField(a fyne.App, queryResult [][]string) {
 	submitButton := widget.NewButton("Submit", func() {
 		//TODO re plot will mess up the plot by show both headers from 2 plot input, find out where the submit button is and make sure delete whatever was saved there
 		fmt.Println("Submit button pressed")
-		fmt.Println("Printing field selection #1  " + fieldSelection1 + " field #2 " + fieldSelection2 + " value column " + resultColumn + " pollutant selection " + pollutantSelection)
+		fmt.Println("Printing field selection #1  " + fieldSelection1 + " field #2 " + fieldSelection2 + " value column " + resultColumn)
 		runPlot(distanceUnits, massUnits, energyUnits, fieldSelection1, fieldSelection2, resultColumn, queryResult)
 	})
 
@@ -517,7 +499,7 @@ func selectAggregationField(a fyne.App, queryResult [][]string) {
 	})
 	buttonContainer := container.New(layout.NewGridLayout(2), submitButton, cancelButton)
 
-	dropdownGrid := container.New(layout.NewGridLayout(3), pollutantSelectionDropdown, fieldSelectionDropdown1, fieldSelectionDropdown2)
+	dropdownGrid := container.New(layout.NewGridLayout(2), fieldSelectionDropdown1, fieldSelectionDropdown2)
 	outerContainer := container.NewVSplit(dropdownGrid, buttonContainer)
 	outerContainer.Offset = 0.8
 	selectAggregationFieldWindow.SetContent(outerContainer)
@@ -731,7 +713,7 @@ func updateToolbarMessage(l *widget.Label, where string, group string, db *sql.D
 	distanceUnits = getMOVESrun(db, dbSelection, "distanceUnits")
 	massUnits = getMOVESrun(db, dbSelection, "massUnits")
 	energyUnits = getMOVESrun(db, dbSelection, "energyUnits")
-
+	//TODO: make this clean, look at screenshot
 	message = "Filters: " + where + "Aggregated by : " + group + " Energy Unit: " + energyUnits + " Distance Unit: " + distanceUnits + " Mass Unit: " + massUnits
 	l.SetText(message)
 }
