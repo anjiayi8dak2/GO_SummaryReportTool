@@ -93,6 +93,7 @@ func makeWindowTwo(a fyne.App, queryResult [][]string, db *sql.DB) {
 			fmt.Println("I pressed update button")
 			updateButtonToolbar(db, window2, filter, groupBy, &queryResult, ToolbarLabel)
 			tableAutoSize(queryResult, tableData)
+			decodeButtonToolbar(queryResult)
 		}),
 		widget.NewToolbarSeparator(),
 		widget.NewToolbarAction(theme.DocumentCreateIcon(), func() { //plot button
@@ -105,11 +106,6 @@ func makeWindowTwo(a fyne.App, queryResult [][]string, db *sql.DB) {
 			csvExport(queryResult)
 		}),
 		widget.NewToolbarSeparator(),
-		widget.NewToolbarAction(theme.VisibilityIcon(), func() { //decode button
-			fmt.Println("I pressed decode button")
-			tableAutoSize(queryResult, tableData)
-			decodeButtonToolbar(queryResult)
-		}),
 		widget.NewToolbarSpacer(),
 		ToolbarLabel,
 	)
@@ -150,13 +146,13 @@ func makeWindowTwo(a fyne.App, queryResult [][]string, db *sql.DB) {
 	)
 	//screen width horizontal distribution of filter panel VS data table panel
 	outerContainer.Offset = 0.08
-	//window2.SetContent(outerContainer)
 	window2.SetContent(container.NewBorder(toolbar, nil, nil, nil, outerContainer))
 	window2.Show()
 }
 
 func createFilterButtons(db *sql.DB, filter map[string][]string, innerContainer *fyne.Container) {
 	switch tableSelection {
+	//TODO: loop smart, something loop through struct field?
 	case "movesactivityoutput":
 		MOVESRunIDContainer := createNewCheckBoxGroup(db, "MOVESRunID", filter)
 		iterationIDContainer := createNewCheckBoxGroup(db, "iterationID", filter)
