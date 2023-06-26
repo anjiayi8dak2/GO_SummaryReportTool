@@ -147,8 +147,9 @@ func barStack() *charts.Bar {
 
 func runPlot(distanceUnits string, massUnits string, energyUnits string, X1 string, X2 string, Y string, queryResult [][]string) {
 
-	//pollutant name should be here, it should pass from the caller
+	//pollutant/activity name should be here for title?
 	titleName = "Plot for " + X1 + " VS " + X2
+	// TODO: delete me
 	// This count is useful to generate plot, user can select 1 or 2 field for aggregation
 	// if count =1, make regular bar, if count =2, then make stack bar
 	xAxisCount = 2
@@ -161,6 +162,8 @@ func runPlot(distanceUnits string, massUnits string, energyUnits string, X1 stri
 	field1_position := 0
 	field2_position := 0
 	valueColumn_position := 0
+
+	//TODO: if the matrix has more than 2 columns, aggregate it
 
 	//loop the existing table, and reshape long to wide end up in map, aka contingency table
 	longToWideMap := map[wideTableShapeStruct]float64{}

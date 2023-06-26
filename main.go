@@ -61,6 +61,7 @@ func main() {
 			dbSelection = selection
 			dbDropdownResult.Refresh()
 		})
+	dbDropdown.PlaceHolder = "DB Selection"
 
 	//Create dropdown for table selection
 	tableDropdownResult := widget.NewLabel("Select a Table")
@@ -74,6 +75,7 @@ func main() {
 			tableSelection = selection
 			tableDropdownResult.Refresh()
 		})
+	tableDropdown.PlaceHolder = "Table Selection"
 
 	dropdownGrid := container.New(layout.NewAdaptiveGridLayout(2), dbDropdown, tableDropdown)
 	submitButton := widget.NewButton("Submit", func() {

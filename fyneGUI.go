@@ -3,11 +3,12 @@ package main
 import (
 	"database/sql"
 	"fmt"
-	"fyne.io/fyne/theme"
 	"fyne.io/fyne/v2"
 	_ "fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/layout"
+	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 	_ "github.com/pkg/browser"
 	"github.com/skratchdot/open-golang/open" // Open the folder in the file explorer, also handle different OS
@@ -96,7 +97,18 @@ func makeWindowTwo(a fyne.App, queryResult [][]string, db *sql.DB) {
 		widget.NewToolbarSeparator(),
 		widget.NewToolbarAction(theme.DocumentCreateIcon(), func() { //plot button
 			fmt.Println("I pressed plot button")
-			selectAggregationField(a, queryResult)
+			//TODO: check before plot if there are more than 2 columns are selected
+			if len(queryResult[0]) > 3 {
+				//popup a dialog box
+				dialog.ShowInformation(
+					"Hold Up",
+					"Please make sure only check 1 or 2 checkbox in the aggregation section for plotting",
+					window2,
+				)
+			} else {
+				selectAggregationField(a, queryResult)
+			}
+
 		}),
 		widget.NewToolbarSeparator(),
 		widget.NewToolbarAction(theme.DownloadIcon(), func() { //download CSV
@@ -471,6 +483,7 @@ func selectAggregationField(a fyne.App, queryResult [][]string) {
 			fieldSelection1 = selection
 			fieldSelectionResult1.Refresh()
 		})
+	fieldSelectionDropdown1.PlaceHolder = "X1 Selection"
 
 	//Create dropdown for field selection #2
 	fieldSelectionResult2 := widget.NewLabel("Select field 2")
@@ -485,9 +498,9 @@ func selectAggregationField(a fyne.App, queryResult [][]string) {
 			fieldSelection2 = selection
 			fieldSelectionResult2.Refresh()
 		})
+	fieldSelectionDropdown2.PlaceHolder = "X2 Selection"
 
 	submitButton := widget.NewButton("Submit", func() {
-		//TODO re plot will mess up the plot by show both headers from 2 plot input, find out where the submit button is and make sure delete whatever was saved there
 		fmt.Println("Submit button pressed")
 		fmt.Println("Printing field selection #1  " + fieldSelection1 + " field #2 " + fieldSelection2 + " value column " + resultColumn)
 		runPlot(distanceUnits, massUnits, energyUnits, fieldSelection1, fieldSelection2, resultColumn, queryResult)
