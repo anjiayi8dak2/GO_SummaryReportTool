@@ -23,15 +23,15 @@ var (
 	//Most part of the variables should pass from fyne window
 	//distanceUnits, massUnits, energyUnits string
 	//pollutant name should be here, it should pass from the caller
-	titleName    = "dummyTitleName"
-	subTitleName = "dummySubTitleName"
+	titleName    = "TitleName"
+	subTitleName = "SubTitleName"
 	// This count is useful to generate plot, user can select 1 or 2 field for aggregation
 	// if count =1, make regular bar, if count =2, then make stack bar
-	xAxisCount = 2
+	xAxisCount = 2 //TODO delete me?
 	// YAxisName Y name could also be activity, it must locate at (first row, last element)
-	YAxisName = "dummyYAxisName"
+	YAxisName = "YAxisName"
 	// XAxisName X name is selected by user, they must locate at first row, except last element
-	XAxisName = "dummyXAxisName"
+	XAxisName = "XAxisName"
 
 	// field in slice
 	field1 []string
@@ -71,7 +71,7 @@ func barStack() *charts.Bar {
 			Name: XAxisName,
 			AxisLabel: &opts.AxisLabel{
 				Show:         true,
-				Rotate:       45,   //rotate title name by 45 degree, because there are many long bar title
+				Rotate:       45,   //rotate title name by 45 degree
 				Interval:     "0",  //0 to display all labels compulsively.
 				ShowMaxLabel: true, //show first bar name, this setting was default as false
 				ShowMinLabel: true, //show last bar name, this setting was default as false

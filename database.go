@@ -127,9 +127,6 @@ func getQueryResult(db *sql.DB, columnSelection []string, whereClause string, gr
 		// stick all 1D array into 2D for data table
 		outFlat = append(outFlat, innerFlat)
 	}
-	//TODO: adding data, add the mass/distance unit for the (first column, last row)
-	// also, depending on what table is selected, the unit can be different. for example, grams or grams per mil
-	// outFlat[0][len(whiteList)-1] = getUnit(db, dbSelection, tableSelection)
 	return outFlat, err
 }
 
@@ -172,7 +169,9 @@ func getUnit(db *sql.DB) string {
 }
 
 // in MOVES output tables, there are null values and empty string value ""
-// go-sql driver does not read null value that returned from query, therefore we use ifnull() and assign -1 as an indicator for the null value
+// go-sql driver will mess up everything for null value that returned from query,
+// therefore, before disaster happen, we use ifnull() and assign -1 as an indicator for the null value
+// SCC has different problem that can be an empty string ”, also need to catch that
 // so far the best solution that does not rely on the independent third party repo
 func getOneRow(db *sql.DB) (interface{}, error) {
 	var ifNullSQL string
@@ -363,18 +362,19 @@ func getOneRow(db *sql.DB) (interface{}, error) {
 	}
 
 	// put sql statement together and select one row
-	sql := ifNullSQL + dbSelection + "." + tableSelection + " LIMIT 1;"
-	rows, err := db.Query(sql)
+	sqlStatement := ifNullSQL + dbSelection + "." + tableSelection + " LIMIT 1;"
+	rows, err := db.Query(sqlStatement)
 	if err != nil {
 		panic(err)
 		return nil, err
 	}
 	defer rows.Close()
 
-	// depends on the table selection string value, create different instance of the struct, (structs can be found in dataType.go)
+	// depends on the table selection string value, create different type of instance, (structs can be found in dataType.go)
 	// then scan the query result into struct specific field for next steps
 	// the Scan function from go-sql driver has no way to select all columns into target struct in one command like "SELECT * ..." into struct_name
-	// I could not find a better way than hard coded column names, will be nice to have a one function call solution in the future.
+	// the go-sql driver documentation used this hard coded Scan() way and I could not find a better way without using random 3rd party repo
+	// will be nice to have a one function call solution in the future.
 	switch tableSelection {
 	case "movesactivityoutput":
 		var output Movesactivityoutput
@@ -515,13 +515,13 @@ func getOneRow(db *sql.DB) (interface{}, error) {
 
 // TODO: performance?
 // return []string contains whitelist columns names that have meaningful values, size depends on how many column are survived
-// return []bool that indicate valid/invalid values for each column, []bool size = total column that a table has in struct
-// for example: a 4 column table has 4 attributes {"yearID", "pollutantID", "roadTypeID", "emissionQuant"}
+// return []bool that indicate true/false values for each column, []bool size = total column that a table has in struct
+// for example: a 4 column table has  {"yearID", "pollutantID", "roadTypeID", "emissionQuant"}
 // then the filter found yearID and roadTypeID are null
 // returned whitelist will be {"pollutantID","emissionQuant"}
 // returned []bool will be {0,1,0,1}
 func getWhiteList(con *sql.DB) ([]string, []bool) {
-	//reset both whiteList
+	//reset both whiteList in []bool and []string
 	whiteList = nil
 	whiteListIndex = nil
 

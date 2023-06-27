@@ -28,7 +28,7 @@ var (
 	fieldSelection2 string
 )
 
-// TODO: takes forever to open file explorer with wrong folder, it always open download folder WHY?
+// TODO: not working at all, why open the document folder by default?
 func openMariaFolder(db *sql.DB) {
 	//dataDir := getDataDir(db)
 	//dataDir = "\"" + dataDir + "\""
@@ -130,7 +130,7 @@ func makeWindowTwo(a fyne.App, queryResult [][]string, db *sql.DB) {
 		aggregationContainer = createNewAggregationGroup(whiteList, groupBy, 3)
 	}
 
-	// TODO: temporary disable aggregation for rate
+	// TODO: temporary disable aggregation for rate,
 	if tableSelection == "movesoutput" || tableSelection == "movesactivityoutput" {
 		aggregationContainer.Visible()
 	} else {
@@ -454,19 +454,20 @@ func selectAggregationField(a fyne.App, queryResult [][]string) {
 	selectAggregationFieldWindow.Resize(fyne.NewSize(400, 400))
 
 	//get the list of field columns and the result column
-	//field columns serve for dropdown box
+	//field columns serve for 2 dropdown boxes
+	//user select what is for X1 and X2
 	//iteration for the first row of the data grid, first row must be header.
 	// TODO: #1 selection shall be full list
 	// #2 list should be full list - the first selection
 
 	headersList := queryResult[0]
-	var headerList2 []string
-	var resultColumn string
+	var headerList2 []string //the column name such as fuelTypeID and pollutantID
+	var resultColumn string  //the column name such as emissionQuant , activity or gramPerDistance
 
 	if len(headersList) > 0 {
 		//assign last element in the header into resultColumn before delete
 		resultColumn = headersList[len(headersList)-1]
-		//remove the last element in the header, this should be usually be result column such as activity or emissionQuant
+		//remove the last element in the header, this should be result column such as activity or emissionQuant
 		headersList = headersList[:len(headersList)-1]
 
 		headerList2 = headersList
@@ -483,6 +484,7 @@ func selectAggregationField(a fyne.App, queryResult [][]string) {
 			fieldSelection1 = selection
 			fieldSelectionResult1.Refresh()
 		})
+	//text show on the dropdown box before click
 	fieldSelectionDropdown1.PlaceHolder = "X1 Selection"
 
 	//Create dropdown for field selection #2
@@ -498,6 +500,7 @@ func selectAggregationField(a fyne.App, queryResult [][]string) {
 			fieldSelection2 = selection
 			fieldSelectionResult2.Refresh()
 		})
+	//text show on the dropdown box before click
 	fieldSelectionDropdown2.PlaceHolder = "X2 Selection"
 
 	submitButton := widget.NewButton("Submit", func() {
@@ -510,13 +513,16 @@ func selectAggregationField(a fyne.App, queryResult [][]string) {
 		fmt.Println("Cancel button pressed")
 		selectAggregationFieldWindow.Close()
 	})
+	// 1 row, 2 columns for submit and cancel
 	buttonContainer := container.New(layout.NewGridLayout(2), submitButton, cancelButton)
-
+	// 1 row, 2 columns for 2 dropdown box
 	dropdownGrid := container.New(layout.NewGridLayout(2), fieldSelectionDropdown1, fieldSelectionDropdown2)
+	// vertical split container 2 rows, 1 column, and it split up and down
 	outerContainer := container.NewVSplit(dropdownGrid, buttonContainer)
+	// upstairs own 80% of the space
 	outerContainer.Offset = 0.8
+	//fyne standard, set content to window and show
 	selectAggregationFieldWindow.SetContent(outerContainer)
-
 	selectAggregationFieldWindow.Show()
 
 }
@@ -542,12 +548,12 @@ func updateButtonToolbar(db *sql.DB, window2 fyne.Window, filter map[string][]st
 				inValue := convertColumnsComma(value)
 				fmt.Println("print in values ", inValue)
 				partialWhere = " AND " + whiteList[index] + " IN ( " + inValue + " ) "
-				fmt.Println("print dummy clause ", partialWhere)
+				fmt.Println("print partialWhere clause ", partialWhere)
 			} else { // otherwise do not put AND
 				inValue := convertColumnsComma(value)
 				fmt.Println("print in values ", inValue)
 				partialWhere = whiteList[index] + " IN ( " + inValue + " ) "
-				fmt.Println("print dummy clause ", partialWhere)
+				fmt.Println("print partialWhere clause ", partialWhere)
 			}
 		} else {
 			fmt.Println(whiteList[index], " key not found")
@@ -595,7 +601,7 @@ func updateButtonToolbar(db *sql.DB, window2 fyne.Window, filter map[string][]st
 
 		//update SELECT clause PLUS sum of emissionQuant or acivity or rates
 		columnSelection = groupbySelection
-		//TODO: switch here, depends on different table, sum activity? emissionQuant?
+		//switch here, depends on different table, sum activity? emissionQuant?
 		//TODO: disable rate aggregation for now, averaging/summing rate can be misleading
 		// because it is not considered many factors such as population distribution, and all kinds of adjustments.
 		if tableSelection == "movesoutput" {
