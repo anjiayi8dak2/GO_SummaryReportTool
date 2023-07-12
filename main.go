@@ -23,7 +23,7 @@ func main() {
 	//Initialize app main window
 	a := app.New()
 	a.Settings().SetTheme(theme.DarkTheme())
-	window1 := a.NewWindow("Summary Report Tool")
+	window1 := a.NewWindow("Summary Report Tool Main Panel")
 	window1.Resize(fyne.NewSize(400, 400))
 
 	//Top menu bar

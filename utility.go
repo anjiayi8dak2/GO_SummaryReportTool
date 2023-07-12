@@ -119,7 +119,7 @@ func RemoveElementFromSlice(l []string, item string) []string {
 
 // input [][]string, output decoded [][]string IDs in English
 // decoder can be found in decoder.go, it predefined the key[value] combinations
-func decodeButtonToolbar(Matrix [][]string) {
+func decodeDataTable(Matrix [][]string) {
 	//outer loop for each column
 	for col := 0; col < len(Matrix[0]); col++ {
 		//inner loop for each row

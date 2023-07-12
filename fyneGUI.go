@@ -52,9 +52,9 @@ func convertColumnsComma(columns []string) string {
 
 // data browsing main window, include the data table and filters
 func makeWindowTwo(a fyne.App, queryResult [][]string, db *sql.DB) {
-	fmt.Println("opening window #2")
-	window2 := a.NewWindow("window #2")
-	window2.SetContent(widget.NewLabel("window #2 label"))
+	fmt.Println("opening Summary Report Tool Data Viewing Window")
+	window2 := a.NewWindow("Data Viewing Window")
+	window2.SetContent(widget.NewLabel("Data Viewing Window label"))
 	window2.Resize(fyne.NewSize(1000, 800))
 
 	//map to hold filters selection in checkbox group for where clause
@@ -92,7 +92,7 @@ func makeWindowTwo(a fyne.App, queryResult [][]string, db *sql.DB) {
 			fmt.Println("I pressed update button")
 			updateButtonToolbar(db, window2, filter, groupBy, &queryResult, ToolbarLabel)
 			tableAutoSize(queryResult, tableData)
-			decodeButtonToolbar(queryResult)
+			decodeDataTable(queryResult)
 		}),
 		widget.NewToolbarSeparator(),
 		widget.NewToolbarAction(theme.DocumentCreateIcon(), func() { //plot button
@@ -139,7 +139,7 @@ func makeWindowTwo(a fyne.App, queryResult [][]string, db *sql.DB) {
 	innerContainer.Add(aggregationContainer)
 
 	//dynamic filter buttons, Use the record of whiteListIndex [] bool, show and hide base on 1 or 0.
-	//we initialized all columns when the window #2 started
+	//we initialized all columns when the Data Viewing Window started
 	for index, ok := range whiteListIndex {
 		if ok {
 			innerContainer.Objects[index].Visible()
@@ -733,7 +733,7 @@ func updateToolbarMessage(l *widget.Label, where string, group string, db *sql.D
 	massUnits = getMOVESrun(db, dbSelection, "massUnits")
 	energyUnits = getMOVESrun(db, dbSelection, "energyUnits")
 	//TODO: make this clean, look at screenshot
-	message = "Filters: " + where + "Aggregated by : " + group + " Energy Unit: " + energyUnits + " Distance Unit: " + distanceUnits + " Mass Unit: " + massUnits
+	message = "|Filters: " + where + "|Aggregated by : " + group + "| Energy Unit: " + energyUnits + "| Distance Unit: " + distanceUnits + "| Mass Unit: " + massUnits
 	l.SetText(message)
 }
 
