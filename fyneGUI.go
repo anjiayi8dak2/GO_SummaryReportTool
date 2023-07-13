@@ -97,7 +97,7 @@ func makeWindowTwo(a fyne.App, queryResult [][]string, db *sql.DB) {
 		widget.NewToolbarSeparator(),
 		widget.NewToolbarAction(theme.DocumentCreateIcon(), func() { //plot button
 			fmt.Println("I pressed plot button")
-			//TODO: check before plot if there are more than 2 columns are selected
+			//check before plot if there are more than 2 columns are selected
 			if len(queryResult[0]) > 3 {
 				//popup a dialog box
 				dialog.ShowInformation(
@@ -106,7 +106,7 @@ func makeWindowTwo(a fyne.App, queryResult [][]string, db *sql.DB) {
 					window2,
 				)
 			} else {
-				selectAggregationField(a, queryResult)
+				selectPlotColumn(a, queryResult)
 			}
 
 		}),
@@ -130,7 +130,7 @@ func makeWindowTwo(a fyne.App, queryResult [][]string, db *sql.DB) {
 		aggregationContainer = createNewAggregationGroup(whiteList, groupBy, 3)
 	}
 
-	// TODO: temporary disable aggregation for rate,
+	// TODO: temporary disable aggregation for rate, sum rate together does not make sense
 	if tableSelection == "movesoutput" || tableSelection == "movesactivityoutput" {
 		aggregationContainer.Visible()
 	} else {
@@ -162,7 +162,7 @@ func makeWindowTwo(a fyne.App, queryResult [][]string, db *sql.DB) {
 
 func createFilterButtons(db *sql.DB, filter map[string][]string, innerContainer *fyne.Container) {
 	switch tableSelection {
-	//TODO: loop smart, something loop through struct field?
+	//TODO: loop smart, something loop through struct field? instead of hardcoded
 	case "movesactivityoutput":
 		MOVESRunIDContainer := createNewCheckBoxGroup(db, "MOVESRunID", filter)
 		iterationIDContainer := createNewCheckBoxGroup(db, "iterationID", filter)
@@ -447,30 +447,26 @@ func createFilterButtons(db *sql.DB, filter map[string][]string, innerContainer 
 }
 
 // open new window when hit the plot button, user should select 1 or 2 field for plotting
-// then this function will pass all the parameter to the plotting library
-func selectAggregationField(a fyne.App, queryResult [][]string) {
+// then this function will pass the selection to plot function
+func selectPlotColumn(a fyne.App, queryResult [][]string) {
 
-	selectAggregationFieldWindow := a.NewWindow("Select 1 or 2 field that for X axis")
+	selectAggregationFieldWindow := a.NewWindow("Plot Configuration Window")
 	selectAggregationFieldWindow.Resize(fyne.NewSize(400, 400))
 
-	//get the list of field columns and the result column
-	//field columns serve for 2 dropdown boxes
-	//user select what is for X1 and X2
-	//iteration for the first row of the data grid, first row must be header.
-	// TODO: #1 selection shall be full list
-	// #2 list should be full list - the first selection
+	// get the list of field columns and the result column, for example dayID, fuelID, emissionQuant
+	// field columns serve for 2 dropdown boxes
+	// user select what is for X1 and X2
+	// copy for the first row of the data grid, first row must be header.
+	// headersList [] string for dropdown box
 
 	headersList := queryResult[0]
-	var headerList2 []string //the column name such as fuelTypeID and pollutantID
-	var resultColumn string  //the column name such as emissionQuant , activity or gramPerDistance
+	var resultColumn string //the value column names such as emissionQuant , activity or gramPerDistance
 
 	if len(headersList) > 0 {
 		//assign last element in the header into resultColumn before delete
 		resultColumn = headersList[len(headersList)-1]
 		//remove the last element in the header, this should be result column such as activity or emissionQuant
 		headersList = headersList[:len(headersList)-1]
-
-		headerList2 = headersList
 	}
 
 	//Create dropdown for field selection #1
@@ -485,14 +481,12 @@ func selectAggregationField(a fyne.App, queryResult [][]string) {
 			fieldSelectionResult1.Refresh()
 		})
 	//text show on the dropdown box before click
-	fieldSelectionDropdown1.PlaceHolder = "X1 Selection"
+	fieldSelectionDropdown1.PlaceHolder = "Select field X1"
 
 	//Create dropdown for field selection #2
 	fieldSelectionResult2 := widget.NewLabel("Select field 2")
-	//Use header list EXCLUDE first selection to update dropdown box option
-	headerList2 = RemoveElementFromSlice(headerList2, fieldSelection1)
 	fieldSelectionDropdown2 := widget.NewSelect(
-		headerList2,
+		headersList,
 		func(selection string) {
 			fieldSelectionResult2.Refresh()
 			fmt.Printf("I selected %selection as field 2..", selection)
@@ -501,7 +495,7 @@ func selectAggregationField(a fyne.App, queryResult [][]string) {
 			fieldSelectionResult2.Refresh()
 		})
 	//text show on the dropdown box before click
-	fieldSelectionDropdown2.PlaceHolder = "X2 Selection"
+	fieldSelectionDropdown2.PlaceHolder = "Select field X2"
 
 	submitButton := widget.NewButton("Submit", func() {
 		fmt.Println("Submit button pressed")
@@ -513,13 +507,14 @@ func selectAggregationField(a fyne.App, queryResult [][]string) {
 		fmt.Println("Cancel button pressed")
 		selectAggregationFieldWindow.Close()
 	})
-	// 1 row, 2 columns for submit and cancel
+	// layout setting
+	// 1 row, 2 columns for submit and cancel grid
 	buttonContainer := container.New(layout.NewGridLayout(2), submitButton, cancelButton)
-	// 1 row, 2 columns for 2 dropdown box
+	// 1 row, 2 columns for 2 dropdown box grid
 	dropdownGrid := container.New(layout.NewGridLayout(2), fieldSelectionDropdown1, fieldSelectionDropdown2)
 	// vertical split container 2 rows, 1 column, and it split up and down
 	outerContainer := container.NewVSplit(dropdownGrid, buttonContainer)
-	// upstairs own 80% of the space
+	// upstairs own 80% of the space, downstairs own 20% space
 	outerContainer.Offset = 0.8
 	//fyne standard, set content to window and show
 	selectAggregationFieldWindow.SetContent(outerContainer)
@@ -536,8 +531,8 @@ func updateButtonToolbar(db *sql.DB, window2 fyne.Window, filter map[string][]st
 	//loop through all the keys in mo map and generate a where clause
 	fmt.Println("loop throuth the whiteList keys and print")
 	// there is no easy loop solution for select and then unselect operation on the run time, because it will generate a key with empty value such as hpid {}
-	// these empty values will cause empty IN() statement in the where clause that make future problems.
-	// hence, we should detect empty value in map and delete that key before disaster happen
+	// these empty values will cause empty IN() statement in the where clause that make sql syntax problems.
+	// hence, detect empty value in map and delete that key before disaster happen
 	for index := 0; index < len(whiteList); index++ {
 		var partialWhere string
 		value, ok := filter[whiteList[index]]
@@ -576,11 +571,10 @@ func updateButtonToolbar(db *sql.DB, window2 fyne.Window, filter map[string][]st
 	}
 
 	// enter GROUP BY claus
-	// if there is 1 item is checked, have GROUP BY xxx
-	// else if, >1 items are checked, call func convertColumnsComma, get comma seperated field name, then have GROUP BY xxx,xxx, .....
-	// else there is 0 item is checked, remove the "GROUP BY"
-
-	//  if 1 or more items are checked, update the select columns same as the GROUP BY, Plus the sum of emissionQuant, maybe override func getQueryResult with direct sql statement
+	// if there is 1 aggregation box is checked, have GROUP BY xxx
+	// else if, >1 aggregation boxes are checked, call func convertColumnsComma, get comma seperated field name, then have GROUP BY xxx,xxx, .....
+	// else there is 0 aggregation box is checked, remove the "GROUP BY" from the sql statement
+	//  if 1 or more items are checked, update the select columns same as the GROUP BY, Plus the sum of emissionQuant
 
 	groupbyClause := " GROUP BY "
 	var columnSelection []string
@@ -636,7 +630,6 @@ func updateButtonToolbar(db *sql.DB, window2 fyne.Window, filter map[string][]st
 
 	//update the matrix with the new where clause and group by we just made
 	var err error
-	//*queryResult = make([][]string, 0)
 	*queryResult, err = getQueryResult(db, columnSelection, whereClause, groupbyClause)
 	fmt.Println("printing error query result WHERE clause")
 	fmt.Println(err)
@@ -655,23 +648,26 @@ func createNewAggregationGroup(whitelist []string, groupBy map[string][]string, 
 	xButton := widget.NewButton("Aggregation", func() {
 	})
 	whitelist2 := whitelist
-	//following table has different count of columns in the very end that always have non-filter value,
+	//following table has different count of columns in the very end that always have a value column,
 	// for example raterpervehicle has startsPerVehicle, movesoutput has emissionQuant, meanwhile rateperdistance has temperature, relHumidity and ratePerDistance
 	// This is based on how we defined the struct, NOT always look at MOVES DB schema, check it in the dataType.go
-	// count 1: Movesoutput, TODO: add activity
+	// count 1: Movesoutput, activity
 	// count 3: Rateperdistance, Rateperhour, Rateperprofile, Rateperstart, Ratepervehicle Startspervehicle
+
+	// This aggregation buttons are not for value column, remove these columns from end of the slice, base on how many value columns a table has
 	if len(whitelist2) > 0 {
 		whitelist2 = whitelist2[:len(whitelist2)-numericColumnsInTheEnd]
 	}
 	fmt.Println("printing whitelist2 slice inside createNewAggregationGroup", whitelist2)
+	// create checkbox button group
 	xCheckGroup := widget.NewCheckGroup(whitelist2, func(value []string) {
 		fmt.Println("selected", value)
-		//update map from checked boxes statues
+		//update map from checked boxes selection statues
 		groupBy["Aggregation"] = value
 		fmt.Println("print entire group by map for  ", "Aggregation", " inside func createNewAggregationGroup")
 		fmt.Println(groupBy)
 
-		//check if map is empty
+		//check if map key combination is empty, if it is empty, delete that key combo
 		if len(groupBy["Aggregation"]) == 0 {
 			fmt.Println("Aggregation map has no value", groupBy["Aggregation"])
 			fmt.Println("BEFORE", groupBy["Aggregation"])
@@ -694,21 +690,25 @@ func createNewCheckBoxGroup(db *sql.DB, columnsName string, filter map[string][]
 	//For example
 	//pollutantidButton + pollutantContainer
 	xButton := widget.NewButton(columnsName, func() {
-		//TODO: expand & collapse on click
+		//TODO: expand & collapse on click at checkbox group title
 	})
 
-	// TODO: if the column name is already known are null value in the whiteList, skip it, only call distinct for these columns
-	distinctX := getDistinct(db, columnsName)
-	// TODO: the value here = the checkbox name, how to show full name but when select value by ID? for example I want checkbox show as fuelType gas but value stay as 1
-	//The fuelType =1 is the way to query the filter
+	// TODO: How distinct query speed performance on the null value?
+	//  we already have white list, search the columnsName that passed in to this function
+	//  search it in the whitelist[], if it is not exist that means it is null column and it can be skipped
 
+	//get list of distinct values from a ID column
+	distinctX := getDistinct(db, columnsName)
+	// TODO: the value here = the checkbox name, how to show full name but when select value by ID? for example I want checkbox show as fuelType 'gas' but value stay as 1
+	//  The fuelType =1 is the way to query the filter, but if I cange the checkbox name into 'gas' the value I got in the backend will became gas.
+
+	//
 	xCheckGroup := widget.NewCheckGroup(distinctX, func(value []string) {
 		fmt.Println("selected", value)
 		//update map  from checked boxes statues
 		filter[columnsName] = value
 		fmt.Println("print entire filter map for  ", columnsName, " inside func createNewCheckBoxGroup")
 		fmt.Println(filter)
-		//TODO: put check empty value key here??
 	})
 
 	xContainer := container.NewVBox(xButton, xCheckGroup)
