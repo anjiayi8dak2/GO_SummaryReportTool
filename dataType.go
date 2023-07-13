@@ -1,6 +1,5 @@
 package main
 
-// TODO: add activity output
 type Movesactivityoutput struct {
 	MOVESRunID     int
 	iterationID    int

@@ -28,7 +28,7 @@ var (
 	fieldSelection2 string
 )
 
-// TODO: not working at all, why open the document folder by default?
+// TODO : not working at all, why open the document folder by default?
 func openMariaFolder(db *sql.DB) {
 	//dataDir := getDataDir(db)
 	//dataDir = "\"" + dataDir + "\""
@@ -732,7 +732,6 @@ func updateToolbarMessage(l *widget.Label, where string, group string, db *sql.D
 	distanceUnits = getMOVESrun(db, dbSelection, "distanceUnits")
 	massUnits = getMOVESrun(db, dbSelection, "massUnits")
 	energyUnits = getMOVESrun(db, dbSelection, "energyUnits")
-	//TODO: make this clean, look at screenshot
 	message = "|Filters: " + where + "|Aggregated by : " + group + "| Energy Unit: " + energyUnits + "| Distance Unit: " + distanceUnits + "| Mass Unit: " + massUnits
 	l.SetText(message)
 }
